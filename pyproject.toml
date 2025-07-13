@@ -1,0 +1,30 @@
+[project]
+name = "github-cli"
+version = "0.1.0"
+description = "Advanced terminal-based GitHub client"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "GitHub CLI Contributors" }
+]
+dependencies = [
+    "aiohttp>=3.9.0",
+    "rich>=13.7.0",
+    "questionary>=2.0.0",
+    "keyring>=24.0.0",
+    "python-dateutil>=2.8.0",
+    "loguru>=0.7.0",
+    "pydantic>=2.5.0",
+    "httpx>=0.25.0",
+    "textual>=0.41.0",
+    "textual-dev>=1.2.0",
+    "rich-argparse>=1.7.1",
+    "pyperclip>=1.9.0",
+]
+
+[project.scripts]
+github-cli = "github_cli.__main__:main_entrypoint"
+[[tool.uv.index]]
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true

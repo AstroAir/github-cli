@@ -1,0 +1,3 @@
+﻿"""
+GitHub CLI data models
+"""

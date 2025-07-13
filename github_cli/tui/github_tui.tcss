@@ -1,0 +1,364 @@
+/* GitHub CLI TUI Styling */
+
+/* Global styles */
+App {
+    background: $background 90%;
+}
+
+/* Header and Footer */
+Header {
+    background: $primary;
+    color: $text;
+    text-align: center;
+    height: 3;
+}
+
+Footer {
+    background: $surface;
+}
+
+/* Main container layout */
+#main-container {
+    height: 100%;
+}
+
+#content-area {
+    height: 100%;
+}
+
+/* Sidebar styling */
+.sidebar {
+    width: 25%;
+    min-width: 20;
+    max-width: 40;
+    background: $surface;
+    border-right: heavy $primary;
+    padding: 1;
+}
+
+#nav-tree {
+    height: 1fr;
+    margin-bottom: 1;
+}
+
+/* Buttons */
+Button {
+    width: 100%;
+    margin-bottom: 1;
+}
+
+Button.-primary {
+    background: $primary;
+}
+
+Button.-error {
+    background: $error;
+}
+
+/* Main tabs */
+#main-tabs {
+    height: 100%;
+}
+
+TabbedContent {
+    background: $background;
+}
+
+TabPane {
+    padding: 1;
+}
+
+/* Status bar */
+StatusBar {
+    dock: bottom;
+    height: 1;
+    background: $surface;
+    color: $text;
+    padding: 0 1;
+}
+
+/* Authentication screen */
+#auth-container {
+    align: center middle;
+    background: $background 90%;
+    border: heavy $primary;
+    width: 60;
+    height: 20;
+    padding: 2;
+}
+
+#auth-title {
+    text-align: center;
+    text-style: bold;
+    color: $primary;
+    margin-bottom: 1;
+}
+
+#auth-subtitle {
+    text-align: center;
+    margin-bottom: 2;
+}
+
+#auth-loading {
+    margin: 1 0;
+}
+
+#auth-log {
+    height: 8;
+    border: solid $primary;
+    margin: 1 0;
+}
+
+#cancel-btn {
+    width: 100%;
+}
+
+/* Help screen */
+#help-container {
+    align: center middle;
+    background: $background 90%;
+    border: heavy $primary;
+    width: 80;
+    height: 30;
+    padding: 2;
+}
+
+#help-title {
+    text-align: center;
+    text-style: bold;
+    color: $primary;
+    margin-bottom: 2;
+}
+
+#help-content {
+    height: 1fr;
+    margin-bottom: 2;
+}
+
+.help-section-title {
+    text-style: bold;
+    color: $accent;
+    margin: 1 0;
+}
+
+.help-item {
+    margin-left: 2;
+    margin-bottom: 0.5;
+}
+
+#close-help {
+    width: 20;
+    align: center;
+}
+
+/* Repository management */
+#repositories {
+    padding: 1;
+}
+
+.repo-table {
+    height: 1fr;
+    border: solid $primary;
+}
+
+.repo-info {
+    background: $surface;
+    border: solid $accent;
+    padding: 1;
+    margin: 1 0;
+}
+
+/* Pull request management */
+#pull-requests {
+    padding: 1;
+}
+
+.pr-table {
+    height: 1fr;
+    border: solid $primary;
+}
+
+.pr-detail {
+    background: $surface;
+    border: solid $accent;
+    padding: 1;
+    height: 10;
+}
+
+/* Actions workflow viewer */
+#actions {
+    padding: 1;
+}
+
+.workflow-table {
+    height: 1fr;
+    border: solid $primary;
+}
+
+.workflow-detail {
+    background: $surface;
+    border: solid $accent;
+    padding: 1;
+    height: 10;
+}
+
+/* Notification center */
+#notifications {
+    padding: 1;
+}
+
+.notification-table {
+    height: 1fr;
+    border: solid $primary;
+}
+
+.notification-item {
+    background: $surface;
+    border-left: thick $accent;
+    padding: 1;
+    margin: 0.5 0;
+}
+
+.notification-item.unread {
+    border-left: thick $warning;
+    background: $warning 10%;
+}
+
+/* Search interface */
+#search {
+    padding: 1;
+}
+
+.search-input {
+    width: 100%;
+    margin-bottom: 1;
+}
+
+.search-results {
+    height: 1fr;
+    border: solid $primary;
+}
+
+.search-result-item {
+    background: $surface;
+    border: solid $accent;
+    padding: 1;
+    margin: 0.5 0;
+}
+
+/* Settings */
+#settings {
+    padding: 1;
+}
+
+.settings-section {
+    background: $surface;
+    border: solid $accent;
+    padding: 1;
+    margin: 1 0;
+}
+
+.settings-title {
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+}
+
+/* Loading states */
+LoadingIndicator {
+    align: center middle;
+}
+
+.loading-overlay {
+    background: $background 80%;
+    align: center middle;
+}
+
+/* Data tables */
+DataTable {
+    height: 1fr;
+}
+
+DataTable > .datatable--header {
+    background: $primary;
+    color: $text;
+    text-style: bold;
+}
+
+DataTable > .datatable--odd-row {
+    background: $surface;
+}
+
+DataTable > .datatable--even-row {
+    background: $background;
+}
+
+DataTable > .datatable--cursor {
+    background: $accent;
+    color: $text;
+}
+
+/* Logs */
+Log {
+    background: $surface;
+    border: solid $primary;
+}
+
+/* Progress bars */
+ProgressBar {
+    margin: 1 0;
+}
+
+ProgressBar > .bar--complete {
+    color: $success;
+}
+
+ProgressBar > .bar--indeterminate {
+    color: $warning;
+}
+
+/* Input fields */
+Input {
+    background: $surface;
+    border: solid $primary;
+}
+
+Input:focus {
+    border: solid $accent;
+}
+
+/* Labels */
+Label {
+    margin: 0.5 0;
+}
+
+/* Placeholders during development */
+Placeholder {
+    background: $surface 50%;
+    border: dashed $primary;
+    text-align: center;
+}
+
+/* Responsive design adjustments */
+@media (max-width: 100) {
+    .sidebar {
+        width: 30%;
+    }
+}
+
+@media (max-width: 80) {
+    .sidebar {
+        width: 35%;
+    }
+    
+    #auth-container, #help-container {
+        width: 90%;
+    }
+}
+
+/* Dark theme adjustments */
+@media (prefers-color-scheme: dark) {
+    App {
+        background: $background 95%;
+    }
+}
