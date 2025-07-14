@@ -17,9 +17,19 @@ from github_cli.utils.config import Config
 class SettingsWidget(Container):
     """Complete settings and configuration widget."""
     
+    # Valid theme options
+    VALID_THEMES = ["auto", "light", "dark", "github", "monokai"]
+    
     def __init__(self, config: Config) -> None:
         super().__init__()
         self.config = config
+    
+    def _validate_theme(self, theme: str) -> str:
+        """Validate and return a valid theme value."""
+        if theme in self.VALID_THEMES:
+            return theme
+        logger.warning(f"Invalid theme '{theme}', falling back to 'auto'")
+        return "auto"
     
     def compose(self) -> ComposeResult:
         """Compose the settings widget."""
@@ -95,7 +105,7 @@ class SettingsWidget(Container):
                                 ("GitHub", "github"),
                                 ("Monokai", "monokai")
                             ],
-                            value=self.config.get("ui.theme", "auto"),
+                            value=self._validate_theme(self.config.get("ui.theme", "auto")),
                             id="theme-select"
                         )
                     
@@ -476,7 +486,7 @@ class SettingsWidget(Container):
             show_tooltips.value = self.config.get("ui.show_tooltips", True)
             
             # Appearance settings
-            theme_select.value = self.config.get("ui.theme", "auto")
+            theme_select.value = self._validate_theme(self.config.get("ui.theme", "auto"))
             color_scheme.value = self.config.get("ui.color_scheme", "default")
             font_size.value = self.config.get("ui.font_size", "medium")
             show_line_numbers.value = self.config.get("ui.show_line_numbers", True)

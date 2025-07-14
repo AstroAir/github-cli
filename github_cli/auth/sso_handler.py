@@ -2,14 +2,12 @@
 SSO handler for GitHub authentication
 """
 
-from typing import Optional, Dict, Any
+from typing import Dict
 import time
 import webbrowser
-import asyncio
 import aiohttp
 
 from github_cli.utils.config import Config
-from github_cli.utils.exceptions import AuthenticationError
 
 
 class SSOHandler:
@@ -73,3 +71,10 @@ class SSOHandler:
                         return False
         except Exception:
             return False
+
+    async def configure(self, org: str) -> None:
+        """Configure SSO for an organization"""
+        print(f"🔧 Configuring SSO for organization: {org}")
+        print("This feature is planned for a future release.")
+        # TODO: Implement SSO configuration
+        pass

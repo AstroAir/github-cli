@@ -142,8 +142,17 @@ async def main() -> int:
         if args.tui:
             logger.info("Launching TUI mode")
             from github_cli.tui.app import run_tui
-            # run_tui is not async, so we don't await it
-            run_tui()
+            import asyncio
+            import threading
+            
+            # Run TUI in a separate thread since it needs its own event loop
+            def run_tui_in_thread():
+                run_tui()
+            
+            # Start TUI in a separate thread
+            tui_thread = threading.Thread(target=run_tui_in_thread)
+            tui_thread.start()
+            tui_thread.join()
             return 0
 
         # Handle no command case

@@ -5,7 +5,7 @@ Configuration management for GitHub CLI
 import os
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional, Union, List
+from typing import Any, Dict, Optional
 
 from github_cli.utils.exceptions import ConfigError
 
@@ -53,7 +53,7 @@ class Config:
                     "max_retries": 3
                 },
                 "ui": {
-                    "theme": "default",
+                    "theme": "auto",
                     "show_progress": True
                 }
             }

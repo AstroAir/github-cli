@@ -1,12 +1,10 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import asyncio
-import secrets
 import time
 import webbrowser
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any, AsyncGenerator, TYPE_CHECKING
 
 import aiohttp
@@ -14,7 +12,7 @@ from loguru import logger
 from pydantic import BaseModel, Field, ValidationError
 
 from github_cli.utils.config import Config
-from github_cli.utils.exceptions import AuthenticationError, NetworkError
+from github_cli.utils.exceptions import AuthenticationError
 
 if TYPE_CHECKING:
     from github_cli.auth.token_manager import TokenManager
@@ -122,7 +120,6 @@ class Authenticator:
         """Enhanced interactive OAuth device flow login with better error handling."""
         if self.is_authenticated():
             logger.info("User already authenticated, skipping login")
-            print("Already authenticated. Use 'logout' first to change accounts.")
             return
 
         # Use configured scopes if none provided
@@ -131,9 +128,10 @@ class Authenticator:
 
         try:
             # Start device flow
+            print("🚀 Initiating GitHub authentication...")
             device_code_data = await self._request_device_code(scopes)
             if not device_code_data:
-                raise AuthenticationError("Failed to start authentication flow")
+                raise AuthenticationError("Failed to start authentication flow. Please check your internet connection.")
 
             # Display user instructions
             await self._display_auth_instructions(device_code_data)
@@ -146,7 +144,7 @@ class Authenticator:
             token_data = await self._poll_for_token(device_code, interval)
             
             if not token_data or "access_token" not in token_data:
-                raise AuthenticationError("Authentication failed or timed out")
+                raise AuthenticationError("Authentication was not completed or timed out.")
 
             # Save and set the token
             token = self.token_manager.save_token(token_data)
@@ -157,15 +155,20 @@ class Authenticator:
                 logger.info(f"Configuring SSO for organization: {sso}")
                 await self._configure_sso(sso)
 
-            print("\n�Successfully authenticated with GitHub!")
+            print("\n✅ Successfully authenticated with GitHub!")
             logger.info("Authentication completed successfully")
 
             # Fetch and cache user info
-            await self.fetch_user_info()
+            user_info = await self.fetch_user_info()
+            if user_info:
+                print(f"👤 Logged in as: {user_info.login}")
             
+        except AuthenticationError:
+            # Re-raise authentication errors as-is
+            raise
         except Exception as e:
             logger.error(f"Authentication failed: {e}")
-            raise AuthenticationError(f"Login failed: {e}") from e
+            raise AuthenticationError(f"Authentication failed due to an unexpected error: {e}") from e
     
     async def _display_auth_instructions(self, device_code_data: dict[str, Any]) -> None:
         """Display authentication instructions to the user."""
@@ -176,24 +179,59 @@ class Authenticator:
         print(f"📋 Copy your one-time code: {user_code}")
         print(f"🌐 Open this URL in your browser: {verification_uri}")
 
-        # Open browser automatically if possible
+        # Try multiple methods to open browser automatically
+        browser_opened = False
         try:
             if verification_uri:
-                webbrowser.open(verification_uri)
-                print("🚀 We've opened the verification page in your browser.")
-                logger.debug("Opened browser for authentication")
+                # Try the default browser first
+                if webbrowser.open(verification_uri):
+                    print("🚀 We've opened the verification page in your browser.")
+                    logger.debug("Opened browser for authentication")
+                    browser_opened = True
+                else:
+                    # Try platform-specific commands as fallback
+                    import subprocess
+                    import sys
+                    
+                    if sys.platform.startswith('win'):
+                        # Windows
+                        subprocess.run(['cmd', '/c', 'start', verification_uri], check=False)
+                        print("🚀 We've opened the verification page in your browser.")
+                        browser_opened = True
+                    elif sys.platform.startswith('darwin'):
+                        # macOS
+                        subprocess.run(['open', verification_uri], check=False)
+                        print("🚀 We've opened the verification page in your browser.")
+                        browser_opened = True
+                    elif sys.platform.startswith('linux'):
+                        # Linux
+                        subprocess.run(['xdg-open', verification_uri], check=False)
+                        print("🚀 We've opened the verification page in your browser.")
+                        browser_opened = True
+                        
         except Exception as e:
             logger.warning(f"Failed to open browser: {e}")
-            print("⚠️  Please manually open the URL above.")
 
-        print("\n�Waiting for GitHub authentication...\n")
+        if not browser_opened:
+            print("⚠️  Could not automatically open browser. Please manually open the URL above.")
+            # Try to copy to clipboard as a fallback
+            try:
+                import pyperclip
+                pyperclip.copy(verification_uri)
+                print("📋 URL copied to clipboard!")
+            except ImportError:
+                logger.debug("pyperclip not available for clipboard support")
+            except Exception as e:
+                logger.debug(f"Could not copy to clipboard: {e}")
+
+        print("\n⏳ Waiting for GitHub authentication...\n")
     
     async def _configure_sso(self, sso: str) -> None:
         """Configure Single Sign-On for the organization."""
         try:
             # Use the SSO handler for configuration
             await self.sso_handler.configure(sso)
-            print(f"�SSO configured for organization: {sso}")
+            print(f"🔧 SSO configured for organization: {sso}")
         except Exception as e:
             logger.warning(f"SSO configuration failed: {e}")
             print(f"⚠️  SSO configuration failed: {e}")
@@ -216,7 +254,7 @@ class Authenticator:
             self._token = None
             self._user_info = None
 
-            print("�Successfully logged out.")
+            print("✅ Successfully logged out.")
             logger.info("Logout completed successfully")
             
         except Exception as e:
@@ -320,10 +358,20 @@ class Authenticator:
                     else:
                         error_text = await response.text()
                         logger.error(f"Device code request failed: HTTP {response.status} - {error_text}")
+                        print(f"\n❌ Failed to start authentication: HTTP {response.status}")
                         return None
                         
+        except aiohttp.ClientConnectorError as e:
+            logger.error(f"Network connection error: {e}")
+            print("\n❌ Cannot connect to GitHub. Please check your internet connection.")
+            return None
+        except asyncio.TimeoutError as e:
+            logger.error(f"Request timeout: {e}")
+            print("\n❌ Request timed out. Please try again.")
+            return None
         except Exception as e:
             logger.error(f"Network error requesting device code: {e}")
+            print(f"\n❌ Network error: {e}")
             return None
 
     async def _poll_for_token(self, device_code: str, interval: int) -> dict[str, Any] | None:
@@ -332,9 +380,15 @@ class Authenticator:
         
         current_interval = interval
         max_attempts = self._auth_config.max_poll_attempts
+        
+        print(f"⏳ Waiting for authentication (timeout in {max_attempts * interval // 60} minutes)...")
 
         for attempt in range(1, max_attempts + 1):
             await asyncio.sleep(current_interval)
+            
+            # Show progress dots for user feedback
+            if attempt % 3 == 0:
+                print(".", end="", flush=True)
             
             logger.debug(f"Polling attempt {attempt}/{max_attempts}")
 
@@ -359,6 +413,7 @@ class Authenticator:
                                 # Success! Add creation timestamp
                                 data["created_at"] = int(time.time())
                                 logger.info("Token polling successful")
+                                print("\n✅ Authentication approved!")
                                 return data
                                 
                             case 200 if data.get("error") == "authorization_pending":
@@ -370,24 +425,32 @@ class Authenticator:
                                 # Need to slow down polling
                                 current_interval = min(current_interval + 1, 10)  # Cap at 10s
                                 logger.debug(f"Rate limited, increasing interval to {current_interval}s")
+                                print(f"\n⚠️  Slowing down polling (new interval: {current_interval}s)")
                                 continue
                                 
                             case 200 if data.get("error") == "expired_token":
                                 logger.error("Device code expired")
-                                print("\n�Authentication code expired. Please try again.")
+                                print("\n❌ Authentication code expired. Please try again.")
                                 return None
                                 
                             case 200 if data.get("error") == "access_denied":
                                 logger.error("User denied authorization")
-                                print("\n�Authorization denied by user.")
+                                print("\n❌ Authorization denied by user.")
                                 return None
                                 
                             case _:
                                 error_msg = data.get("error_description", data.get("error", "Unknown error"))
                                 logger.error(f"Token polling error: {error_msg}")
-                                print(f"\n�Authentication error: {error_msg}")
+                                print(f"\n❌ Authentication error: {error_msg}")
                                 return None
                                 
+            except aiohttp.ClientConnectorError as e:
+                logger.warning(f"Network error during token polling attempt {attempt}: {e}")
+                if attempt == max_attempts:
+                    print(f"\n❌ Network connection failed after {max_attempts} attempts.")
+                    return None
+                print(f"\n⚠️  Network error, retrying... ({attempt}/{max_attempts})")
+                continue
             except Exception as e:
                 logger.warning(f"Error during token polling attempt {attempt}: {e}")
                 if attempt == max_attempts:
@@ -395,5 +458,5 @@ class Authenticator:
                 continue
 
         logger.error("Token polling timed out")
-        print("\n�Authentication timed out. Please try again.")
+        print(f"\n❌ Authentication timed out after {max_attempts} attempts. Please try again.")
         return None

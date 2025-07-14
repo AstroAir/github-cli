@@ -143,12 +143,12 @@ StatusBar {
 
 .help-item {
     margin-left: 2;
-    margin-bottom: 0.5;
+    margin-bottom: 1;
 }
 
 #close-help {
     width: 20;
-    align: center;
+    align: center middle;
 }
 
 /* Repository management */
@@ -216,7 +216,7 @@ StatusBar {
     background: $surface;
     border-left: thick $accent;
     padding: 1;
-    margin: 0.5 0;
+    margin: 1 0;
 }
 
 .notification-item.unread {
@@ -243,7 +243,7 @@ StatusBar {
     background: $surface;
     border: solid $accent;
     padding: 1;
-    margin: 0.5 0;
+    margin: 1 0;
 }
 
 /* Settings */
@@ -329,7 +329,7 @@ Input:focus {
 
 /* Labels */
 Label {
-    margin: 0.5 0;
+    margin: 1 0;
 }
 
 /* Placeholders during development */
@@ -339,26 +339,5 @@ Placeholder {
     text-align: center;
 }
 
-/* Responsive design adjustments */
-@media (max-width: 100) {
-    .sidebar {
-        width: 30%;
-    }
-}
-
-@media (max-width: 80) {
-    .sidebar {
-        width: 35%;
-    }
-    
-    #auth-container, #help-container {
-        width: 90%;
-    }
-}
-
-/* Dark theme adjustments */
-@media (prefers-color-scheme: dark) {
-    App {
-        background: $background 95%;
-    }
-}
+/* Note: Textual CSS doesn't support @media queries, so responsive design
+   needs to be handled programmatically in the Python code */

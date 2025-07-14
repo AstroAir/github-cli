@@ -213,7 +213,7 @@ async def main() -> int:
                 args.interactive = True
 
         # For commands requiring authentication, ensure the user is authenticated
-        if args.command not in ["auth", "config", "help"] or \
+        if args.command not in ["auth", "config"] or \
            (args.command == "auth" and args.action not in ["login", "status"]):
             if not authenticator.is_authenticated():
                 print("You need to login first. Run 'github-cli auth login'")
@@ -226,7 +226,7 @@ async def main() -> int:
         # Initialize the terminal UI
         terminal = TerminalUI(client)
         # Set theme if needed
-        terminal.theme = args.theme or config.get("ui.theme", "default")
+        terminal.theme = args.theme or config.get("ui.theme", "auto")
 
         # Load plugins
         if config.get("plugins.enabled", True):

@@ -251,17 +251,40 @@ class GitHubTUIApp(App[None]):
             self.loading = True
             self.notify("Starting authentication flow...", timeout=3)
             
-            # Push authentication screen
-            await self.push_screen(AuthScreen(self.authenticator))
+            # Push authentication screen and wait for result
+            result = await self.push_screen(AuthScreen(self.authenticator))
             
-            # Refresh authentication status
+            # Refresh authentication status after the screen returns
             await self._check_authentication()
+            
+            if self.authenticated:
+                self.notify(f"Successfully logged in as {self.current_user}", severity="information", timeout=5)
+                logger.info(f"User successfully authenticated: {self.current_user}")
+                
+                # Refresh all content that depends on authentication
+                await self._refresh_authenticated_content()
+            else:
+                self.notify("Authentication was not completed", severity="warning")
             
         except Exception as e:
             logger.error(f"Login error: {e}")
-            self.notify(f"Login failed: {e}", severity="error")
+            self.notify(f"Login failed: {e}", severity="error", timeout=10)
         finally:
             self.loading = False
+    
+    async def _refresh_authenticated_content(self) -> None:
+        """Refresh content that requires authentication."""
+        try:
+            # This method can be extended to refresh specific tabs or widgets
+            # that depend on authentication status
+            logger.debug("Refreshing authenticated content")
+            
+            # Example: Could refresh repositories, notifications, etc.
+            # For now, we just log the action
+            pass
+            
+        except Exception as e:
+            logger.warning(f"Error refreshing authenticated content: {e}")
     
     async def action_logout(self) -> None:
         """Handle logout action."""
@@ -356,43 +379,90 @@ class AuthScreen(Screen[None]):
     
     BINDINGS = [
         Binding("escape", "dismiss", "Cancel"),
+        Binding("ctrl+c", "dismiss", "Cancel"),
     ]
     
     def __init__(self, authenticator: Authenticator) -> None:
         super().__init__()
         self.authenticator = authenticator
+        self._auth_task: asyncio.Task | None = None
     
     def compose(self) -> ComposeResult:
         """Compose the authentication screen."""
         with Container(id="auth-container"):
-            yield Static("GitHub Authentication", id="auth-title")
-            yield Static("Please complete the OAuth flow in your browser", id="auth-subtitle")
+            yield Static("🔐 GitHub Authentication", id="auth-title")
+            yield Static("Starting authentication flow...", id="auth-subtitle")
             yield LoadingIndicator(id="auth-loading")
-            yield Log(id="auth-log")
-            yield Button("Cancel", id="cancel-btn", variant="error")
+            yield Log(id="auth-log", auto_scroll=True)
+            with Horizontal(id="auth-buttons"):
+                yield Button("Cancel", id="cancel-btn", variant="error")
+                yield Button("Retry", id="retry-btn", variant="primary")
     
     async def on_mount(self) -> None:
         """Start the authentication flow when mounted."""
+        await self._start_auth_flow()
+    
+    async def _start_auth_flow(self) -> None:
+        """Start the authentication flow with proper error handling."""
         log_widget = self.query_one("#auth-log", Log)
+        subtitle_widget = self.query_one("#auth-subtitle", Static)
+        loading_widget = self.query_one("#auth-loading", LoadingIndicator)
+        retry_btn = self.query_one("#retry-btn", Button)
         
         try:
-            log_widget.write_line("Starting GitHub authentication...")
+            # Reset UI state
+            loading_widget.display = True
+            retry_btn.display = False
+            subtitle_widget.update("Starting authentication flow...")
+            log_widget.clear()
             
-            # Start the OAuth flow
-            await self.authenticator.login_interactive()
+            log_widget.write_line("🔐 Starting GitHub authentication...")
+            log_widget.write_line("📋 Please follow the instructions that will appear...")
             
-            log_widget.write_line("Authentication successful!")
-            await asyncio.sleep(1)  # Brief pause to show success message
+            # Start the OAuth flow in a task so we can cancel it
+            self._auth_task = asyncio.create_task(self.authenticator.login_interactive())
+            await self._auth_task
+            
+            log_widget.write_line("✅ Authentication successful!")
+            subtitle_widget.update("Authentication completed successfully!")
+            loading_widget.display = False
+            
+            # Brief pause to show success message
+            await asyncio.sleep(1.5)
             self.dismiss()
             
-        except Exception as e:
-            log_widget.write_line(f"Authentication failed: {e}")
+        except asyncio.CancelledError:
+            log_widget.write_line("❌ Authentication cancelled by user")
+            subtitle_widget.update("Authentication cancelled")
+            loading_widget.display = False
+            retry_btn.display = True
+            logger.info("Authentication cancelled by user")
+            
+        except AuthenticationError as e:
+            log_widget.write_line(f"❌ Authentication failed: {e}")
+            subtitle_widget.update("Authentication failed - Click Retry to try again")
+            loading_widget.display = False
+            retry_btn.display = True
             logger.error(f"Authentication error: {e}")
+            
+        except Exception as e:
+            log_widget.write_line(f"❌ Unexpected error: {e}")
+            subtitle_widget.update("An unexpected error occurred")
+            loading_widget.display = False
+            retry_btn.display = True
+            logger.error(f"Unexpected authentication error: {e}")
     
     @on(Button.Pressed, "#cancel-btn")
     def cancel_auth(self) -> None:
         """Cancel authentication."""
+        if self._auth_task and not self._auth_task.done():
+            self._auth_task.cancel()
         self.dismiss()
+    
+    @on(Button.Pressed, "#retry-btn")
+    async def retry_auth(self) -> None:
+        """Retry authentication."""
+        await self._start_auth_flow()
 
 
 class HelpScreen(Screen[None]):

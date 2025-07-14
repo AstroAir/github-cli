@@ -25,7 +25,7 @@ class TerminalUI:
     def __init__(self, client: GitHubClient):
         self.client = client
         self.console = Console()
-        self.theme = "default"
+        self.theme = "auto"
 
         # Define colors
         self.colors = {
