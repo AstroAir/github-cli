@@ -8,13 +8,15 @@ from typing import Any, NoReturn
 from loguru import logger
 from rich.console import Console
 from rich.traceback import install as install_rich_tracebacks
-from rich_argparse import RichHelpFormatter # Import RichHelpFormatter from rich_argparse
+# Import RichHelpFormatter from rich_argparse
+from rich_argparse import RichHelpFormatter
 
 from github_cli.auth.authenticator import Authenticator
 from github_cli.api.client import GitHubClient
 from github_cli.ui.terminal import TerminalUI
 from github_cli.ui.dashboard import Dashboard
-from github_cli.utils.exceptions import AuthenticationError # Removed unused GitHubCLIError
+# Removed unused GitHubCLIError
+from github_cli.utils.exceptions import AuthenticationError
 from github_cli.utils.config import Config
 
 # Configure rich tracebacks for better error display
@@ -64,7 +66,8 @@ async def main() -> int:
         parser = argparse.ArgumentParser(
             description="Advanced terminal-based GitHub client",
             # Use RichHelpFormatter from rich_argparse if available
-            formatter_class=RichHelpFormatter if hasattr(argparse, 'ArgumentParser') and 'RichHelpFormatter' in globals() else argparse.HelpFormatter
+            formatter_class=RichHelpFormatter if hasattr(
+                argparse, 'ArgumentParser') and 'RichHelpFormatter' in globals() else argparse.HelpFormatter
         )
 
         # Define subcommands with modern Python patterns
@@ -75,34 +78,34 @@ async def main() -> int:
         )
 
         # Auth commands
-        _setup_auth_parser(subparsers) # Removed unused assignment
+        _setup_auth_parser(subparsers)  # Removed unused assignment
 
         # Repo commands
-        _setup_repo_parser(subparsers) # Removed unused assignment
+        _setup_repo_parser(subparsers)  # Removed unused assignment
 
         # PR commands
-        _setup_pr_parser(subparsers) # Removed unused assignment
+        _setup_pr_parser(subparsers)  # Removed unused assignment
 
         # Actions commands
-        _setup_actions_parser(subparsers) # Removed unused assignment
+        _setup_actions_parser(subparsers)  # Removed unused assignment
 
         # Notifications commands
-        _setup_notifications_parser(subparsers) # Removed unused assignment
+        _setup_notifications_parser(subparsers)  # Removed unused assignment
 
         # User commands
-        _setup_user_parser(subparsers) # Removed unused assignment
+        _setup_user_parser(subparsers)  # Removed unused assignment
 
         # Organization commands
-        _setup_org_parser(subparsers) # Removed unused assignment
+        _setup_org_parser(subparsers)  # Removed unused assignment
 
         # Search commands
-        _setup_search_parser(subparsers) # Removed unused assignment
+        _setup_search_parser(subparsers)  # Removed unused assignment
 
         # Release commands
-        _setup_release_parser(subparsers) # Removed unused assignment
+        _setup_release_parser(subparsers)  # Removed unused assignment
 
         # Dashboard command
-        subparsers.add_parser( # Removed unused assignment
+        subparsers.add_parser(  # Removed unused assignment
             "dashboard",
             help="Open interactive dashboard"
         )
@@ -144,11 +147,11 @@ async def main() -> int:
             from github_cli.tui.app import run_tui
             import asyncio
             import threading
-            
+
             # Run TUI in a separate thread since it needs its own event loop
             def run_tui_in_thread():
                 run_tui()
-            
+
             # Start TUI in a separate thread
             tui_thread = threading.Thread(target=run_tui_in_thread)
             tui_thread.start()
@@ -164,7 +167,8 @@ async def main() -> int:
                     dashboard = Dashboard(client, ui)
                     await dashboard.start()
                 else:
-                    logger.info("No command specified and not authenticated, showing help")
+                    logger.info(
+                        "No command specified and not authenticated, showing help")
                     parser.print_help()
             return 0
 
@@ -208,15 +212,19 @@ def _setup_repo_parser(subparsers) -> Any:
     repo_parser = subparsers.add_parser("repo", help="Repository commands")
     repo_parser.add_argument(
         "action",
-        choices=["list", "view", "create", "clone", "fork", "delete", "topics", "transfer", "stats"],
+        choices=["list", "view", "create", "clone", "fork",
+                 "delete", "topics", "transfer", "stats"],
         help="Repository action"
     )
     repo_parser.add_argument("--name", help="Repository name (owner/repo)")
-    repo_parser.add_argument("--template", help="Template repository for creation")
+    repo_parser.add_argument(
+        "--template", help="Template repository for creation")
     repo_parser.add_argument("--description", help="Repository description")
-    repo_parser.add_argument("--private", action="store_true", help="Create a private repository")
+    repo_parser.add_argument(
+        "--private", action="store_true", help="Create a private repository")
     repo_parser.add_argument("--org", help="Organization for repository")
-    repo_parser.add_argument("--topics", help="Repository topics (comma separated)")
+    repo_parser.add_argument(
+        "--topics", help="Repository topics (comma separated)")
     return repo_parser
 
 
@@ -225,7 +233,8 @@ def _setup_pr_parser(subparsers) -> Any:
     pr_parser = subparsers.add_parser("pr", help="Pull request commands")
     pr_parser.add_argument(
         "action",
-        choices=["list", "view", "create", "merge", "close", "reopen", "diff", "checkout"],
+        choices=["list", "view", "create", "merge",
+                 "close", "reopen", "diff", "checkout"],
         help="Pull request action"
     )
     pr_parser.add_argument("--repo", help="Repository name (owner/repo)")
@@ -234,14 +243,17 @@ def _setup_pr_parser(subparsers) -> Any:
     pr_parser.add_argument("--body", help="Pull request body")
     pr_parser.add_argument("--head", help="Head branch")
     pr_parser.add_argument("--base", help="Base branch")
-    pr_parser.add_argument("--draft", action="store_true", help="Create as draft pull request")
-    pr_parser.add_argument("--state", choices=["open", "closed", "all"], default="open", help="Filter by state")
+    pr_parser.add_argument("--draft", action="store_true",
+                           help="Create as draft pull request")
+    pr_parser.add_argument(
+        "--state", choices=["open", "closed", "all"], default="open", help="Filter by state")
     return pr_parser
 
 
 def _setup_actions_parser(subparsers) -> Any:
     """Setup GitHub Actions command parser."""
-    actions_parser = subparsers.add_parser("actions", help="GitHub Actions commands")
+    actions_parser = subparsers.add_parser(
+        "actions", help="GitHub Actions commands")
     actions_parser.add_argument(
         "action",
         choices=["list", "runs", "view-run", "cancel", "rerun"],
@@ -261,13 +273,15 @@ def _setup_actions_parser(subparsers) -> Any:
 
 def _setup_notifications_parser(subparsers) -> Any:
     """Setup notifications command parser."""
-    notifications_parser = subparsers.add_parser("notifications", help="Notification commands")
+    notifications_parser = subparsers.add_parser(
+        "notifications", help="Notification commands")
     notifications_parser.add_argument(
         "action",
         choices=["list", "read", "subscribe"],
         help="Notification action"
     )
-    notifications_parser.add_argument("--all", action="store_true", help="Include read notifications")
+    notifications_parser.add_argument(
+        "--all", action="store_true", help="Include read notifications")
     notifications_parser.add_argument(
         "--participating",
         action="store_true",
@@ -277,7 +291,8 @@ def _setup_notifications_parser(subparsers) -> Any:
         "--since",
         help="Only show notifications updated after the given time"
     )
-    notifications_parser.add_argument("--repo", help="Repository name (owner/repo)")
+    notifications_parser.add_argument(
+        "--repo", help="Repository name (owner/repo)")
     notifications_parser.add_argument("--thread", help="Thread ID")
     notifications_parser.add_argument(
         "--subscribed",
@@ -358,8 +373,10 @@ def _setup_release_parser(subparsers) -> Any:
     release_parser.add_argument("--tag", help="Release tag")
     release_parser.add_argument("--name", help="Release name")
     release_parser.add_argument("--body", help="Release description")
-    release_parser.add_argument("--draft", action="store_true", help="Create as draft release")
-    release_parser.add_argument("--prerelease", action="store_true", help="Mark as prerelease")
+    release_parser.add_argument(
+        "--draft", action="store_true", help="Create as draft release")
+    release_parser.add_argument(
+        "--prerelease", action="store_true", help="Mark as prerelease")
     return release_parser
 
 
@@ -376,7 +393,8 @@ async def _handle_command(
 
     # Check authentication requirements
     auth_required_commands = {
-        "repo": ["create", "delete", "fork", "transfer"],  # view doesn't need auth
+        # view doesn't need auth
+        "repo": ["create", "delete", "fork", "transfer"],
         "pr": [],  # All PR commands need auth
         "actions": [],  # All actions commands need auth
         "dashboard": [],  # Dashboard needs auth
@@ -391,8 +409,10 @@ async def _handle_command(
 
         if not required_actions or action in required_actions or not action:
             if not authenticator.is_authenticated():
-                console.print("[red]Authentication required. Use 'auth login' first.[/red]")
-                logger.warning(f"Authentication required for command: {args.command}")
+                console.print(
+                    "[red]Authentication required. Use 'auth login' first.[/red]")
+                logger.warning(
+                    f"Authentication required for command: {args.command}")
                 return 1
 
     # Use modern pattern matching for command handling
@@ -458,13 +478,16 @@ async def _handle_auth_command(args, authenticator: Authenticator, ui: TerminalU
                 if authenticator.is_authenticated():
                     user_info = await authenticator.fetch_user_info()
                     if user_info:
-                        console.print(f"[green]�Logged in as {user_info.login}[/green]")
+                        console.print(
+                            f"[green]�Logged in as {user_info.login}[/green]")
                         if user_info.name:
                             console.print(f"[dim]Name: {user_info.name}[/dim]")
                         if user_info.email:
-                            console.print(f"[dim]Email: {user_info.email}[/dim]")
+                            console.print(
+                                f"[dim]Email: {user_info.email}[/dim]")
                     else:
-                        console.print("[yellow]⚠️ Authenticated, but unable to fetch user info.[/yellow]")
+                        console.print(
+                            "[yellow]⚠️ Authenticated, but unable to fetch user info.[/yellow]")
                 else:
                     console.print("[red]�Not logged in.[/red]")
 
@@ -474,7 +497,8 @@ async def _handle_auth_command(args, authenticator: Authenticator, ui: TerminalU
                     if token:
                         # Show only the first 8 characters for security
                         masked_token = f"{token[:8]}{'*' * (len(token) - 8)}"
-                        console.print(f"[dim]Current token: {masked_token}[/dim]")
+                        console.print(
+                            f"[dim]Current token: {masked_token}[/dim]")
                     else:
                         console.print("[red]No active token.[/red]")
                 else:
@@ -482,7 +506,8 @@ async def _handle_auth_command(args, authenticator: Authenticator, ui: TerminalU
 
             case "scopes":
                 if authenticator.is_authenticated():
-                    console.print("[dim]Scope information not yet implemented.[/dim]")
+                    console.print(
+                        "[dim]Scope information not yet implemented.[/dim]")
                 else:
                     console.print("[red]Not logged in.[/red]")
 
@@ -502,56 +527,64 @@ async def _handle_auth_command(args, authenticator: Authenticator, ui: TerminalU
 # Removed unused client and ui parameters from placeholder functions
 async def _handle_repo_command(args) -> int:
     """Handle repository commands."""
-    console.print(f"[yellow]Repository command '{args.action}' not yet implemented.[/yellow]")
+    console.print(
+        f"[yellow]Repository command '{args.action}' not yet implemented.[/yellow]")
     return 0
 
 
 # Removed unused client and ui parameters from placeholder functions
 async def _handle_pr_command(args) -> int:
     """Handle pull request commands."""
-    console.print(f"[yellow]Pull request command '{args.action}' not yet implemented.[/yellow]")
+    console.print(
+        f"[yellow]Pull request command '{args.action}' not yet implemented.[/yellow]")
     return 0
 
 
 # Removed unused client and ui parameters from placeholder functions
 async def _handle_actions_command(args) -> int:
     """Handle GitHub Actions commands."""
-    console.print(f"[yellow]Actions command '{args.action}' not yet implemented.[/yellow]")
+    console.print(
+        f"[yellow]Actions command '{args.action}' not yet implemented.[/yellow]")
     return 0
 
 
 # Removed unused client and ui parameters from placeholder functions
 async def _handle_notifications_command(args) -> int:
     """Handle notifications commands."""
-    console.print(f"[yellow]Notifications command '{args.action}' not yet implemented.[/yellow]")
+    console.print(
+        f"[yellow]Notifications command '{args.action}' not yet implemented.[/yellow]")
     return 0
 
 
 # Removed unused client and ui parameters from placeholder functions
 async def _handle_user_command(args) -> int:
     """Handle user commands."""
-    console.print(f"[yellow]User command '{args.action}' not yet implemented.[/yellow]")
+    console.print(
+        f"[yellow]User command '{args.action}' not yet implemented.[/yellow]")
     return 0
 
 
 # Removed unused client and ui parameters from placeholder functions
 async def _handle_org_command(args) -> int:
     """Handle organization commands."""
-    console.print(f"[yellow]Organization command '{args.action}' not yet implemented.[/yellow]")
+    console.print(
+        f"[yellow]Organization command '{args.action}' not yet implemented.[/yellow]")
     return 0
 
 
 # Removed unused client and ui parameters from placeholder functions
 async def _handle_search_command(args) -> int:
     """Handle search commands."""
-    console.print(f"[yellow]Search command '{args.action}' not yet implemented.[/yellow]")
+    console.print(
+        f"[yellow]Search command '{args.action}' not yet implemented.[/yellow]")
     return 0
 
 
 # Removed unused client and ui parameters from placeholder functions
 async def _handle_release_command(args) -> int:
     """Handle release commands."""
-    console.print(f"[yellow]Release command '{args.action}' not yet implemented.[/yellow]")
+    console.print(
+        f"[yellow]Release command '{args.action}' not yet implemented.[/yellow]")
     return 0
 
 

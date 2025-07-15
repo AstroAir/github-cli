@@ -28,15 +28,15 @@ class Dashboard:
         self.client = client
         self.terminal = terminal
         self.console = Console()
-        
+
     async def run(self):
         """Run the dashboard UI"""
         # Load initial data
         await self._load_data()
-        
+
         # Create layout
         layout = self._create_layout()
-        
+
         # Display dashboard with live updates
         try:
             with Live(layout, refresh_per_second=1, screen=True) as live:
@@ -107,7 +107,8 @@ class Dashboard:
                 response = await self.client.get("user/repos", params={"sort": "updated", "per_page": 5})
                 from github_cli.models.repository import Repository
                 # response.data should contain the list of repositories
-                repos_data = response.data if hasattr(response, 'data') else response
+                repos_data = response.data if hasattr(
+                    response, 'data') else response
                 if isinstance(repos_data, list):
                     self.data["repositories"] = [
                         Repository.from_json(repo) for repo in repos_data if isinstance(repo, dict)]
@@ -125,7 +126,8 @@ class Dashboard:
                     "per_page": 5
                 })
                 # Extract data from APIResponse and get items
-                response_data = response.data if hasattr(response, 'data') else response
+                response_data = response.data if hasattr(
+                    response, 'data') else response
                 if isinstance(response_data, dict):
                     self.data["pull_requests"] = response_data.get("items", [])
                 else:
@@ -142,7 +144,8 @@ class Dashboard:
                     "per_page": 5
                 })
                 # Extract data from APIResponse and get items
-                response_data = response.data if hasattr(response, 'data') else response
+                response_data = response.data if hasattr(
+                    response, 'data') else response
                 if isinstance(response_data, dict):
                     self.data["issues"] = response_data.get("items", [])
                 else:

@@ -37,16 +37,21 @@ class UserInfo(BaseModel):
     name: str | None = Field(default=None, description="Display name")
     email: str | None = Field(default=None, description="Primary email")
     avatar_url: str | None = Field(default=None, description="Avatar URL")
-    
+
 
 class AuthenticationConfig(BaseModel):
     """Authentication configuration model."""
     client_id: str = Field(default="Iv1.c42d2e9c91e3a928")
-    device_code_url: str = Field(default="https://github.com/login/device/code")
-    token_url: str = Field(default="https://github.com/login/oauth/access_token")
-    default_scopes: str = Field(default="repo,read:user,user:email,gist,workflow")
-    max_poll_attempts: int = Field(default=60, description="Max polling attempts for token")
-    poll_interval: int = Field(default=5, description="Default polling interval in seconds")
+    device_code_url: str = Field(
+        default="https://github.com/login/device/code")
+    token_url: str = Field(
+        default="https://github.com/login/oauth/access_token")
+    default_scopes: str = Field(
+        default="repo,read:user,user:email,gist,workflow")
+    max_poll_attempts: int = Field(
+        default=60, description="Max polling attempts for token")
+    poll_interval: int = Field(
+        default=5, description="Default polling interval in seconds")
 
 
 class Authenticator:
@@ -55,14 +60,14 @@ class Authenticator:
     def __init__(self, config: Config) -> None:
         self.config = config
         self._auth_config = AuthenticationConfig()
-        
+
         # Lazy load these to avoid circular imports
         self._token_manager: TokenManager | None = None
         self._sso_handler: SSOHandler | None = None
-        
+
         self._token: str | None = None
         self._user_info: UserInfo | None = None
-        
+
         # Setup structured logging
         logger.configure(
             handlers=[
@@ -75,9 +80,9 @@ class Authenticator:
                 }
             ]
         )
-        
+
         logger.info("Authenticator initialized")
-    
+
     @property
     def token_manager(self) -> TokenManager:
         """Lazy-loaded token manager."""
@@ -85,7 +90,7 @@ class Authenticator:
             from github_cli.auth.token_manager import TokenManager
             self._token_manager = TokenManager(self.config)
         return self._token_manager
-    
+
     @property
     def sso_handler(self) -> SSOHandler:
         """Lazy-loaded SSO handler."""
@@ -93,14 +98,14 @@ class Authenticator:
             from github_cli.auth.sso_handler import SSOHandler
             self._sso_handler = SSOHandler(self.config)
         return self._sso_handler
-    
+
     @property
     def token(self) -> str | None:
         """Get the current authentication token."""
         if self._token is None:
             self._token = self.token_manager.get_active_token()
         return self._token
-    
+
     @property
     def user_info(self) -> UserInfo | None:
         """Get cached user information."""
@@ -113,8 +118,8 @@ class Authenticator:
         return authenticated
 
     async def login_interactive(
-        self, 
-        scopes: str | None = None, 
+        self,
+        scopes: str | None = None,
         sso: str | None = None
     ) -> None:
         """Enhanced interactive OAuth device flow login with better error handling."""
@@ -131,20 +136,23 @@ class Authenticator:
             print("🚀 Initiating GitHub authentication...")
             device_code_data = await self._request_device_code(scopes)
             if not device_code_data:
-                raise AuthenticationError("Failed to start authentication flow. Please check your internet connection.")
+                raise AuthenticationError(
+                    "Failed to start authentication flow. Please check your internet connection.")
 
             # Display user instructions
             await self._display_auth_instructions(device_code_data)
 
             # Poll for token
             device_code = device_code_data.get("device_code", "")
-            interval = int(device_code_data.get("interval", self._auth_config.poll_interval))
+            interval = int(device_code_data.get(
+                "interval", self._auth_config.poll_interval))
 
             logger.info("Starting token polling")
             token_data = await self._poll_for_token(device_code, interval)
-            
+
             if not token_data or "access_token" not in token_data:
-                raise AuthenticationError("Authentication was not completed or timed out.")
+                raise AuthenticationError(
+                    "Authentication was not completed or timed out.")
 
             # Save and set the token
             token = self.token_manager.save_token(token_data)
@@ -162,14 +170,15 @@ class Authenticator:
             user_info = await self.fetch_user_info()
             if user_info:
                 print(f"👤 Logged in as: {user_info.login}")
-            
+
         except AuthenticationError:
             # Re-raise authentication errors as-is
             raise
         except Exception as e:
             logger.error(f"Authentication failed: {e}")
-            raise AuthenticationError(f"Authentication failed due to an unexpected error: {e}") from e
-    
+            raise AuthenticationError(
+                f"Authentication failed due to an unexpected error: {e}") from e
+
     async def _display_auth_instructions(self, device_code_data: dict[str, Any]) -> None:
         """Display authentication instructions to the user."""
         user_code = device_code_data.get("user_code", "")
@@ -192,10 +201,11 @@ class Authenticator:
                     # Try platform-specific commands as fallback
                     import subprocess
                     import sys
-                    
+
                     if sys.platform.startswith('win'):
                         # Windows
-                        subprocess.run(['cmd', '/c', 'start', verification_uri], check=False)
+                        subprocess.run(
+                            ['cmd', '/c', 'start', verification_uri], check=False)
                         print("🚀 We've opened the verification page in your browser.")
                         browser_opened = True
                     elif sys.platform.startswith('darwin'):
@@ -205,15 +215,17 @@ class Authenticator:
                         browser_opened = True
                     elif sys.platform.startswith('linux'):
                         # Linux
-                        subprocess.run(['xdg-open', verification_uri], check=False)
+                        subprocess.run(
+                            ['xdg-open', verification_uri], check=False)
                         print("🚀 We've opened the verification page in your browser.")
                         browser_opened = True
-                        
+
         except Exception as e:
             logger.warning(f"Failed to open browser: {e}")
 
         if not browser_opened:
-            print("⚠️  Could not automatically open browser. Please manually open the URL above.")
+            print(
+                "⚠️  Could not automatically open browser. Please manually open the URL above.")
             # Try to copy to clipboard as a fallback
             try:
                 import pyperclip
@@ -225,7 +237,7 @@ class Authenticator:
                 logger.debug(f"Could not copy to clipboard: {e}")
 
         print("\n⏳ Waiting for GitHub authentication...\n")
-    
+
     async def _configure_sso(self, sso: str) -> None:
         """Configure Single Sign-On for the organization."""
         try:
@@ -246,9 +258,11 @@ class Authenticator:
         try:
             # Clear the active token from storage
             if self._token:
-                token_prefix = self._token[:8] if len(self._token) >= 8 else self._token
+                token_prefix = self._token[:8] if len(
+                    self._token) >= 8 else self._token
                 self.token_manager.delete_token(token_prefix)
-                logger.info(f"Deleted token with prefix: {token_prefix[:4]}...")
+                logger.info(
+                    f"Deleted token with prefix: {token_prefix[:4]}...")
 
             # Clear in-memory state
             self._token = None
@@ -256,7 +270,7 @@ class Authenticator:
 
             print("✅ Successfully logged out.")
             logger.info("Logout completed successfully")
-            
+
         except Exception as e:
             logger.error(f"Error during logout: {e}")
             # Still clear in-memory state even if token deletion fails
@@ -271,7 +285,7 @@ class Authenticator:
             return None
 
         logger.debug("Fetching user information from GitHub API")
-        
+
         try:
             async with self._create_http_session() as session:
                 async with session.get(
@@ -283,7 +297,8 @@ class Authenticator:
                         try:
                             # Validate and store user info
                             self._user_info = UserInfo(**user_data)
-                            logger.info(f"Successfully fetched user info for: {self._user_info.login}")
+                            logger.info(
+                                f"Successfully fetched user info for: {self._user_info.login}")
                             return self._user_info
                         except ValidationError as e:
                             logger.error(f"Invalid user data format: {e}")
@@ -294,13 +309,14 @@ class Authenticator:
                         self._token = None
                         return None
                     else:
-                        logger.error(f"Failed to fetch user info: HTTP {response.status}")
+                        logger.error(
+                            f"Failed to fetch user info: HTTP {response.status}")
                         return None
-                        
+
         except Exception as e:
             logger.error(f"Error fetching user info: {e}")
             return None
-    
+
     @asynccontextmanager
     async def _create_http_session(self) -> AsyncGenerator[aiohttp.ClientSession, None]:
         """Create an optimized HTTP session for authentication requests."""
@@ -310,7 +326,7 @@ class Authenticator:
             ttl_dns_cache=300,
             use_dns_cache=True
         )
-        
+
         async with aiohttp.ClientSession(
             timeout=timeout,
             connector=connector,
@@ -321,23 +337,23 @@ class Authenticator:
             finally:
                 # Session cleanup is automatic with context manager
                 pass
-    
+
     def _get_auth_headers(self) -> dict[str, str]:
         """Get authentication headers for API requests."""
         headers = {
             "Accept": "application/vnd.github.v3+json",
             "X-GitHub-Api-Version": "2022-11-28"
         }
-        
+
         if self._token:
             headers["Authorization"] = f"Bearer {self._token}"
-            
+
         return headers
 
     async def _request_device_code(self, scopes: str) -> dict[str, Any] | None:
         """Request a device code for OAuth authentication with enhanced error handling."""
         logger.debug(f"Requesting device code for scopes: {scopes}")
-        
+
         try:
             async with self._create_http_session() as session:
                 async with session.post(
@@ -357,10 +373,12 @@ class Authenticator:
                         return data
                     else:
                         error_text = await response.text()
-                        logger.error(f"Device code request failed: HTTP {response.status} - {error_text}")
-                        print(f"\n❌ Failed to start authentication: HTTP {response.status}")
+                        logger.error(
+                            f"Device code request failed: HTTP {response.status} - {error_text}")
+                        print(
+                            f"\n❌ Failed to start authentication: HTTP {response.status}")
                         return None
-                        
+
         except aiohttp.ClientConnectorError as e:
             logger.error(f"Network connection error: {e}")
             print("\n❌ Cannot connect to GitHub. Please check your internet connection.")
@@ -377,19 +395,20 @@ class Authenticator:
     async def _poll_for_token(self, device_code: str, interval: int) -> dict[str, Any] | None:
         """Poll for OAuth token with exponential backoff and enhanced error handling."""
         logger.debug(f"Starting token polling with {interval}s interval")
-        
+
         current_interval = interval
         max_attempts = self._auth_config.max_poll_attempts
-        
-        print(f"⏳ Waiting for authentication (timeout in {max_attempts * interval // 60} minutes)...")
+
+        print(
+            f"⏳ Waiting for authentication (timeout in {max_attempts * interval // 60} minutes)...")
 
         for attempt in range(1, max_attempts + 1):
             await asyncio.sleep(current_interval)
-            
+
             # Show progress dots for user feedback
             if attempt % 3 == 0:
                 print(".", end="", flush=True)
-            
+
             logger.debug(f"Polling attempt {attempt}/{max_attempts}")
 
             try:
@@ -415,48 +434,59 @@ class Authenticator:
                                 logger.info("Token polling successful")
                                 print("\n✅ Authentication approved!")
                                 return data
-                                
+
                             case 200 if data.get("error") == "authorization_pending":
                                 # User hasn't authorized yet, continue polling
                                 logger.debug("Authorization still pending")
                                 continue
-                                
+
                             case 200 if data.get("error") == "slow_down":
                                 # Need to slow down polling
-                                current_interval = min(current_interval + 1, 10)  # Cap at 10s
-                                logger.debug(f"Rate limited, increasing interval to {current_interval}s")
-                                print(f"\n⚠️  Slowing down polling (new interval: {current_interval}s)")
+                                current_interval = min(
+                                    current_interval + 1, 10)  # Cap at 10s
+                                logger.debug(
+                                    f"Rate limited, increasing interval to {current_interval}s")
+                                print(
+                                    f"\n⚠️  Slowing down polling (new interval: {current_interval}s)")
                                 continue
-                                
+
                             case 200 if data.get("error") == "expired_token":
                                 logger.error("Device code expired")
-                                print("\n❌ Authentication code expired. Please try again.")
+                                print(
+                                    "\n❌ Authentication code expired. Please try again.")
                                 return None
-                                
+
                             case 200 if data.get("error") == "access_denied":
                                 logger.error("User denied authorization")
                                 print("\n❌ Authorization denied by user.")
                                 return None
-                                
+
                             case _:
-                                error_msg = data.get("error_description", data.get("error", "Unknown error"))
-                                logger.error(f"Token polling error: {error_msg}")
+                                error_msg = data.get(
+                                    "error_description", data.get("error", "Unknown error"))
+                                logger.error(
+                                    f"Token polling error: {error_msg}")
                                 print(f"\n❌ Authentication error: {error_msg}")
                                 return None
-                                
+
             except aiohttp.ClientConnectorError as e:
-                logger.warning(f"Network error during token polling attempt {attempt}: {e}")
+                logger.warning(
+                    f"Network error during token polling attempt {attempt}: {e}")
                 if attempt == max_attempts:
-                    print(f"\n❌ Network connection failed after {max_attempts} attempts.")
+                    print(
+                        f"\n❌ Network connection failed after {max_attempts} attempts.")
                     return None
-                print(f"\n⚠️  Network error, retrying... ({attempt}/{max_attempts})")
+                print(
+                    f"\n⚠️  Network error, retrying... ({attempt}/{max_attempts})")
                 continue
             except Exception as e:
-                logger.warning(f"Error during token polling attempt {attempt}: {e}")
+                logger.warning(
+                    f"Error during token polling attempt {attempt}: {e}")
                 if attempt == max_attempts:
                     raise
                 continue
 
         logger.error("Token polling timed out")
-        print(f"\n❌ Authentication timed out after {max_attempts} attempts. Please try again.")
+        print(
+            f"\n❌ Authentication timed out after {max_attempts} attempts. Please try again.")
         return None

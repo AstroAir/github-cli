@@ -273,46 +273,50 @@ class TerminalUI:
         """Display code with syntax highlighting"""
         syntax = Syntax(code, language, theme="monokai", line_numbers=True)
         self.console.print(syntax)
-        
+
     async def start_interactive_mode(self, shortcuts_manager=None) -> None:
         """Start the interactive terminal mode"""
-        self.console.print("[bold green]Welcome to GitHub CLI Interactive Mode[/bold green]")
-        self.console.print("Type 'help' to see available commands or 'exit' to quit.")
-        
+        self.console.print(
+            "[bold green]Welcome to GitHub CLI Interactive Mode[/bold green]")
+        self.console.print(
+            "Type 'help' to see available commands or 'exit' to quit.")
+
         while True:
             try:
                 # Display prompt
-                self.console.print("[bold blue]github-cli>[/bold blue] ", end="")
+                self.console.print(
+                    "[bold blue]github-cli>[/bold blue] ", end="")
                 command = input().strip()
-                
+
                 if not command:
                     continue
-                    
+
                 if command.lower() in ['exit', 'quit', 'q']:
                     break
-                    
+
                 if command.lower() == 'help':
                     self._display_help()
                     continue
-                
+
                 # Check if command is a shortcut
                 if shortcuts_manager and shortcuts_manager.has_shortcut(command):
                     command = shortcuts_manager.get_shortcut(command)
-                
+
                 # Process command
                 await self._process_command(command)
-                
+
             except KeyboardInterrupt:
                 print("\nUse 'exit' to quit.")
             except Exception as e:
                 self.display_error(f"Command error: {str(e)}")
-    
+
     async def _process_command(self, command: str) -> None:
         """Process a command in interactive mode"""
         # This is a placeholder - real implementation would parse and execute commands
         parts = command.split()
         if not parts:
             return
-            
+
         # Simplified command handling
-        self.console.print(f"[yellow]Command '{command}' is not yet implemented[/yellow]")
+        self.console.print(
+            f"[yellow]Command '{command}' is not yet implemented[/yellow]")
