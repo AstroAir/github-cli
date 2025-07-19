@@ -1,0 +1,585 @@
+/*
+Accessibility-focused CSS for GitHub CLI authentication system.
+
+This stylesheet provides high contrast themes, enhanced focus indicators,
+and accessibility-compliant styling for authentication screens.
+*/
+
+/* High Contrast Mode Styles */
+.high-contrast {
+    background: black;
+    color: white;
+    border: 2px solid white;
+}
+
+.high-contrast Static {
+    background: black;
+    color: white;
+}
+
+.high-contrast Label {
+    background: black;
+    color: white;
+    text-style: bold;
+}
+
+.high-contrast Container {
+    background: black;
+    border: 1px solid white;
+}
+
+/* Enhanced Focus Indicators */
+.enhanced-focus:focus {
+    border: 3px solid yellow !important;
+    background: navy !important;
+    color: white !important;
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+/* High Contrast Button Styles */
+Button.high-contrast {
+    background: black;
+    color: white;
+    border: 2px solid white;
+    text-style: bold;
+}
+
+Button.high-contrast:hover {
+    background: white;
+    color: black;
+    border: 2px solid black;
+}
+
+Button.high-contrast:focus {
+    border: 3px solid yellow;
+    background: navy;
+    color: white;
+    outline: 2px solid white;
+    outline-offset: 1px;
+}
+
+Button.high-contrast.primary {
+    background: darkblue;
+    color: white;
+    border: 2px solid white;
+}
+
+Button.high-contrast.primary:hover {
+    background: blue;
+    color: white;
+}
+
+Button.high-contrast.primary:focus {
+    border: 3px solid yellow;
+    background: navy;
+    outline: 2px solid white;
+}
+
+Button.high-contrast.error {
+    background: darkred;
+    color: white;
+    border: 2px solid white;
+}
+
+Button.high-contrast.error:hover {
+    background: red;
+    color: white;
+}
+
+Button.high-contrast.error:focus {
+    border: 3px solid yellow;
+    background: maroon;
+    outline: 2px solid white;
+}
+
+Button.high-contrast.success {
+    background: darkgreen;
+    color: white;
+    border: 2px solid white;
+}
+
+Button.high-contrast.success:hover {
+    background: green;
+    color: white;
+}
+
+Button.high-contrast.success:focus {
+    border: 3px solid yellow;
+    background: darkgreen;
+    outline: 2px solid white;
+}
+
+/* Accessibility Preferences Screen Styles */
+.accessibility-preferences-screen {
+    background: $background;
+    padding: 1;
+}
+
+.accessibility-preferences-screen.high-contrast {
+    background: black;
+    color: white;
+}
+
+.preferences-header {
+    margin-bottom: 2;
+    padding: 1;
+    border-bottom: 1px solid $primary;
+}
+
+.preferences-header.high-contrast {
+    border-bottom: 2px solid white;
+}
+
+.preferences-title {
+    text-style: bold;
+    color: $primary;
+    margin-bottom: 1;
+}
+
+.preferences-title.high-contrast {
+    color: white;
+    text-style: bold;
+}
+
+.preferences-description {
+    color: $text-muted;
+    margin-bottom: 1;
+}
+
+.preferences-description.high-contrast {
+    color: white;
+}
+
+.accessibility-status {
+    text-style: bold;
+    color: $success;
+}
+
+.accessibility-status.high-contrast {
+    color: white;
+    text-style: bold;
+}
+
+.preferences-content {
+    height: auto;
+    overflow-y: auto;
+}
+
+.preferences-section {
+    margin-bottom: 2;
+    padding: 1;
+    border: 1px solid $surface;
+    border-radius: 1;
+}
+
+.preferences-section.high-contrast {
+    border: 2px solid white;
+    border-radius: 0;
+}
+
+.section-title {
+    text-style: bold;
+    color: $primary;
+    margin-bottom: 1;
+}
+
+.section-title.high-contrast {
+    color: white;
+    text-style: bold;
+}
+
+.setting-description {
+    color: $text-muted;
+    margin-top: 1;
+    font-style: italic;
+}
+
+.setting-description.high-contrast {
+    color: white;
+    font-style: normal;
+}
+
+.detection-result {
+    color: $success;
+    text-style: bold;
+    margin-top: 1;
+}
+
+.detection-result.high-contrast {
+    color: white;
+    text-style: bold;
+}
+
+.quick-setup-buttons {
+    margin-top: 2;
+    gap: 1;
+}
+
+.preferences-actions {
+    margin-top: 2;
+    padding-top: 1;
+    border-top: 1px solid $surface;
+}
+
+.preferences-actions.high-contrast {
+    border-top: 2px solid white;
+}
+
+.action-buttons {
+    gap: 1;
+    justify-content: center;
+}
+
+/* Checkbox Styles for Accessibility */
+Checkbox.high-contrast {
+    color: white;
+}
+
+Checkbox.high-contrast:focus {
+    border: 2px solid yellow;
+    outline: 1px solid white;
+}
+
+/* RadioSet Styles for Accessibility */
+RadioSet.high-contrast {
+    background: black;
+    color: white;
+    border: 1px solid white;
+}
+
+RadioButton.high-contrast {
+    color: white;
+}
+
+RadioButton.high-contrast:focus {
+    border: 2px solid yellow;
+    background: navy;
+    color: white;
+}
+
+RadioButton.high-contrast:checked {
+    background: darkblue;
+    color: white;
+    border: 2px solid white;
+}
+
+/* Quick Setup Screen Styles */
+.accessibility-quick-setup {
+    background: $background;
+    padding: 2;
+}
+
+.accessibility-quick-setup.high-contrast {
+    background: black;
+    color: white;
+}
+
+.setup-title {
+    text-style: bold;
+    color: $primary;
+    text-align: center;
+    margin-bottom: 2;
+}
+
+.setup-title.high-contrast {
+    color: white;
+    text-style: bold;
+}
+
+.setup-description {
+    color: $text;
+    text-align: center;
+    margin-bottom: 2;
+}
+
+.setup-description.high-contrast {
+    color: white;
+}
+
+.profile-descriptions {
+    margin-top: 2;
+    margin-bottom: 2;
+    padding: 1;
+    border: 1px solid $surface;
+    border-radius: 1;
+    min-height: 4;
+}
+
+.profile-descriptions.high-contrast {
+    border: 2px solid white;
+    border-radius: 0;
+}
+
+.description-text {
+    color: $text-muted;
+    font-style: italic;
+}
+
+.description-text.high-contrast {
+    color: white;
+    font-style: normal;
+}
+
+.setup-actions {
+    margin-top: 2;
+    gap: 1;
+    justify-content: center;
+}
+
+/* Enhanced Auth Screen Accessibility Styles */
+.auth-screen-container.high-contrast {
+    background: black;
+    color: white;
+    border: 2px solid white;
+}
+
+.auth-title.high-contrast {
+    color: white;
+    text-style: bold;
+}
+
+.auth-instructions.high-contrast {
+    color: white;
+    background: black;
+}
+
+.device-code.high-contrast {
+    background: navy;
+    color: white;
+    border: 3px solid yellow;
+    text-style: bold;
+    text-align: center;
+}
+
+.verification-url.high-contrast {
+    color: white;
+    text-style: bold;
+}
+
+.progress-indicator.high-contrast {
+    background: black;
+    color: white;
+    border: 1px solid white;
+}
+
+.help-text.high-contrast {
+    color: white;
+    background: black;
+}
+
+.panel-title.high-contrast {
+    color: white;
+    text-style: bold;
+    border-bottom: 1px solid white;
+}
+
+/* Reduced Motion Styles */
+.reduce-motion * {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+}
+
+.reduce-motion ProgressBar {
+    animation: none !important;
+}
+
+/* Large Text Mode */
+.large-text {
+    font-size: 120%;
+}
+
+.large-text .auth-title {
+    font-size: 150%;
+}
+
+.large-text .device-code {
+    font-size: 140%;
+}
+
+.large-text Button {
+    padding: 1 2;
+    font-size: 110%;
+}
+
+/* Simplified Interface */
+.simplified-interface {
+    border: none;
+    background: $background;
+}
+
+.simplified-interface Container {
+    border: none;
+    margin: 0;
+    padding: 1;
+}
+
+.simplified-interface .panel-title {
+    display: none;
+}
+
+.simplified-interface .help-text {
+    display: none;
+}
+
+/* Screen Reader Only Content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus Management */
+.focus-trap {
+    /* Styles for focus trapping containers */
+}
+
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: $primary;
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 1000;
+}
+
+.skip-link:focus {
+    top: 6px;
+}
+
+/* Keyboard Navigation Indicators */
+.keyboard-nav-active *:focus {
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+}
+
+.keyboard-nav-active.high-contrast *:focus {
+    outline: 3px solid yellow;
+    outline-offset: 2px;
+}
+
+/* Error and Status Message Accessibility */
+.error-message.high-contrast {
+    background: darkred;
+    color: white;
+    border: 2px solid white;
+    padding: 1;
+}
+
+.success-message.high-contrast {
+    background: darkgreen;
+    color: white;
+    border: 2px solid white;
+    padding: 1;
+}
+
+.warning-message.high-contrast {
+    background: darkorange;
+    color: white;
+    border: 2px solid white;
+    padding: 1;
+}
+
+.info-message.high-contrast {
+    background: darkblue;
+    color: white;
+    border: 2px solid white;
+    padding: 1;
+}
+
+/* Progress Bar Accessibility */
+ProgressBar.high-contrast {
+    background: black;
+    border: 2px solid white;
+}
+
+ProgressBar.high-contrast > .bar {
+    background: white;
+}
+
+/* Loading States */
+.loading.high-contrast {
+    color: white;
+    text-style: bold;
+    text-align: center;
+}
+
+/* Responsive Accessibility Adjustments */
+.compact.high-contrast {
+    padding: 0;
+    margin: 0;
+}
+
+.compact.high-contrast .device-code {
+    font-size: 100%;
+    padding: 1;
+}
+
+.standard.high-contrast .device-code {
+    font-size: 110%;
+    padding: 1;
+}
+
+.expanded.high-contrast .device-code {
+    font-size: 120%;
+    padding: 2;
+}
+
+/* Animation Overrides for Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High Contrast Media Query Support */
+@media (prefers-contrast: high) {
+    * {
+        background: black !important;
+        color: white !important;
+        border-color: white !important;
+    }
+    
+    Button {
+        border: 2px solid white !important;
+    }
+    
+    *:focus {
+        outline: 3px solid yellow !important;
+        outline-offset: 2px !important;
+    }
+}
+
+/* Color Scheme Support */
+@media (prefers-color-scheme: dark) {
+    .accessibility-preferences-screen {
+        background: #1a1a1a;
+        color: #ffffff;
+    }
+}
+
+/* Print Styles for Accessibility */
+@media print {
+    .high-contrast {
+        background: white !important;
+        color: black !important;
+        border: 2px solid black !important;
+    }
+    
+    .device-code {
+        font-size: 14pt;
+        font-weight: bold;
+        border: 2px solid black;
+        padding: 10pt;
+    }
+}

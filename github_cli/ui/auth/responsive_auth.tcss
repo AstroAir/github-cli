@@ -1,0 +1,991 @@
+/*
+Responsive CSS styling for GitHub CLI authentication components.
+
+This stylesheet provides breakpoint-specific rules, adaptive spacing and sizing,
+responsive button layouts, text truncation, and accessibility-compliant styling
+for authentication screens across different terminal sizes.
+
+Breakpoints:
+- Compact: < 60 columns, < 15 rows
+- Standard: 60-100 columns, 15-25 rows  
+- Expanded: > 100 columns, > 25 rows
+*/
+
+/* =============================================================================
+   BASE AUTHENTICATION SCREEN STYLES
+   ============================================================================= */
+
+.auth-screen {
+    background: $background;
+    color: $text;
+    padding: 1;
+    border: solid $primary;
+    align: center middle;
+    overflow: hidden;
+}
+
+.auth-screen-container {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    background: $surface;
+    border: solid $accent;
+    padding: 2;
+    align: center middle;
+    overflow: hidden;
+}
+
+/* Authentication screen header */
+.auth-header {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 2;
+    padding: 1;
+    border-bottom: solid $primary;
+}
+
+.auth-title {
+    text-style: bold;
+    color: $primary;
+    text-align: center;
+    margin-bottom: 1;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.auth-subtitle {
+    color: $text-muted;
+    text-align: center;
+    margin-bottom: 1;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* =============================================================================
+   RESPONSIVE BREAKPOINT STYLES
+   ============================================================================= */
+
+/* Compact Layout (< 60 cols, < 15 rows) */
+.auth-screen.compact {
+    padding: 0;
+    border: none;
+    width: 100%;
+    height: 100%;
+}
+
+.auth-screen.compact .auth-screen-container {
+    width: 100%;
+    height: 100%;
+    padding: 1;
+    border: none;
+    max-width: none;
+    max-height: none;
+}
+
+.auth-screen.compact .auth-header {
+    margin-bottom: 1;
+    padding: 0;
+    border-bottom: none;
+}
+
+.auth-screen.compact .auth-title {
+    margin-bottom: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.auth-screen.compact .auth-subtitle {
+    display: none;
+}
+
+/* Standard Layout (60-100 cols, 15-25 rows) */
+.auth-screen.standard {
+    padding: 1;
+    width: 80%;
+    height: 80%;
+    min-width: 50;
+    min-height: 15;
+}
+
+.auth-screen.standard .auth-screen-container {
+    width: 100%;
+    height: 100%;
+    padding: 2;
+    max-width: 80;
+    max-height: 25;
+}
+
+.auth-screen.standard .auth-header {
+    margin-bottom: 2;
+    padding: 1;
+}
+
+/* Expanded Layout (> 100 cols, > 25 rows) */
+.auth-screen.expanded {
+    padding: 2;
+    width: 70%;
+    height: 70%;
+    min-width: 80;
+    min-height: 25;
+}
+
+.auth-screen.expanded .auth-screen-container {
+    width: 100%;
+    height: 100%;
+    padding: 3;
+    max-width: 120;
+    max-height: 40;
+}
+
+.auth-screen.expanded .auth-header {
+    margin-bottom: 3;
+    padding: 2;
+}
+
+/* =============================================================================
+   DEVICE CODE DISPLAY STYLES
+   ============================================================================= */
+
+.device-code-container {
+    width: 100%;
+    margin: 2 0;
+    padding: 2;
+    border: thick solid $accent;
+    background: $primary;
+    text-align: center;
+    overflow: hidden;
+}
+
+.device-code {
+    text-style: bold;
+    color: $text-on-primary;
+    text-align: center;
+    font-size: 120%;
+    letter-spacing: 2;
+    margin: 1 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.device-code-label {
+    color: $text-muted;
+    text-align: center;
+    margin-bottom: 1;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Responsive device code styling */
+.auth-screen.compact .device-code-container {
+    margin: 1 0;
+    padding: 1;
+    border: solid $accent;
+}
+
+.auth-screen.compact .device-code {
+    font-size: 100%;
+    letter-spacing: 1;
+    margin: 0;
+}
+
+.auth-screen.compact .device-code-label {
+    display: none;
+}
+
+.auth-screen.standard .device-code-container {
+    margin: 2 0;
+    padding: 2;
+}
+
+.auth-screen.standard .device-code {
+    font-size: 110%;
+    letter-spacing: 1;
+}
+
+.auth-screen.expanded .device-code-container {
+    margin: 3 0;
+    padding: 3;
+    border: thick solid $accent;
+}
+
+.auth-screen.expanded .device-code {
+    font-size: 140%;
+    letter-spacing: 3;
+    margin: 2 0;
+}
+
+/* =============================================================================
+   VERIFICATION URL STYLES
+   ============================================================================= */
+
+.verification-url-container {
+    width: 100%;
+    margin: 2 0;
+    padding: 1;
+    border: solid $primary;
+    background: $surface;
+    text-align: center;
+    overflow: hidden;
+}
+
+.verification-url {
+    color: $accent;
+    text-style: bold;
+    text-align: center;
+    text-decoration: underline;
+    margin: 1 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.verification-url-label {
+    color: $text;
+    text-align: center;
+    margin-bottom: 1;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Responsive verification URL styling */
+.auth-screen.compact .verification-url-container {
+    margin: 1 0;
+    padding: 0;
+    border: none;
+}
+
+.auth-screen.compact .verification-url {
+    margin: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.auth-screen.compact .verification-url-label {
+    display: none;
+}
+
+.auth-screen.standard .verification-url-container {
+    margin: 2 0;
+    padding: 1;
+}
+
+.auth-screen.expanded .verification-url-container {
+    margin: 3 0;
+    padding: 2;
+}
+
+/* =============================================================================
+   INSTRUCTION TEXT STYLES
+   ============================================================================= */
+
+.auth-instructions {
+    width: 100%;
+    margin: 2 0;
+    padding: 1;
+    color: $text;
+    text-align: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.instruction-step {
+    margin: 1 0;
+    padding: 1;
+    border-left: thick solid $accent;
+    background: $surface;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.instruction-number {
+    color: $accent;
+    text-style: bold;
+    margin-right: 1;
+}
+
+.instruction-text {
+    color: $text;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Responsive instruction styling */
+.auth-screen.compact .auth-instructions {
+    margin: 1 0;
+    padding: 0;
+    max-height: 4;
+}
+
+.auth-screen.compact .instruction-step {
+    margin: 0;
+    padding: 0 1;
+    border-left: solid $accent;
+}
+
+.auth-screen.compact .instruction-number {
+    display: none;
+}
+
+.auth-screen.standard .auth-instructions {
+    margin: 2 0;
+    padding: 1;
+    max-height: 8;
+}
+
+.auth-screen.expanded .auth-instructions {
+    margin: 3 0;
+    padding: 2;
+    max-height: 12;
+}
+
+/* =============================================================================
+   BUTTON LAYOUT STYLES
+   ============================================================================= */
+
+.auth-buttons {
+    width: 100%;
+    margin-top: 2;
+    padding: 1;
+    text-align: center;
+    overflow: hidden;
+}
+
+.auth-buttons.horizontal {
+    layout: horizontal;
+    gap: 1;
+    justify-content: center;
+}
+
+.auth-buttons.vertical {
+    layout: vertical;
+    gap: 1;
+    align: center middle;
+}
+
+.auth-buttons.grid {
+    layout: grid;
+    grid-size: 2 2;
+    grid-gutter: 1;
+}
+
+.auth-button {
+    min-width: 12;
+    height: 3;
+    padding: 1 2;
+    border: solid $primary;
+    background: $surface;
+    color: $text;
+    text-style: bold;
+    text-align: center;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.auth-button:hover {
+    background: $accent;
+    color: $text-on-accent;
+}
+
+.auth-button:focus {
+    border: thick solid $accent;
+    background: $accent;
+    color: $text-on-accent;
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+}
+
+.auth-button.primary {
+    background: $primary;
+    color: $text-on-primary;
+    border: solid $accent;
+}
+
+.auth-button.primary:hover {
+    background: $accent;
+    color: $text-on-accent;
+}
+
+.auth-button.secondary {
+    background: $surface;
+    color: $text;
+    border: solid $text-muted;
+}
+
+.auth-button.cancel {
+    background: $error;
+    color: $text-on-error;
+    border: solid $error;
+}
+
+.auth-button.cancel:hover {
+    background: $error-muted;
+    color: $error;
+}
+
+/* Responsive button layouts */
+.auth-screen.compact .auth-buttons {
+    margin-top: 1;
+    padding: 0;
+    layout: vertical;
+    gap: 0;
+}
+
+.auth-screen.compact .auth-button {
+    width: 100%;
+    min-width: auto;
+    height: 1;
+    padding: 0 1;
+    margin-bottom: 1;
+}
+
+.auth-screen.standard .auth-buttons {
+    layout: horizontal;
+    gap: 1;
+}
+
+.auth-screen.standard .auth-button {
+    min-width: 15;
+    height: 3;
+}
+
+.auth-screen.expanded .auth-buttons {
+    layout: horizontal;
+    gap: 2;
+}
+
+.auth-screen.expanded .auth-button {
+    min-width: 20;
+    height: 3;
+    padding: 1 3;
+}
+
+/* =============================================================================
+   PROGRESS INDICATOR STYLES
+   ============================================================================= */
+
+.auth-progress {
+    width: 100%;
+    margin: 2 0;
+    padding: 1;
+    border: solid $primary;
+    background: $surface;
+    text-align: center;
+    overflow: hidden;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 1;
+    background: $surface;
+    border: solid $text-muted;
+    margin: 1 0;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: $primary;
+    color: $text-on-primary;
+    text-align: center;
+    overflow: hidden;
+}
+
+.progress-text {
+    color: $text;
+    text-align: center;
+    margin: 1 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.progress-details {
+    color: $text-muted;
+    text-align: center;
+    font-style: italic;
+    margin-top: 1;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Responsive progress styling */
+.auth-screen.compact .auth-progress {
+    margin: 1 0;
+    padding: 0;
+    border: none;
+}
+
+.auth-screen.compact .progress-details {
+    display: none;
+}
+
+.auth-screen.compact .progress-text {
+    margin: 0;
+}
+
+.auth-screen.standard .auth-progress {
+    margin: 2 0;
+    padding: 1;
+}
+
+.auth-screen.expanded .auth-progress {
+    margin: 3 0;
+    padding: 2;
+}
+
+/* =============================================================================
+   STATUS MESSAGE STYLES
+   ============================================================================= */
+
+.auth-status {
+    width: 100%;
+    margin: 2 0;
+    padding: 2;
+    text-align: center;
+    border-radius: 1;
+    overflow: hidden;
+}
+
+.auth-status.success {
+    background: $success-muted;
+    color: $success;
+    border: solid $success;
+}
+
+.auth-status.error {
+    background: $error-muted;
+    color: $error;
+    border: solid $error;
+}
+
+.auth-status.warning {
+    background: $warning-muted;
+    color: $warning;
+    border: solid $warning;
+}
+
+.auth-status.info {
+    background: $info-muted;
+    color: $info;
+    border: solid $info;
+}
+
+.status-icon {
+    text-style: bold;
+    font-size: 120%;
+    margin-bottom: 1;
+}
+
+.status-message {
+    text-style: bold;
+    margin-bottom: 1;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.status-details {
+    color: $text-muted;
+    font-style: italic;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Responsive status styling */
+.auth-screen.compact .auth-status {
+    margin: 1 0;
+    padding: 1;
+    border-radius: 0;
+}
+
+.auth-screen.compact .status-icon {
+    font-size: 100%;
+    margin-bottom: 0;
+}
+
+.auth-screen.compact .status-details {
+    display: none;
+}
+
+.auth-screen.standard .auth-status {
+    margin: 2 0;
+    padding: 2;
+}
+
+.auth-screen.expanded .auth-status {
+    margin: 3 0;
+    padding: 3;
+}
+
+/* =============================================================================
+   TEXT TRUNCATION AND OVERFLOW HANDLING
+   ============================================================================= */
+
+.text-truncate {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.text-wrap {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.text-clip {
+    overflow: hidden;
+}
+
+/* Responsive text handling */
+.auth-screen.compact .text-responsive {
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.auth-screen.standard .text-responsive {
+    word-wrap: break-word;
+}
+
+.auth-screen.expanded .text-responsive {
+    word-wrap: normal;
+}
+
+/* =============================================================================
+   ACCESSIBILITY STYLES
+   ============================================================================= */
+
+/* High contrast mode */
+.auth-screen.high-contrast {
+    background: black;
+    color: white;
+    border: 2px solid white;
+}
+
+.auth-screen.high-contrast .auth-screen-container {
+    background: black;
+    color: white;
+    border: 2px solid white;
+}
+
+.auth-screen.high-contrast .auth-title {
+    color: white;
+    text-style: bold;
+}
+
+.auth-screen.high-contrast .device-code-container {
+    background: navy;
+    color: white;
+    border: 3px solid yellow;
+}
+
+.auth-screen.high-contrast .device-code {
+    color: white;
+    text-style: bold;
+}
+
+.auth-screen.high-contrast .verification-url {
+    color: yellow;
+    text-style: bold;
+}
+
+.auth-screen.high-contrast .auth-button {
+    background: black;
+    color: white;
+    border: 2px solid white;
+    text-style: bold;
+}
+
+.auth-screen.high-contrast .auth-button:hover {
+    background: white;
+    color: black;
+}
+
+.auth-screen.high-contrast .auth-button:focus {
+    border: 3px solid yellow;
+    background: navy;
+    color: white;
+    outline: 2px solid white;
+}
+
+.auth-screen.high-contrast .auth-button.primary {
+    background: darkblue;
+    color: white;
+    border: 2px solid white;
+}
+
+.auth-screen.high-contrast .auth-button.cancel {
+    background: darkred;
+    color: white;
+    border: 2px solid white;
+}
+
+/* Enhanced focus indicators */
+.auth-screen .focus-enhanced:focus {
+    border: 3px solid $accent;
+    background: $accent-muted;
+    color: $accent;
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+    text-style: bold;
+}
+
+.auth-screen.high-contrast .focus-enhanced:focus {
+    border: 3px solid yellow;
+    background: navy;
+    color: white;
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Reduced motion support */
+.reduce-motion * {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+}
+
+/* Large text mode */
+.auth-screen.large-text {
+    font-size: 120%;
+}
+
+.auth-screen.large-text .auth-title {
+    font-size: 150%;
+}
+
+.auth-screen.large-text .device-code {
+    font-size: 140%;
+}
+
+.auth-screen.large-text .auth-button {
+    padding: 2 3;
+    font-size: 110%;
+}
+
+/* =============================================================================
+   ADAPTIVE SPACING UTILITIES
+   ============================================================================= */
+
+.spacing-compact {
+    padding: 0;
+    margin: 0;
+}
+
+.spacing-normal {
+    padding: 1;
+    margin: 1;
+}
+
+.spacing-comfortable {
+    padding: 2;
+    margin: 2;
+}
+
+/* Responsive spacing application */
+.auth-screen.compact * {
+    padding: 0;
+    margin: 0;
+}
+
+.auth-screen.compact .spacing-override {
+    padding: 1;
+    margin: 1;
+}
+
+.auth-screen.standard * {
+    /* Use default spacing */
+}
+
+.auth-screen.expanded * {
+    /* Use comfortable spacing where appropriate */
+}
+
+/* =============================================================================
+   LOADING AND ANIMATION STATES
+   ============================================================================= */
+
+.auth-loading {
+    text-align: center;
+    color: $primary;
+    text-style: bold;
+    margin: 2 0;
+    padding: 1;
+}
+
+.auth-loading.compact {
+    margin: 1 0;
+    padding: 0;
+}
+
+.loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+.loading-pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { opacity: 1.0; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1.0; }
+}
+
+/* Disable animations for reduced motion */
+.reduce-motion .loading-spinner,
+.reduce-motion .loading-pulse {
+    animation: none;
+}
+
+/* =============================================================================
+   MEDIA QUERIES FOR SYSTEM PREFERENCES
+   ============================================================================= */
+
+/* High contrast preference */
+@media (prefers-contrast: high) {
+    .auth-screen {
+        background: black !important;
+        color: white !important;
+        border: 2px solid white !important;
+    }
+    
+    .auth-button {
+        border: 2px solid white !important;
+        background: black !important;
+        color: white !important;
+    }
+    
+    .auth-button:focus {
+        border: 3px solid yellow !important;
+        outline: 2px solid white !important;
+    }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark color scheme */
+@media (prefers-color-scheme: dark) {
+    .auth-screen {
+        background: #1a1a1a;
+        color: #ffffff;
+    }
+    
+    .auth-screen-container {
+        background: #2d2d2d;
+        border-color: #4a4a4a;
+    }
+}
+
+/* =============================================================================
+   PRINT STYLES
+   ============================================================================= */
+
+@media print {
+    .auth-screen {
+        background: white !important;
+        color: black !important;
+        border: 2px solid black !important;
+    }
+    
+    .device-code {
+        font-size: 14pt;
+        font-weight: bold;
+        border: 2px solid black;
+        padding: 10pt;
+    }
+    
+    .auth-button {
+        display: none;
+    }
+    
+    .auth-loading,
+    .auth-progress {
+        display: none;
+    }
+}
+
+/* =============================================================================
+   UTILITY CLASSES
+   ============================================================================= */
+
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: block;
+}
+
+.center {
+    text-align: center;
+    align: center middle;
+}
+
+.bold {
+    text-style: bold;
+}
+
+.italic {
+    font-style: italic;
+}
+
+.underline {
+    text-decoration: underline;
+}
+
+.no-wrap {
+    white-space: nowrap;
+}
+
+.break-word {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
+.overflow-auto {
+    overflow: auto;
+}
+
+.width-full {
+    width: 100%;
+}
+
+.height-full {
+    height: 100%;
+}
+
+.flex-grow {
+    width: 1fr;
+    height: 1fr;
+}
+
+.flex-shrink {
+    width: auto;
+    height: auto;
+}

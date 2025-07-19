@@ -111,3 +111,18 @@ class TokenManager:
             return True
 
         return False
+
+    def clear_token(self) -> None:
+        """Clear the active token completely"""
+        try:
+            # Remove active token reference
+            if self.active_token_file.exists():
+                self.active_token_file.unlink()
+            
+            # Optionally remove all tokens - uncomment if desired
+            # for token_file in self.tokens_dir.glob("*.json"):
+            #     token_file.unlink()
+            
+        except Exception:
+            # Silent fail for cleanup operations
+            pass

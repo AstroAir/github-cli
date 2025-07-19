@@ -16,7 +16,7 @@ from github_cli.utils.exceptions import GitHubCLIError, AuthenticationError, Net
 
 # TUI components
 try:
-    from github_cli.tui.app import GitHubTUIApp, run_tui
+    from github_cli.ui.tui.core.app import GitHubTUIApp, run_tui
     TUI_AVAILABLE = True
 except ImportError:
     TUI_AVAILABLE = False

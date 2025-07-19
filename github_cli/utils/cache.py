@@ -73,6 +73,9 @@ class CacheManager:
         # Runtime cache for frequently accessed items
         self._memory_cache: Dict[str, CacheEntry] = {}
         self._last_cleanup = time.time()
+        
+        # Logger
+        self.logger = logger
 
         # Performance metrics
         self._stats = {
@@ -97,7 +100,7 @@ class CacheManager:
         shard_dir.mkdir(exist_ok=True)
         return shard_dir / f"{cache_key[2:]}.json"
 
-    async def get(self, key: str, default: T = None) -> T:
+    async def get(self, key: str, default: Optional[T] = None) -> Optional[T]:
         """Get value from cache with async support and performance tracking."""
         if self.mode == "ignore":
             self._stats["misses"] += 1
@@ -130,25 +133,25 @@ class CacheManager:
                 return default
 
             # Load and validate cache file
-            async with asyncio.to_thread(self._load_cache_file, cache_file) as cache_data:
-                if cache_data is None:
-                    self._stats["misses"] += 1
-                    return default
+            cache_data = await asyncio.to_thread(self._load_cache_file, cache_file)
+            if cache_data is None:
+                self._stats["misses"] += 1
+                return default
 
-                entry = CacheEntry(**cache_data)
+            entry = CacheEntry(**cache_data)
 
-                if entry.is_expired and self.mode != "refresh":
-                    # Remove expired file
-                    await asyncio.to_thread(cache_file.unlink, missing_ok=True)
-                    self._stats["misses"] += 1
-                    return default
+            if entry.is_expired and self.mode != "refresh":
+                # Remove expired file
+                await asyncio.to_thread(cache_file.unlink, missing_ok=True)
+                self._stats["misses"] += 1
+                return default
 
-                # Add to memory cache for faster future access
-                self._memory_cache[key] = entry
-                self._stats["hits"] += 1
-                logger.debug(
-                    f"Cache hit (disk): {key}, age: {entry.age_seconds:.1f}s")
-                return entry.data
+            # Add to memory cache for faster future access
+            self._memory_cache[key] = entry
+            self._stats["hits"] += 1
+            logger.debug(
+                f"Cache hit (disk): {key}, age: {entry.age_seconds:.1f}s")
+            return entry.data
 
         except Exception as e:
             logger.error(f"Cache get error for key {key}: {e}")
@@ -427,12 +430,6 @@ class CacheManager:
         cache_file = self._get_cache_file(key)
         cache_file.unlink(missing_ok=True)
 
-    def clear(self) -> None:
-        """Clear all cache"""
-        for cache_file in self.cache_dir.glob("*.json"):
-            cache_file.unlink(missing_ok=True)
-        self.logger.info("Cache cleared")
-
     def is_cached(self, key: str) -> bool:
         """Check if key is cached and not expired"""
         if self.mode == "ignore":
@@ -501,11 +498,11 @@ class CacheManager:
         self.logger.info(f"Cleaned up {cleaned} expired cache entries")
         return cleaned
 
-    def cache_api_response(self, endpoint: str, params: Dict[str, Any], response: Any, ttl: Optional[int] = None) -> None:
+    async def cache_api_response(self, endpoint: str, params: Dict[str, Any], response: Any, ttl: Optional[int] = None) -> None:
         """Cache an API response"""
         # Create a cache key from endpoint and parameters
         cache_key = f"api:{endpoint}:{json.dumps(params, sort_keys=True)}"
-        self.set(cache_key, response, ttl)
+        await self.set(cache_key, response, ttl)
 
     def get_cached_api_response(self, endpoint: str, params: Dict[str, Any]) -> Any:
         """Get cached API response"""

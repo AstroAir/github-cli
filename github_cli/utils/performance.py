@@ -43,10 +43,11 @@ class PerformanceMonitor:
             # Use eager task factory if available (Python 3.12+)
             loop = asyncio.get_running_loop()
             if hasattr(asyncio, 'eager_task_factory'):
-                loop.set_task_factory(asyncio.eager_task_factory())
+                eager_factory = getattr(asyncio, 'eager_task_factory')
+                loop.set_task_factory(eager_factory)
                 logger.debug(
                     "Enabled eager task factory for performance optimization")
-        except RuntimeError:
+        except (RuntimeError, AttributeError):
             # No running loop yet, will be set when loop starts
             pass
 
@@ -277,7 +278,8 @@ async def setup_performance_optimizations() -> None:
 
         # Enable eager task factory if available (Python 3.12+)
         if hasattr(asyncio, 'eager_task_factory'):
-            loop.set_task_factory(asyncio.eager_task_factory())
+            eager_factory = getattr(asyncio, 'eager_task_factory')
+            loop.set_task_factory(eager_factory)
             logger.info(
                 "Enabled eager task factory for 2-5x performance improvement")
 

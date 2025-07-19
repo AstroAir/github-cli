@@ -257,13 +257,8 @@ class Authenticator:
 
         try:
             # Clear the active token from storage
-            if self._token:
-                token_prefix = self._token[:8] if len(
-                    self._token) >= 8 else self._token
-                self.token_manager.delete_token(token_prefix)
-                logger.info(
-                    f"Deleted token with prefix: {token_prefix[:4]}...")
-
+            self.token_manager.clear_token()
+            
             # Clear in-memory state
             self._token = None
             self._user_info = None

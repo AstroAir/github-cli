@@ -1,0 +1,424 @@
+/* Enhanced Visual Feedback Styles for GitHub CLI Authentication */
+
+/* Animated Progress Indicator Styles */
+.animated-progress-container {
+    width: 100%;
+    height: auto;
+    padding: 1;
+    border: solid $primary;
+    border-title-align: center;
+    border-title-color: $text;
+}
+
+.progress-compact {
+    text-align: center;
+    color: $text;
+    background: $surface;
+    padding: 0 1;
+}
+
+.progress-main {
+    text-align: left;
+    color: $text;
+    background: $surface;
+    padding: 0 1;
+    text-style: bold;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 1;
+    color: $primary;
+    background: $surface;
+}
+
+.progress-details {
+    color: $text-muted;
+    text-style: italic;
+    padding: 0 1;
+}
+
+.progress-time {
+    color: $text-muted;
+    text-align: right;
+    padding: 0 1;
+}
+
+/* Emphasized Display Styles */
+.emphasized-display {
+    width: 100%;
+    height: auto;
+    margin: 1 0;
+}
+
+.emphasized-display.compact {
+    margin: 0;
+    padding: 0 1;
+}
+
+.emphasized-content {
+    text-align: center;
+    padding: 1;
+}
+
+.emphasized-content.bordered {
+    border: solid $accent;
+    border-title-align: center;
+    background: $surface;
+}
+
+.emphasized-content.highlighted {
+    background: $primary;
+    color: $text-on-primary;
+    text-style: bold;
+}
+
+.emphasized-content.animated {
+    background: $surface;
+    color: $accent;
+    text-style: bold;
+}
+
+/* State Indicator Styles */
+.state-indicator {
+    width: 100%;
+    height: auto;
+    padding: 1;
+    margin: 1 0;
+}
+
+.state-indicator.compact {
+    padding: 0 1;
+    margin: 0;
+}
+
+.state-icon {
+    text-align: center;
+    text-style: bold;
+    padding: 0 1;
+}
+
+.state-message {
+    text-align: center;
+    padding: 0 1;
+    text-style: bold;
+}
+
+.state-details {
+    color: $text-muted;
+    text-align: center;
+    padding: 0 1;
+    text-style: italic;
+}
+
+/* Focus Indicator Styles */
+.focus-indicator {
+    width: 100%;
+    height: 1;
+}
+
+.focus-indicator.outline {
+    border: solid $accent;
+    background: transparent;
+    color: $accent;
+    text-style: bold;
+}
+
+.focus-indicator.background {
+    background: $accent;
+    color: $text-on-accent;
+    text-style: bold;
+}
+
+.focus-indicator.underline {
+    background: transparent;
+    color: $accent;
+    text-decoration: underline;
+}
+
+/* Success State Styles */
+.state-indicator .state-icon:has-class(success) {
+    color: $success;
+}
+
+.state-indicator .state-message:has-class(success) {
+    color: $success;
+}
+
+.progress-main:has-class(success) {
+    color: $success;
+}
+
+/* Error State Styles */
+.state-indicator .state-icon:has-class(error) {
+    color: $error;
+}
+
+.state-indicator .state-message:has-class(error) {
+    color: $error;
+}
+
+.progress-main:has-class(error) {
+    color: $error;
+}
+
+/* Warning State Styles */
+.state-indicator .state-icon:has-class(warning) {
+    color: $warning;
+}
+
+.state-indicator .state-message:has-class(warning) {
+    color: $warning;
+}
+
+.progress-main:has-class(warning) {
+    color: $warning;
+}
+
+/* Info State Styles */
+.state-indicator .state-icon:has-class(info) {
+    color: $info;
+}
+
+.state-indicator .state-message:has-class(info) {
+    color: $info;
+}
+
+/* High Contrast Mode Overrides */
+.high-contrast .animated-progress-container {
+    border: solid white;
+    background: black;
+}
+
+.high-contrast .progress-main,
+.high-contrast .progress-compact {
+    color: white;
+    background: black;
+    text-style: bold;
+}
+
+.high-contrast .emphasized-content.highlighted {
+    background: white;
+    color: black;
+    text-style: bold;
+}
+
+.high-contrast .focus-indicator.outline {
+    border: solid white;
+    color: white;
+    text-style: bold;
+}
+
+.high-contrast .focus-indicator.background {
+    background: white;
+    color: black;
+    text-style: bold;
+}
+
+/* Accessibility Mode Enhancements */
+.accessibility-mode .focus-indicator {
+    text-style: bold;
+    border: thick solid $accent;
+}
+
+.accessibility-mode .emphasized-content {
+    text-style: bold;
+    padding: 2;
+}
+
+.accessibility-mode .state-message {
+    text-style: bold;
+    padding: 1;
+}
+
+/* Animation Keyframes */
+@keyframes pulse {
+    0% { opacity: 1.0; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1.0; }
+}
+
+@keyframes highlight {
+    0% { background: $surface; }
+    50% { background: $accent; }
+    100% { background: $surface; }
+}
+
+@keyframes focus-glow {
+    0% { border-color: $accent; }
+    50% { border-color: $primary; }
+    100% { border-color: $accent; }
+}
+
+/* Apply animations when enabled */
+.enable-animations .emphasized-content.animated {
+    animation: pulse 2s infinite;
+}
+
+.enable-animations .focus-indicator.outline {
+    animation: focus-glow 1.5s infinite;
+}
+
+.enable-animations .progress-main:has-class(loading) {
+    animation: pulse 1s infinite;
+}
+
+/* Responsive Breakpoint Adjustments */
+@media (max-width: 60) {
+    .animated-progress-container {
+        padding: 0;
+        border: none;
+    }
+    
+    .emphasized-display {
+        margin: 0;
+    }
+    
+    .state-indicator {
+        padding: 0 1;
+        margin: 0;
+    }
+}
+
+@media (max-height: 15) {
+    .progress-details,
+    .progress-time,
+    .state-details {
+        display: none;
+    }
+}
+
+/* Device Code Emphasis Styles */
+.device-code-emphasis {
+    border: thick solid $accent;
+    background: $primary;
+    color: $text-on-primary;
+    text-align: center;
+    text-style: bold;
+    padding: 2;
+    margin: 1;
+}
+
+.device-code-emphasis.compact {
+    padding: 1;
+    margin: 0;
+    border: solid $accent;
+}
+
+.device-code-emphasis.animated {
+    animation: highlight 3s infinite;
+}
+
+/* Success/Failure Message Styles */
+.success-message {
+    border: solid $success;
+    background: $success-muted;
+    color: $success;
+    text-align: center;
+    text-style: bold;
+    padding: 2;
+    margin: 1;
+}
+
+.error-message {
+    border: solid $error;
+    background: $error-muted;
+    color: $error;
+    text-align: center;
+    text-style: bold;
+    padding: 2;
+    margin: 1;
+}
+
+.warning-message {
+    border: solid $warning;
+    background: $warning-muted;
+    color: $warning;
+    text-align: center;
+    text-style: bold;
+    padding: 2;
+    margin: 1;
+}
+
+/* Compact mode message styles */
+.success-message.compact,
+.error-message.compact,
+.warning-message.compact {
+    padding: 1;
+    margin: 0;
+    border: none;
+}
+
+/* Loading spinner styles */
+.loading-spinner {
+    text-align: center;
+    color: $primary;
+    text-style: bold;
+}
+
+.loading-spinner.compact {
+    padding: 0;
+}
+
+/* Progress percentage display */
+.progress-percentage {
+    color: $text-muted;
+    text-align: right;
+    padding: 0 1;
+}
+
+.progress-percentage.compact {
+    display: none;
+}
+
+/* Countdown timer styles */
+.countdown-timer {
+    color: $warning;
+    text-align: center;
+    text-style: bold;
+    padding: 1;
+    border: solid $warning;
+    background: $warning-muted;
+}
+
+.countdown-timer.compact {
+    padding: 0 1;
+    border: none;
+    background: transparent;
+}
+
+/* Status transition animations */
+.status-transition {
+    transition: all 0.3s ease-in-out;
+}
+
+.enable-animations .status-transition {
+    animation: pulse 0.5s ease-in-out;
+}
+
+/* Keyboard navigation indicators */
+.keyboard-focus {
+    border: thick solid $accent;
+    background: $accent-muted;
+    outline: 2px solid $accent;
+    outline-offset: 2px;
+}
+
+.keyboard-focus.high-contrast {
+    border: thick solid white;
+    background: black;
+    outline: 2px solid white;
+}
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

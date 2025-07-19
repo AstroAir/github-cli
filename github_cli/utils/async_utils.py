@@ -264,7 +264,7 @@ async def gather_with_concurrency(
     *awaitables: Awaitable[T],
     max_concurrency: int = 10,
     return_exceptions: bool = False
-) -> List[T]:
+) -> List[Union[T, BaseException]]:
     """
     Gather awaitables with concurrency control.
 
@@ -327,6 +327,7 @@ async def retry_with_backoff(
     # Should never reach here, but just in case
     if last_exception:
         raise last_exception
+    raise RuntimeError("Unexpected end of retry loop")
 
 
 class AsyncCache:

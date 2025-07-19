@@ -87,7 +87,7 @@ class GitCommands:
                 if not line:
                     continue
 
-                status_code = line[:2]
+                status_code = line[:3]
                 filename = line[3:]
 
                 if status_code.startswith("M"):
@@ -96,7 +96,7 @@ class GitCommands:
                     added.append(filename)
                 elif status_code.startswith("D"):
                     deleted.append(filename)
-                elif status_code.startswith(""):
+                elif status_code.startswith("??"):
                     untracked.append(filename)
 
             return {
@@ -285,85 +285,3 @@ async def handle_git_command(args, git_cmds: GitCommands):
 
     except GitHubCLIError as e:
         git_cmds.terminal.display_error(str(e))
-
-
-# Add display methods to TerminalUI
-def _add_git_methods_to_terminal():
-    """Add git display methods to TerminalUI class"""
-    from rich.table import Table
-    from rich.panel import Panel
-    from rich import box
-
-    def display_git_branches(self, branches: List[str]) -> None:
-        """Display git branches"""
-        if not branches:
-            self.display_info("No branches found")
-            return
-
-        table = Table(title="Git Branches", box=box.ROUNDED)
-        table.add_column("Branch", style="cyan")
-
-        for branch in branches:
-            table.add_row(branch)
-
-        self.console.print(table)
-
-    def display_git_status(self, status: Dict[str, Any]) -> None:
-        """Display git repository status"""
-        repo = status.get("repository", "Unknown")
-        branch = status.get("branch", "Unknown")
-
-        header = f"Repository: {repo} (Branch: {branch})"
-
-        if status.get("clean", True):
-            content = "Working tree clean"
-            style = "green"
-        else:
-            content_lines = []
-
-            if status.get("modified"):
-                content_lines.append(
-                    f"Modified: {len(status['modified'])} files")
-            if status.get("added"):
-                content_lines.append(f"Added: {len(status['added'])} files")
-            if status.get("deleted"):
-                content_lines.append(
-                    f"Deleted: {len(status['deleted'])} files")
-            if status.get("untracked"):
-                content_lines.append(
-                    f"Untracked: {len(status['untracked'])} files")
-
-            content = "\n".join(content_lines)
-            style = "yellow"
-
-        self.console.print(Panel(content, title=header,
-                           box=box.ROUNDED, style=style))
-
-    def display_git_stashes(self, stashes: List[Dict[str, str]]) -> None:
-        """Display git stashes"""
-        if not stashes:
-            self.display_info("No stashes found")
-            return
-
-        table = Table(title="Git Stashes", box=box.ROUNDED)
-        table.add_column("Index", style="cyan")
-        table.add_column("Message", style="white")
-        table.add_column("Date", style="blue")
-
-        for stash in stashes:
-            table.add_row(
-                stash.get("index", ""),
-                stash.get("message", ""),
-                stash.get("date", "")
-            )
-
-        self.console.print(table)
-
-    # Add methods to TerminalUI class
-    TerminalUI.display_git_branches = display_git_branches
-    TerminalUI.display_git_status = display_git_status
-    TerminalUI.display_git_stashes = display_git_stashes
-
-
-# Initialize the methods
-_add_git_methods_to_terminal()

@@ -144,7 +144,7 @@ async def main() -> int:
         # Handle TUI mode
         if args.tui:
             logger.info("Launching TUI mode")
-            from github_cli.tui.app import run_tui
+            from github_cli.ui.tui.core.app import run_tui
             import asyncio
             import threading
 

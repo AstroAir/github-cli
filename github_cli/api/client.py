@@ -9,10 +9,11 @@ import aiohttp
 from loguru import logger
 from pydantic import BaseModel, Field, ValidationError
 
-from github_cli.utils.exceptions import APIError, NetworkError, NotFoundError
+from github_cli.utils.exceptions import APIError, NetworkError, NotFoundError, TokenExpiredError
 
 if TYPE_CHECKING:
     from github_cli.auth.authenticator import Authenticator
+    from github_cli.auth.token_expiration_handler import TokenExpirationHandler
 
 
 T = TypeVar('T')
@@ -46,6 +47,7 @@ class GitHubClient:
         self.authenticator = authenticator
         self._rate_limit_info = RateLimitInfo()
         self._session: aiohttp.ClientSession | None = None
+        self._token_expiration_handler: TokenExpirationHandler | None = None
 
         # Configure structured logging
         logger.configure(
@@ -69,6 +71,15 @@ class GitHubClient:
     def rate_limit_reset(self) -> int:
         """Get rate limit reset time."""
         return self._rate_limit_info.reset_time
+
+    @property
+    def token_expiration_handler(self) -> TokenExpirationHandler:
+        """Get or create the token expiration handler."""
+        if self._token_expiration_handler is None:
+            from github_cli.auth.token_expiration_handler import TokenExpirationHandler, TokenExpirationConfig
+            config = TokenExpirationConfig()
+            self._token_expiration_handler = TokenExpirationHandler(self.authenticator, config)
+        return self._token_expiration_handler
 
     @asynccontextmanager
     async def _get_session(self) -> AsyncGenerator[aiohttp.ClientSession, None]:
@@ -136,6 +147,26 @@ class GitHubClient:
         """Make a request to the GitHub API with enhanced error handling and retries."""
         url = urljoin(self.API_BASE, endpoint.lstrip("/"))
 
+        # Use token validation context manager for automatic expiration handling
+        operation = f"{method} {endpoint}"
+        async with self.token_expiration_handler.with_token_validation(
+            operation=operation,
+            endpoint=endpoint,
+            user_message=f"Making {method} request to {endpoint}"
+        ):
+            return await self._make_http_request(method, url, endpoint, params, data, headers, retry_count)
+
+    async def _make_http_request(
+        self,
+        method: str,
+        url: str,
+        endpoint: str,
+        params: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        retry_count: int = 0
+    ) -> APIResponse:
+        """Make the actual HTTP request with retry logic."""
         # Prepare headers
         request_headers = {
             "Accept": "application/vnd.github.v3+json",
@@ -182,7 +213,7 @@ class GitHubClient:
                 logger.info(
                     f"Retrying request after {delay}s (attempt {retry_count + 1}/{self.MAX_RETRIES})")
                 await asyncio.sleep(delay)
-                return await self._request(method, endpoint, params, data, headers, retry_count + 1)
+                return await self._make_http_request(method, url, endpoint, params, data, headers, retry_count + 1)
 
             # Convert to our custom exception
             if isinstance(e, asyncio.TimeoutError):
@@ -190,6 +221,10 @@ class GitHubClient:
                     f"Request to {endpoint} timed out after {self.DEFAULT_TIMEOUT}s") from e
             else:
                 raise NetworkError(f"Network error: {e}") from e
+
+        except TokenExpiredError:
+            # Token expired during request, let the context manager handle it
+            raise
 
         except Exception as e:
             logger.exception(f"Unexpected error during request to {endpoint}")

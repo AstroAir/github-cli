@@ -285,3 +285,29 @@ class TimeoutError(NetworkError):
             cause=cause
         )
         self.context.update(context)
+
+
+class TokenExpiredError(AuthenticationError):
+    """Specific error for expired authentication tokens."""
+
+    def __init__(
+        self,
+        message: str = "Authentication token has expired",
+        *,
+        operation: str | None = None,
+        expiry_time: int | None = None,
+        cause: Exception | None = None
+    ) -> None:
+        context = {}
+        if operation:
+            context["operation"] = operation
+        if expiry_time:
+            context["expiry_time"] = expiry_time
+
+        super().__init__(
+            message,
+            auth_type="token_expiration",
+            status_code=401,
+            cause=cause
+        )
+        self.context.update(context)
