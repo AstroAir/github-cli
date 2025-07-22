@@ -13,9 +13,9 @@ from unittest.mock import Mock, patch, mock_open
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
-from github_cli.utils.cache import Cache, CacheEntry
+from github_cli.utils.cache import CacheManager, CacheEntry
 from github_cli.utils.config import Config
-from github_cli.utils.exceptions import ConfigurationError
+from github_cli.utils.exceptions import ConfigError
 
 
 @pytest.mark.unit

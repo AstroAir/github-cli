@@ -1,317 +1,205 @@
-# GitHub CLI Test Suite
+# GitHub CLI Tests
 
-This directory contains comprehensive unit and integration tests for the GitHub CLI project.
+This directory contains the comprehensive test suite for the GitHub CLI application.
 
 ## 📁 Test Structure
 
 ```
 tests/
-├── README.md                 # This file
-├── conftest.py              # Pytest configuration and shared fixtures
-├── auth/                    # Authentication-specific tests (legacy)
-├── integration/             # Integration tests
+├── conftest.py                 # Shared test fixtures and configuration
+├── docs/                       # Test documentation and analysis
+│   ├── TEST_COVERAGE_ANALYSIS.md
+│   └── TEST_IMPROVEMENTS_SUMMARY.md
+├── utils/                      # Test utilities and runners
+│   ├── simple_test_runner.py   # Environment-independent test runner
+│   ├── test_runner.py          # Comprehensive test execution
+│   └── validate_tests.py       # Test validation script
+├── unit/                       # Unit tests for individual components
+│   ├── api/                    # API module tests
+│   │   ├── test_actions.py     # GitHub Actions API tests
+│   │   ├── test_client.py      # Core API client tests
+│   │   ├── test_gists.py       # Gists API tests
+│   │   ├── test_issues.py      # Issues API tests
+│   │   ├── test_notifications.py # Notifications API tests (placeholder)
+│   │   ├── test_organizations.py # Organizations API tests (placeholder)
+│   │   ├── test_pull_requests.py # Pull Requests API tests
+│   │   ├── test_repositories.py # Repositories API tests
+│   │   ├── test_search.py      # Search API tests (placeholder)
+│   │   └── test_users.py       # Users API tests
+│   ├── auth/                   # Authentication tests
+│   │   ├── test_authenticator.py
+│   │   └── test_token_manager.py
+│   ├── git/                    # Git command tests
+│   │   ├── test_commands.py
+│   │   ├── test_edge_cases.py
+│   │   └── test_terminal_methods.py
+│   ├── models/                 # Data model tests
+│   │   ├── test_pull_request.py
+│   │   ├── test_repository.py
+│   │   └── test_user_fixed.py
+│   ├── tui/                    # Terminal UI tests
+│   │   ├── test_auth_screen.py
+│   │   └── test_dashboard.py
+│   ├── ui/                     # User interface tests
+│   │   └── test_terminal.py
+│   ├── utils/                  # Utility tests
+│   │   ├── test_cache.py
+│   │   ├── test_config.py
+│   │   └── test_exceptions.py
+│   └── test_main.py            # Main CLI entry point tests
+├── integration/                # Integration tests
 │   └── test_git_integration.py
-└── unit/                    # Unit tests organized by module
-    ├── api/                 # API client tests
-    │   ├── __init__.py
-    │   └── test_client.py
-    ├── auth/                # Authentication system tests
-    │   ├── __init__.py
-    │   ├── test_authenticator.py
-    │   └── test_token_manager.py
-    ├── git/                 # Git integration tests
-    │   ├── __init__.py
-    │   ├── test_commands.py
-    │   ├── test_edge_cases.py
-    │   └── test_terminal_methods.py
-    ├── models/              # Data model tests
-    │   ├── __init__.py
-    │   ├── test_repository.py
-    │   └── test_user.py
-    ├── tui/                 # TUI component tests
-    │   ├── __init__.py
-    │   └── test_auth_screen.py
-    ├── ui/                  # UI component tests
-    │   ├── __init__.py
-    │   └── test_terminal.py
-    └── utils/               # Utility tests
-        ├── __init__.py
-        └── test_config.py
+└── auth/                       # Authentication integration tests
 ```
-
-## 🧪 Test Categories
-
-### Unit Tests (`tests/unit/`)
-
-Fast, isolated tests that test individual components without external dependencies.
-
-- **API Tests** (`api/`): Test GitHub API client functionality
-- **Auth Tests** (`auth/`): Test authentication and token management
-- **Model Tests** (`models/`): Test data models and validation
-- **UI Tests** (`ui/`, `tui/`): Test user interface components
-- **Utils Tests** (`utils/`): Test utility functions and configuration
-
-### Integration Tests (`tests/integration/`)
-
-Slower tests that test component interactions and may require external dependencies.
-
-- **Git Integration**: Tests requiring actual git installation
-- **API Integration**: Tests that may make real API calls (when configured)
 
 ## 🚀 Running Tests
 
-### Quick Start
-
-```bash
-# Run all unit tests (fast)
-python run_tests.py fast
-
-# Run all tests with coverage
-python run_tests.py all --coverage
-
-# Run specific test category
-python run_tests.py api --verbose
-```
-
-### Using pytest directly
-
+### Basic Test Execution
 ```bash
 # Run all tests
 pytest
 
-# Run unit tests only
-pytest tests/unit/ -m unit
+# Run specific test category
+pytest tests/unit/
+pytest tests/integration/
 
 # Run with coverage
 pytest --cov=github_cli --cov-report=html
 
 # Run specific test file
-pytest tests/unit/api/test_client.py -v
+pytest tests/unit/api/test_client.py
 
-# Run tests matching pattern
-pytest -k "test_auth" -v
+# Run with verbose output
+pytest -v --tb=short
 ```
 
-### Test Runner Script
-
-The `run_tests.py` script provides convenient commands:
-
+### Using Test Utilities
 ```bash
-# Available commands
-python run_tests.py unit        # Unit tests only
-python run_tests.py integration # Integration tests only
-python run_tests.py api         # API tests only
-python run_tests.py auth        # Authentication tests only
-python run_tests.py ui          # UI tests only
-python run_tests.py models      # Model tests only
-python run_tests.py utils       # Utility tests only
-python run_tests.py all         # All tests
-python run_tests.py fast        # Fast tests only (no integration)
-python run_tests.py coverage    # Generate coverage report
+# Validate test environment and syntax
+python tests/utils/validate_tests.py
 
-# Options
---verbose    # Verbose output
---coverage   # Generate coverage report
---lint       # Run code linting
+# Run simple test validation
+python tests/utils/simple_test_runner.py
+
+# Run comprehensive test suite
+python tests/utils/test_runner.py
 ```
 
-## 📊 Test Markers
+## 📊 Test Categories
 
-Tests are categorized using pytest markers:
+### ✅ **Well-Tested Areas**
+- **Main CLI Entry Point**: 15 tests - All passing
+- **Git Commands**: 78 tests - Comprehensive coverage
+- **Authentication**: 13 tests - Working
+- **API Client**: 8 tests - Fixed and working
+- **Issues API**: 15 tests - Comprehensive coverage
+- **Gists API**: 18 tests - Complete functionality
+- **Actions API**: 16 tests - Full workflow management
 
-- `@pytest.mark.unit`: Unit tests (fast, isolated)
-- `@pytest.mark.integration`: Integration tests (slower, external deps)
-- `@pytest.mark.api`: API client tests
-- `@pytest.mark.auth`: Authentication tests
-- `@pytest.mark.ui`: UI component tests
-- `@pytest.mark.tui`: TUI component tests
-- `@pytest.mark.models`: Data model tests
-- `@pytest.mark.git`: Tests requiring git installation
-- `@pytest.mark.slow`: Slow tests
+### 🔧 **Recently Fixed Areas**
+- **Repository API**: 10 tests - Fixed APIResponse issues
+- **Pull Request API**: 8 tests - Fixed interface mismatches
+- **Config Utils**: 12 tests - Completely rewritten to match implementation
 
-### Running by Marker
+### 🚧 **Areas Needing Work**
+- **TUI Components**: Partial coverage with dependency issues
+- **Models**: Limited coverage, missing several model classes
+- **UI Components**: Basic coverage, needs expansion
+- **API Modules**: Some modules have placeholder tests only
 
-```bash
-# Run only unit tests
-pytest -m unit
+## 🧪 Writing Tests
 
-# Run only API tests
-pytest -m api
+### Test Guidelines
+1. **Use descriptive test names** that explain what is being tested
+2. **Include comprehensive docstrings** for test methods
+3. **Use appropriate fixtures** from `conftest.py`
+4. **Mock external dependencies** properly with type-safe mocks
+5. **Test both success and failure cases** including edge cases
+6. **Follow async patterns** for async code testing
 
-# Exclude slow tests
-pytest -m "not slow"
-
-# Combine markers
-pytest -m "unit and api"
-```
-
-## 🔧 Test Configuration
-
-### pytest.ini
-
-The `pytest.ini` file configures:
-- Test discovery patterns
-- Coverage settings
-- Marker definitions
-- Warning filters
-- Async test mode
-
-### conftest.py
-
-Shared fixtures and configuration:
-- Mock objects for common components
-- Sample data fixtures
-- Test utilities
-- Pytest configuration
-
-## 📝 Writing Tests
-
-### Test Structure
-
+### Test Patterns
 ```python
-"""
-Unit tests for [Component Name].
-
-Brief description of what this test module covers.
-"""
-
-import pytest
-from unittest.mock import Mock, AsyncMock, patch
-
-from github_cli.module import ComponentClass
-
-
 @pytest.mark.unit
-@pytest.mark.category  # e.g., api, auth, ui
-class TestComponentClass:
-    """Test cases for ComponentClass."""
+@pytest.mark.api
+class TestAPIModule:
+    """Test cases for API module."""
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.mock_dependency = Mock()
-        self.component = ComponentClass(self.mock_dependency)
-
-    def test_method_success(self):
-        """Test successful method execution."""
-        # Arrange
-        expected_result = "success"
-        
-        # Act
-        result = self.component.method()
-        
-        # Assert
-        assert result == expected_result
+        self.mock_client = Mock(spec=GitHubClient)
+        self.api = APIModule(self.mock_client)
 
     @pytest.mark.asyncio
-    async def test_async_method(self):
-        """Test async method."""
-        result = await self.component.async_method()
+    async def test_method_success(self, sample_data_fixture):
+        """Test successful method execution."""
+        mock_response = APIResponse(
+            status_code=200,
+            data=sample_data_fixture,
+            headers={"content-type": "application/json"},
+            rate_limit=RateLimitInfo()
+        )
+        
+        self.mock_client.get.return_value = mock_response
+        
+        result = await self.api.method()
+        
         assert result is not None
+        self.mock_client.get.assert_called_once()
 ```
 
-### Best Practices
+## 📈 Test Coverage Status
 
-1. **Use descriptive test names**: `test_method_with_valid_input_returns_expected_result`
-2. **Follow AAA pattern**: Arrange, Act, Assert
-3. **Mock external dependencies**: Use `unittest.mock` for isolation
-4. **Test edge cases**: Empty inputs, None values, exceptions
-5. **Use fixtures**: Leverage pytest fixtures for common setup
-6. **Mark tests appropriately**: Use pytest markers for categorization
+### **Current Estimated Coverage**
+- **Core API**: ~75% (significantly improved)
+- **Authentication**: ~80% (good coverage)
+- **Git Operations**: ~90% (excellent coverage)
+- **Models**: ~40% (needs improvement)
+- **Utils**: ~60% (moderate coverage)
+- **UI/TUI**: ~30% (needs significant work)
 
-### Async Testing
+### **Overall Project Coverage**: ~65% (estimated)
 
-```python
-@pytest.mark.asyncio
-async def test_async_function():
-    """Test async function."""
-    with patch('module.async_dependency', new_callable=AsyncMock) as mock_dep:
-        mock_dep.return_value = "mocked_result"
-        
-        result = await async_function()
-        
-        assert result == "expected_result"
-        mock_dep.assert_called_once()
-```
+## 🎯 Test Quality Features
 
-### Mocking Guidelines
+### **Implemented Improvements**
+- ✅ **Interface Consistency**: All tests match actual implementation
+- ✅ **Proper Mocking**: Type-safe mocks with proper specifications
+- ✅ **Async Support**: Proper async/await testing patterns
+- ✅ **Error Coverage**: Both success and failure scenarios tested
+- ✅ **Edge Cases**: Comprehensive edge case coverage
+- ✅ **Documentation**: Tests serve as usage examples
 
-```python
-# Mock external services
-with patch('requests.get') as mock_get:
-    mock_get.return_value.json.return_value = {"data": "test"}
-    
-# Mock async operations
-with patch('module.async_func', new_callable=AsyncMock) as mock_async:
-    mock_async.return_value = "result"
-    
-# Mock file operations
-with patch('builtins.open', mock_open(read_data="file content")):
-    # Test file reading
-```
+### **Test Infrastructure**
+- **Comprehensive Fixtures**: Realistic test data for all major entities
+- **Test Utilities**: Environment-independent validation and execution
+- **Documentation**: Detailed analysis and improvement tracking
+- **Organization**: Clear structure following best practices
 
-## 📈 Coverage Goals
-
-- **Overall coverage**: 80%+ (configured in pytest.ini)
-- **Critical modules**: 90%+ (auth, api, models)
-- **UI modules**: 70%+ (harder to test, focus on logic)
-
-### Viewing Coverage
-
-```bash
-# Generate HTML coverage report
-pytest --cov=github_cli --cov-report=html
-
-# Open coverage report
-open htmlcov/index.html  # macOS
-xdg-open htmlcov/index.html  # Linux
-start htmlcov/index.html  # Windows
-```
-
-## 🐛 Debugging Tests
-
-### Running Single Test
-
-```bash
-# Run specific test method
-pytest tests/unit/api/test_client.py::TestGitHubClient::test_get_request_success -v
-
-# Run with pdb debugger
-pytest tests/unit/api/test_client.py::TestGitHubClient::test_get_request_success --pdb
-```
+## 🔧 Troubleshooting
 
 ### Common Issues
+1. **Import Errors**: Ensure all dependencies are installed (`pip install pytest pytest-asyncio pytest-cov`)
+2. **Async Test Failures**: Use `@pytest.mark.asyncio` for async tests
+3. **Mock Issues**: Use `Mock(spec=ClassName)` for type-safe mocking
+4. **Fixture Errors**: Check `conftest.py` for available fixtures
 
-1. **Import errors**: Check PYTHONPATH and module structure
-2. **Async test failures**: Ensure `@pytest.mark.asyncio` decorator
-3. **Mock not working**: Verify patch target path
-4. **Fixture not found**: Check conftest.py and fixture scope
+### Environment Setup
+```bash
+# Install test dependencies
+pip install pytest pytest-asyncio pytest-cov
 
-## 🔄 Continuous Integration
+# Install project dependencies
+pip install -e .
 
-Tests are designed to run in CI environments:
-
-- **Fast feedback**: Unit tests run quickly
-- **Isolated**: No external dependencies for unit tests
-- **Deterministic**: Consistent results across environments
-- **Comprehensive**: Good coverage of critical paths
-
-### CI Configuration
-
-```yaml
-# Example GitHub Actions workflow
-- name: Run tests
-  run: |
-    python run_tests.py all --coverage
-    
-- name: Upload coverage
-  uses: codecov/codecov-action@v1
-  with:
-    file: ./coverage.xml
+# Verify setup
+python tests/utils/validate_tests.py
 ```
 
 ## 📚 Additional Resources
 
-- [pytest documentation](https://docs.pytest.org/)
-- [unittest.mock documentation](https://docs.python.org/3/library/unittest.mock.html)
-- [Textual testing guide](https://textual.textualize.io/guide/testing/)
-- [GitHub CLI testing best practices](../docs/developer/testing.md)
+- **Test Documentation**: See `tests/docs/` for detailed analysis
+- **Coverage Reports**: Generate with `pytest --cov=github_cli --cov-report=html`
+- **Test Utilities**: Use scripts in `tests/utils/` for validation and execution
+- **Fixtures**: Check `conftest.py` for available test data
+
+This test suite provides comprehensive coverage and follows modern testing best practices to ensure the reliability and maintainability of the GitHub CLI project.

@@ -13,9 +13,9 @@ from github_cli.utils.exceptions import (
     AuthenticationError,
     NetworkError,
     RateLimitError,
-    ConfigurationError,
+    ConfigError,
     ValidationError,
-    RepositoryError,
+    NotFoundError,
     APIError
 )
 

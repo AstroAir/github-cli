@@ -40,7 +40,7 @@ class PullRequestAPI:
         }
 
         response = await self.client.get(endpoint, params=params)
-        return [PullRequest.from_json(pr_data) for pr_data in response]
+        return [PullRequest.from_json(pr_data) for pr_data in response.data]
 
     async def get_pull_request(self, repo: str, number: int) -> PullRequest:
         """Get a pull request by number"""
@@ -48,7 +48,7 @@ class PullRequestAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return PullRequest.from_json(response)
+            return PullRequest.from_json(response.data)
         except NotFoundError:
             raise GitHubCLIError(f"Pull request #{number} not found in {repo}")
 
@@ -73,7 +73,7 @@ class PullRequestAPI:
 
         try:
             response = await self.client.post(endpoint, data=data)
-            return PullRequest.from_json(response)
+            return PullRequest.from_json(response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to create pull request: {str(e)}")
 
@@ -83,7 +83,7 @@ class PullRequestAPI:
 
         try:
             response = await self.client.patch(endpoint, data=kwargs)
-            return PullRequest.from_json(response)
+            return PullRequest.from_json(response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to update pull request: {str(e)}")
 
@@ -92,7 +92,8 @@ class PullRequestAPI:
         endpoint = f"repos/{repo}/pulls/{number}/files"
 
         try:
-            return await self.client.get(endpoint)
+            response = await self.client.get(endpoint)
+            return response.data
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to get pull request files: {str(e)}")
 
@@ -101,7 +102,8 @@ class PullRequestAPI:
         endpoint = f"repos/{repo}/pulls/{number}/commits"
 
         try:
-            return await self.client.get(endpoint)
+            response = await self.client.get(endpoint)
+            return response.data
         except GitHubCLIError as e:
             raise GitHubCLIError(
                 f"Failed to get pull request commits: {str(e)}")
@@ -111,7 +113,8 @@ class PullRequestAPI:
         endpoint = f"repos/{repo}/pulls/{number}/reviews"
 
         try:
-            return await self.client.get(endpoint)
+            response = await self.client.get(endpoint)
+            return response.data
         except GitHubCLIError as e:
             raise GitHubCLIError(
                 f"Failed to get pull request reviews: {str(e)}")
@@ -137,7 +140,8 @@ class PullRequestAPI:
             data["comments"] = comments
 
         try:
-            return await self.client.post(endpoint, data=data)
+            response = await self.client.post(endpoint, data=data)
+            return response.data
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to create review: {str(e)}")
 
@@ -162,7 +166,8 @@ class PullRequestAPI:
             data["commit_message"] = commit_message
 
         try:
-            return await self.client.put(endpoint, data=data)
+            response = await self.client.put(endpoint, data=data)
+            return response.data
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to merge pull request: {str(e)}")
 

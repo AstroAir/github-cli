@@ -10,7 +10,8 @@ from __future__ import annotations
 import time
 from .common import (
     asyncio, dataclass, Enum, Any, Callable, logger,
-    Button, Label, Static, ProgressBar, Container, Horizontal, Vertical
+    Button, Label, Static, ProgressBar, Container, Horizontal, Vertical,
+    AuthResult, AuthErrorType, AuthRecoveryAction
 )
 from typing import Literal, Protocol, runtime_checkable
 from contextlib import asynccontextmanager
@@ -26,40 +27,7 @@ from github_cli.utils.exceptions import (
 )
 
 
-class AuthErrorType(Enum):
-    """Types of authentication errors."""
-    NETWORK = "network"
-    TOKEN_EXPIRED = "token_expired"
-    TOKEN_INVALID = "token_invalid"
-    USER_DENIED = "user_denied"
-    DEVICE_CODE_EXPIRED = "device_code_expired"
-    RATE_LIMITED = "rate_limited"
-    BROWSER_UNAVAILABLE = "browser_unavailable"
-    CLIPBOARD_UNAVAILABLE = "clipboard_unavailable"
-    ENVIRONMENT_RESTRICTED = "environment_restricted"
-    UNKNOWN = "unknown"
 
-
-class AuthRecoveryAction(Enum):
-    """Possible recovery actions for authentication errors."""
-    RETRY = "retry"
-    RESTART_FLOW = "restart_flow"
-    MANUAL_AUTH = "manual_auth"
-    WAIT_AND_RETRY = "wait_and_retry"
-    CANCEL = "cancel"
-    SHOW_HELP = "show_help"
-
-
-@dataclass(frozen=True, slots=True)
-class AuthResult:
-    """Result of authentication attempt."""
-    success: bool
-    user_info: dict[str, Any] | None = None
-    error: Exception | None = None
-    retry_suggested: bool = False
-    preferences_updated: bool = False
-    recovery_action: AuthRecoveryAction | None = None
-    error_type: AuthErrorType | None = None
 
 
 @dataclass(frozen=True, slots=True)

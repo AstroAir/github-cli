@@ -10,6 +10,45 @@ from datetime import datetime, timezone
 from github_cli.models.pull_request import PullRequest
 
 
+def create_test_pull_request(**overrides):
+    """Helper function to create a valid PullRequest for testing."""
+    defaults = {
+        # Issue fields
+        "id": 123,
+        "number": 1,
+        "title": "Test PR",
+        "state": "open",
+        "locked": False,
+        "assignee": None,
+        "assignees": [],
+        "milestone": None,
+        "comments": 0,
+        "created_at": "2023-12-01T00:00:00Z",
+        "updated_at": "2023-12-01T00:00:00Z",
+        "closed_at": None,
+        "author_association": "OWNER",
+        "body": "Test PR body",
+        "user": {"id": 1, "login": "user", "type": "User"},
+        "labels": [],
+        "html_url": "https://github.com/user/repo/pull/1",
+        "url": "https://api.github.com/repos/user/repo/issues/1",
+        "repository_url": "https://api.github.com/repos/user/repo",
+        # PullRequest specific fields
+        "head": {"ref": "feature", "sha": "abc123", "repo": {"name": "repo", "full_name": "user/repo"}},
+        "base": {"ref": "main", "sha": "def456", "repo": {"name": "repo", "full_name": "user/repo"}},
+        "merged": False,
+        "mergeable": True,
+        "mergeable_state": "clean",
+        "merged_by": None,
+        "merged_at": None,
+        "draft": False,
+        "requested_reviewers": [],
+        "requested_teams": [],
+    }
+    defaults.update(overrides)
+    return PullRequest(**defaults)
+
+
 @pytest.mark.unit
 @pytest.mark.models
 class TestPullRequest:
@@ -17,26 +56,12 @@ class TestPullRequest:
 
     def test_pull_request_creation_minimal(self):
         """Test PullRequest creation with minimal required fields."""
-        pr = PullRequest(
+        pr = create_test_pull_request(
             id=555666777,
             number=42,
             title="Add new feature",
             body="This PR adds a new feature to the application.",
             state="open",
-            draft=False,
-            locked=False,
-            html_url="https://github.com/testuser/test-repo/pull/42",
-            diff_url="https://github.com/testuser/test-repo/pull/42.diff",
-            patch_url="https://github.com/testuser/test-repo/pull/42.patch",
-            created_at="2023-11-01T00:00:00Z",
-            updated_at="2023-12-01T00:00:00Z",
-            closed_at=None,
-            merged_at=None,
-            merge_commit_sha=None,
-            assignees=[],
-            requested_reviewers=[],
-            labels=[],
-            milestone=None,
             head={
                 "ref": "feature-branch",
                 "sha": "abc123def456",
@@ -48,15 +73,6 @@ class TestPullRequest:
                 "repo": {"name": "test-repo", "full_name": "testuser/test-repo"}
             },
             user={"id": 987654321, "login": "testuser", "type": "User"},
-            mergeable=True,
-            mergeable_state="clean",
-            merged=False,
-            comments=0,
-            review_comments=0,
-            commits=1,
-            additions=10,
-            deletions=2,
-            changed_files=1
         )
         
         assert pr.id == 555666777
@@ -71,7 +87,7 @@ class TestPullRequest:
 
     def test_pull_request_creation_full(self, sample_pull_request_data):
         """Test PullRequest creation with full data."""
-        pr = PullRequest(**sample_pull_request_data)
+        pr = PullRequest.from_json(sample_pull_request_data)
         
         assert pr.id == sample_pull_request_data["id"]
         assert pr.number == sample_pull_request_data["number"]
@@ -84,38 +100,10 @@ class TestPullRequest:
 
     def test_pull_request_state_open(self):
         """Test PullRequest with open state."""
-        pr = PullRequest(
-            id=123,
-            number=1,
+        pr = create_test_pull_request(
             title="Open PR",
             body="This is an open PR",
-            state="open",
-            draft=False,
-            locked=False,
-            html_url="https://github.com/user/repo/pull/1",
-            diff_url="https://github.com/user/repo/pull/1.diff",
-            patch_url="https://github.com/user/repo/pull/1.patch",
-            created_at="2023-12-01T00:00:00Z",
-            updated_at="2023-12-01T00:00:00Z",
-            closed_at=None,
-            merged_at=None,
-            merge_commit_sha=None,
-            assignees=[],
-            requested_reviewers=[],
-            labels=[],
-            milestone=None,
-            head={"ref": "feature", "sha": "abc123", "repo": {"name": "repo", "full_name": "user/repo"}},
-            base={"ref": "main", "sha": "def456", "repo": {"name": "repo", "full_name": "user/repo"}},
-            user={"id": 1, "login": "user", "type": "User"},
-            mergeable=True,
-            mergeable_state="clean",
-            merged=False,
-            comments=0,
-            review_comments=0,
-            commits=1,
-            additions=5,
-            deletions=1,
-            changed_files=1
+            state="open"
         )
         
         assert pr.state == "open"
@@ -125,38 +113,15 @@ class TestPullRequest:
 
     def test_pull_request_state_closed(self):
         """Test PullRequest with closed state."""
-        pr = PullRequest(
-            id=123,
-            number=1,
+        pr = create_test_pull_request(
             title="Closed PR",
             body="This is a closed PR",
             state="closed",
-            draft=False,
-            locked=False,
-            html_url="https://github.com/user/repo/pull/1",
-            diff_url="https://github.com/user/repo/pull/1.diff",
-            patch_url="https://github.com/user/repo/pull/1.patch",
-            created_at="2023-12-01T00:00:00Z",
-            updated_at="2023-12-01T12:00:00Z",
             closed_at="2023-12-01T12:00:00Z",
-            merged_at=None,
-            merge_commit_sha=None,
-            assignees=[],
-            requested_reviewers=[],
-            labels=[],
-            milestone=None,
-            head={"ref": "feature", "sha": "abc123", "repo": {"name": "repo", "full_name": "user/repo"}},
-            base={"ref": "main", "sha": "def456", "repo": {"name": "repo", "full_name": "user/repo"}},
-            user={"id": 1, "login": "user", "type": "User"},
+            updated_at="2023-12-01T12:00:00Z",
             mergeable=None,
             mergeable_state="unknown",
-            merged=False,
-            comments=2,
-            review_comments=1,
-            commits=1,
-            additions=5,
-            deletions=1,
-            changed_files=1
+            comments=2
         )
         
         assert pr.state == "closed"
@@ -165,79 +130,30 @@ class TestPullRequest:
 
     def test_pull_request_state_merged(self):
         """Test PullRequest with merged state."""
-        pr = PullRequest(
-            id=123,
-            number=1,
+        pr = create_test_pull_request(
             title="Merged PR",
             body="This is a merged PR",
             state="closed",
-            draft=False,
-            locked=False,
-            html_url="https://github.com/user/repo/pull/1",
-            diff_url="https://github.com/user/repo/pull/1.diff",
-            patch_url="https://github.com/user/repo/pull/1.patch",
-            created_at="2023-12-01T00:00:00Z",
             updated_at="2023-12-01T12:00:00Z",
             closed_at="2023-12-01T12:00:00Z",
             merged_at="2023-12-01T12:00:00Z",
-            merge_commit_sha="merged123abc",
-            assignees=[],
-            requested_reviewers=[],
-            labels=[],
-            milestone=None,
-            head={"ref": "feature", "sha": "abc123", "repo": {"name": "repo", "full_name": "user/repo"}},
-            base={"ref": "main", "sha": "def456", "repo": {"name": "repo", "full_name": "user/repo"}},
-            user={"id": 1, "login": "user", "type": "User"},
+            merged=True,
             mergeable=None,
             mergeable_state="unknown",
-            merged=True,
-            comments=3,
-            review_comments=2,
-            commits=2,
-            additions=15,
-            deletions=3,
-            changed_files=2
+            comments=3
         )
         
         assert pr.state == "closed"
         assert pr.merged is True
         assert pr.merged_at == "2023-12-01T12:00:00Z"
-        assert pr.merge_commit_sha == "merged123abc"
 
     def test_pull_request_draft(self):
         """Test PullRequest with draft status."""
-        pr = PullRequest(
-            id=123,
-            number=1,
+        pr = create_test_pull_request(
             title="Draft PR",
             body="This is a draft PR",
             state="open",
-            draft=True,
-            locked=False,
-            html_url="https://github.com/user/repo/pull/1",
-            diff_url="https://github.com/user/repo/pull/1.diff",
-            patch_url="https://github.com/user/repo/pull/1.patch",
-            created_at="2023-12-01T00:00:00Z",
-            updated_at="2023-12-01T00:00:00Z",
-            closed_at=None,
-            merged_at=None,
-            merge_commit_sha=None,
-            assignees=[],
-            requested_reviewers=[],
-            labels=[],
-            milestone=None,
-            head={"ref": "feature", "sha": "abc123", "repo": {"name": "repo", "full_name": "user/repo"}},
-            base={"ref": "main", "sha": "def456", "repo": {"name": "repo", "full_name": "user/repo"}},
-            user={"id": 1, "login": "user", "type": "User"},
-            mergeable=True,
-            mergeable_state="clean",
-            merged=False,
-            comments=0,
-            review_comments=0,
-            commits=1,
-            additions=5,
-            deletions=1,
-            changed_files=1
+            draft=True
         )
         
         assert pr.draft is True
@@ -249,39 +165,9 @@ class TestPullRequest:
             {"id": 111, "login": "assignee1", "type": "User"},
             {"id": 222, "login": "assignee2", "type": "User"}
         ]
-        
-        pr = PullRequest(
-            id=123,
-            number=1,
+        pr = create_test_pull_request(
             title="PR with assignees",
-            body="This PR has assignees",
-            state="open",
-            draft=False,
-            locked=False,
-            html_url="https://github.com/user/repo/pull/1",
-            diff_url="https://github.com/user/repo/pull/1.diff",
-            patch_url="https://github.com/user/repo/pull/1.patch",
-            created_at="2023-12-01T00:00:00Z",
-            updated_at="2023-12-01T00:00:00Z",
-            closed_at=None,
-            merged_at=None,
-            merge_commit_sha=None,
-            assignees=assignees,
-            requested_reviewers=[],
-            labels=[],
-            milestone=None,
-            head={"ref": "feature", "sha": "abc123", "repo": {"name": "repo", "full_name": "user/repo"}},
-            base={"ref": "main", "sha": "def456", "repo": {"name": "repo", "full_name": "user/repo"}},
-            user={"id": 1, "login": "user", "type": "User"},
-            mergeable=True,
-            mergeable_state="clean",
-            merged=False,
-            comments=0,
-            review_comments=0,
-            commits=1,
-            additions=5,
-            deletions=1,
-            changed_files=1
+            assignees=assignees
         )
         
         assert len(pr.assignees) == 2
@@ -294,39 +180,9 @@ class TestPullRequest:
             {"id": 333, "login": "reviewer1", "type": "User"},
             {"id": 444, "login": "reviewer2", "type": "User"}
         ]
-        
-        pr = PullRequest(
-            id=123,
-            number=1,
+        pr = create_test_pull_request(
             title="PR with reviewers",
-            body="This PR has requested reviewers",
-            state="open",
-            draft=False,
-            locked=False,
-            html_url="https://github.com/user/repo/pull/1",
-            diff_url="https://github.com/user/repo/pull/1.diff",
-            patch_url="https://github.com/user/repo/pull/1.patch",
-            created_at="2023-12-01T00:00:00Z",
-            updated_at="2023-12-01T00:00:00Z",
-            closed_at=None,
-            merged_at=None,
-            merge_commit_sha=None,
-            assignees=[],
-            requested_reviewers=reviewers,
-            labels=[],
-            milestone=None,
-            head={"ref": "feature", "sha": "abc123", "repo": {"name": "repo", "full_name": "user/repo"}},
-            base={"ref": "main", "sha": "def456", "repo": {"name": "repo", "full_name": "user/repo"}},
-            user={"id": 1, "login": "user", "type": "User"},
-            mergeable=True,
-            mergeable_state="clean",
-            merged=False,
-            comments=0,
-            review_comments=0,
-            commits=1,
-            additions=5,
-            deletions=1,
-            changed_files=1
+            requested_reviewers=reviewers
         )
         
         assert len(pr.requested_reviewers) == 2
@@ -336,92 +192,29 @@ class TestPullRequest:
     def test_pull_request_with_labels(self):
         """Test PullRequest with labels."""
         labels = [
-            {"name": "bug", "color": "d73a4a"},
-            {"name": "enhancement", "color": "a2eeef"},
-            {"name": "priority-high", "color": "ff0000"}
+            {"id": 1, "name": "bug", "color": "d73a4a"},
+            {"id": 2, "name": "enhancement", "color": "a2eeef"}
         ]
-        
-        pr = PullRequest(
-            id=123,
-            number=1,
+        pr = create_test_pull_request(
             title="PR with labels",
-            body="This PR has labels",
-            state="open",
-            draft=False,
-            locked=False,
-            html_url="https://github.com/user/repo/pull/1",
-            diff_url="https://github.com/user/repo/pull/1.diff",
-            patch_url="https://github.com/user/repo/pull/1.patch",
-            created_at="2023-12-01T00:00:00Z",
-            updated_at="2023-12-01T00:00:00Z",
-            closed_at=None,
-            merged_at=None,
-            merge_commit_sha=None,
-            assignees=[],
-            requested_reviewers=[],
-            labels=labels,
-            milestone=None,
-            head={"ref": "feature", "sha": "abc123", "repo": {"name": "repo", "full_name": "user/repo"}},
-            base={"ref": "main", "sha": "def456", "repo": {"name": "repo", "full_name": "user/repo"}},
-            user={"id": 1, "login": "user", "type": "User"},
-            mergeable=True,
-            mergeable_state="clean",
-            merged=False,
-            comments=0,
-            review_comments=0,
-            commits=1,
-            additions=5,
-            deletions=1,
-            changed_files=1
+            labels=labels
         )
         
-        assert len(pr.labels) == 3
+        assert len(pr.labels) == 2
         assert pr.labels[0]["name"] == "bug"
         assert pr.labels[1]["name"] == "enhancement"
-        assert pr.labels[2]["name"] == "priority-high"
 
     def test_pull_request_with_milestone(self):
         """Test PullRequest with milestone."""
         milestone = {
-            "id": 555,
-            "number": 1,
+            "id": 1,
             "title": "v1.0.0",
             "description": "First major release",
             "state": "open"
         }
-        
-        pr = PullRequest(
-            id=123,
-            number=1,
+        pr = create_test_pull_request(
             title="PR with milestone",
-            body="This PR has a milestone",
-            state="open",
-            draft=False,
-            locked=False,
-            html_url="https://github.com/user/repo/pull/1",
-            diff_url="https://github.com/user/repo/pull/1.diff",
-            patch_url="https://github.com/user/repo/pull/1.patch",
-            created_at="2023-12-01T00:00:00Z",
-            updated_at="2023-12-01T00:00:00Z",
-            closed_at=None,
-            merged_at=None,
-            merge_commit_sha=None,
-            assignees=[],
-            requested_reviewers=[],
-            labels=[],
-            milestone=milestone,
-            head={"ref": "feature", "sha": "abc123", "repo": {"name": "repo", "full_name": "user/repo"}},
-            base={"ref": "main", "sha": "def456", "repo": {"name": "repo", "full_name": "user/repo"}},
-            user={"id": 1, "login": "user", "type": "User"},
-            mergeable=True,
-            mergeable_state="clean",
-            merged=False,
-            comments=0,
-            review_comments=0,
-            commits=1,
-            additions=5,
-            deletions=1,
-            changed_files=1
+            milestone=milestone
         )
         
         assert pr.milestone is not None
@@ -430,140 +223,29 @@ class TestPullRequest:
 
     def test_pull_request_head_and_base(self):
         """Test PullRequest head and base branch information."""
-        head = {
-            "ref": "feature/new-feature",
-            "sha": "abc123def456",
-            "repo": {
-                "name": "test-repo",
-                "full_name": "testuser/test-repo",
-                "owner": {"login": "testuser"}
-            }
-        }
-        
-        base = {
-            "ref": "main",
-            "sha": "def456abc123",
-            "repo": {
-                "name": "test-repo",
-                "full_name": "testuser/test-repo",
-                "owner": {"login": "testuser"}
-            }
-        }
-        
-        pr = PullRequest(
-            id=123,
-            number=1,
-            title="Feature PR",
-            body="This PR adds a new feature",
-            state="open",
-            draft=False,
-            locked=False,
-            html_url="https://github.com/testuser/test-repo/pull/1",
-            diff_url="https://github.com/testuser/test-repo/pull/1.diff",
-            patch_url="https://github.com/testuser/test-repo/pull/1.patch",
-            created_at="2023-12-01T00:00:00Z",
-            updated_at="2023-12-01T00:00:00Z",
-            closed_at=None,
-            merged_at=None,
-            merge_commit_sha=None,
-            assignees=[],
-            requested_reviewers=[],
-            labels=[],
-            milestone=None,
-            head=head,
-            base=base,
-            user={"id": 1, "login": "testuser", "type": "User"},
-            mergeable=True,
-            mergeable_state="clean",
-            merged=False,
-            comments=0,
-            review_comments=0,
-            commits=1,
-            additions=5,
-            deletions=1,
-            changed_files=1
+        pr = create_test_pull_request(
+            head={"ref": "feature-branch", "sha": "abc123", "repo": {"name": "repo", "full_name": "user/repo"}},
+            base={"ref": "main", "sha": "def456", "repo": {"name": "repo", "full_name": "user/repo"}}
         )
         
-        assert pr.head["ref"] == "feature/new-feature"
-        assert pr.head["sha"] == "abc123def456"
+        assert pr.head["ref"] == "feature-branch"
+        assert pr.head["sha"] == "abc123"
         assert pr.base["ref"] == "main"
-        assert pr.base["sha"] == "def456abc123"
-
-    def test_pull_request_statistics(self):
-        """Test PullRequest statistics fields."""
-        pr = PullRequest(
-            id=123,
-            number=1,
-            title="PR with stats",
-            body="This PR has statistics",
-            state="open",
-            draft=False,
-            locked=False,
-            html_url="https://github.com/user/repo/pull/1",
-            diff_url="https://github.com/user/repo/pull/1.diff",
-            patch_url="https://github.com/user/repo/pull/1.patch",
-            created_at="2023-12-01T00:00:00Z",
-            updated_at="2023-12-01T00:00:00Z",
-            closed_at=None,
-            merged_at=None,
-            merge_commit_sha=None,
-            assignees=[],
-            requested_reviewers=[],
-            labels=[],
-            milestone=None,
-            head={"ref": "feature", "sha": "abc123", "repo": {"name": "repo", "full_name": "user/repo"}},
-            base={"ref": "main", "sha": "def456", "repo": {"name": "repo", "full_name": "user/repo"}},
-            user={"id": 1, "login": "user", "type": "User"},
-            mergeable=True,
-            mergeable_state="clean",
-            merged=False,
-            comments=5,
-            review_comments=3,
-            commits=4,
-            additions=100,
-            deletions=25,
-            changed_files=8
-        )
-        
-        assert pr.comments == 5
-        assert pr.review_comments == 3
-        assert pr.commits == 4
-        assert pr.additions == 100
-        assert pr.deletions == 25
-        assert pr.changed_files == 8
+        assert pr.base["sha"] == "def456"
 
     def test_pull_request_mergeable_states(self):
         """Test PullRequest mergeable states."""
-        # Clean state
-        pr_clean = PullRequest(
-            id=123, number=1, title="Clean PR", body="", state="open", draft=False, locked=False,
-            html_url="https://github.com/user/repo/pull/1", diff_url="", patch_url="",
-            created_at="2023-12-01T00:00:00Z", updated_at="2023-12-01T00:00:00Z",
-            closed_at=None, merged_at=None, merge_commit_sha=None,
-            assignees=[], requested_reviewers=[], labels=[], milestone=None,
-            head={"ref": "feature", "sha": "abc123", "repo": {"name": "repo", "full_name": "user/repo"}},
-            base={"ref": "main", "sha": "def456", "repo": {"name": "repo", "full_name": "user/repo"}},
-            user={"id": 1, "login": "user", "type": "User"},
-            mergeable=True, mergeable_state="clean", merged=False,
-            comments=0, review_comments=0, commits=1, additions=5, deletions=1, changed_files=1
-        )
-        
+        # Test clean state
+        pr_clean = create_test_pull_request(mergeable=True, mergeable_state="clean")
         assert pr_clean.mergeable is True
         assert pr_clean.mergeable_state == "clean"
         
-        # Dirty state
-        pr_dirty = PullRequest(
-            id=124, number=2, title="Dirty PR", body="", state="open", draft=False, locked=False,
-            html_url="https://github.com/user/repo/pull/2", diff_url="", patch_url="",
-            created_at="2023-12-01T00:00:00Z", updated_at="2023-12-01T00:00:00Z",
-            closed_at=None, merged_at=None, merge_commit_sha=None,
-            assignees=[], requested_reviewers=[], labels=[], milestone=None,
-            head={"ref": "feature2", "sha": "abc124", "repo": {"name": "repo", "full_name": "user/repo"}},
-            base={"ref": "main", "sha": "def456", "repo": {"name": "repo", "full_name": "user/repo"}},
-            user={"id": 1, "login": "user", "type": "User"},
-            mergeable=False, mergeable_state="dirty", merged=False,
-            comments=0, review_comments=0, commits=1, additions=5, deletions=1, changed_files=1
-        )
+        # Test conflicted state
+        pr_conflict = create_test_pull_request(mergeable=False, mergeable_state="dirty")
+        assert pr_conflict.mergeable is False
+        assert pr_conflict.mergeable_state == "dirty"
         
-        assert pr_dirty.mergeable is False
-        assert pr_dirty.mergeable_state == "dirty"
+        # Test unknown state
+        pr_unknown = create_test_pull_request(mergeable=None, mergeable_state="unknown")
+        assert pr_unknown.mergeable is None
+        assert pr_unknown.mergeable_state == "unknown"

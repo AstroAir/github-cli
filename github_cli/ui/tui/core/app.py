@@ -1,6 +1,7 @@
 ﻿from __future__ import annotations
 
 import asyncio
+from pathlib import Path
 from typing import ClassVar
 
 from textual import on, work
@@ -97,7 +98,7 @@ class GitHubTUIApp(App[None]):
     TITLE = "GitHub CLI - Terminal User Interface"
     SUB_TITLE = "Advanced GitHub management in your terminal"
 
-    CSS_PATH = "github_tui.tcss"  # External CSS file for styling
+    CSS_PATH = str(Path(__file__).parent.parent / "github_tui.tcss")  # External CSS file for styling
 
     BINDINGS: ClassVar[list[BindingType]] = [
         Binding("ctrl+c,q", "quit", "Quit", priority=True),

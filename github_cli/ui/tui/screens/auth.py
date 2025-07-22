@@ -18,8 +18,8 @@ from textual.widgets import Button, Static
 from github_cli.auth.authenticator import Authenticator
 from github_cli.auth.common import AuthResult, AuthenticationError
 from github_cli.ui.auth.responsive_layout import ResponsiveAuthLayout
-from github_cli.ui.auth.error_handler import AuthErrorHandler
-from github_cli.ui.auth.progress_tracker import AuthProgressTracker, AuthStep
+from github_cli.auth.error_handler import AuthErrorHandler
+from github_cli.auth.progress_tracker import AuthProgressTracker, AuthStep
 from github_cli.utils.config import Config
 from github_cli.utils.performance import logger
 from github_cli.ui.tui.core.responsive import ResponsiveLayoutManager

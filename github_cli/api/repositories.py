@@ -35,7 +35,7 @@ class RepositoryAPI:
         }
 
         response = await self.client.get(endpoint, params=params)
-        return [Repository.from_json(repo_data) for repo_data in response]
+        return [Repository.from_json(repo_data) for repo_data in response.data]
 
     async def list_org_repos(self, org: str,
                              type: str = "all",
@@ -52,7 +52,7 @@ class RepositoryAPI:
         }
 
         response = await self.client.get(endpoint, params=params)
-        return [Repository.from_json(repo_data) for repo_data in response]
+        return [Repository.from_json(repo_data) for repo_data in response.data]
 
     async def get_repo(self, repo_name: str) -> Repository:
         """Get a repository by name (format: owner/repo)"""
@@ -64,7 +64,7 @@ class RepositoryAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return Repository.from_json(response)
+            return Repository.from_json(response.data)
         except NotFoundError:
             raise GitHubCLIError(f"Repository not found: {repo_name}")
 
@@ -87,13 +87,13 @@ class RepositoryAPI:
             data["description"] = description
 
         response = await self.client.post(endpoint, data=data)
-        return Repository.from_json(response)
+        return Repository.from_json(response.data)
 
     async def update_repo(self, repo_name: str, **kwargs) -> Repository:
         """Update a repository"""
         endpoint = f"repos/{repo_name}"
         response = await self.client.patch(endpoint, data=kwargs)
-        return Repository.from_json(response)
+        return Repository.from_json(response.data)
 
     async def delete_repo(self, repo_name: str) -> bool:
         """Delete a repository"""
@@ -107,7 +107,7 @@ class RepositoryAPI:
         headers = {"Accept": "application/vnd.github.mercy-preview+json"}
 
         response = await self.client.get(endpoint, params={"headers": headers})
-        return response.get("names", [])
+        return response.data.get("names", [])
 
     async def add_topics(self, repo_name: str, topics: List[str]) -> List[str]:
         """Add topics to a repository"""
@@ -116,7 +116,7 @@ class RepositoryAPI:
 
         # First, get current topics
         response = await self.client.get(endpoint, params={"headers": headers})
-        current_topics = set(response.get("names", []))
+        current_topics = set(response.data.get("names", []))
 
         # Add new topics
         new_topics = list(current_topics.union(set(topics)))
@@ -124,7 +124,7 @@ class RepositoryAPI:
         # Update topics
         data = {"names": new_topics}
         response = await self.client.put(endpoint, data, headers=headers)
-        return response.get("names", [])
+        return response.data.get("names", [])
 
     async def get_repo_stats(self, repo_name: str) -> Dict[str, Any]:
         """Get repository statistics"""

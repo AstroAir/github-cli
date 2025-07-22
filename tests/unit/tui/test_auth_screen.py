@@ -8,12 +8,11 @@ user interactions, and authentication flow integration.
 import pytest
 import asyncio
 from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from textual.testing import TUITestCase
 
-from github_cli.ui.tui.screens.auth import AuthScreen
+# Skip TUI tests if textual is not available
+pytest.importorskip("textual")
+
 from github_cli.auth.authenticator import Authenticator
-from github_cli.auth.common import AuthResult, AuthenticationError
-from github_cli.ui.tui.core.responsive import ResponsiveLayoutManager
 from github_cli.utils.config import Config
 
 

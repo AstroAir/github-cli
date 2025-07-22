@@ -193,7 +193,9 @@ def sample_repository_data():
             "login": "testuser",
             "type": "User",
             "site_admin": False
-        }
+        },
+        # Additional field required by Repository model
+        "url": "https://api.github.com/repos/testuser/test-repo"
     }
 
 
@@ -214,8 +216,18 @@ def sample_user_data():
         "blog": "https://testuser.dev",
         "twitter_username": "testuser",
         "avatar_url": "https://avatars.githubusercontent.com/u/987654321",
+        "gravatar_id": "",
         "html_url": "https://github.com/testuser",
         "url": "https://api.github.com/users/testuser",
+        "followers_url": "https://api.github.com/users/testuser/followers",
+        "following_url": "https://api.github.com/users/testuser/following{/other_user}",
+        "gists_url": "https://api.github.com/users/testuser/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/testuser/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/testuser/subscriptions",
+        "organizations_url": "https://api.github.com/users/testuser/orgs",
+        "repos_url": "https://api.github.com/users/testuser/repos",
+        "events_url": "https://api.github.com/users/testuser/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/testuser/received_events",
         "public_repos": 10,
         "public_gists": 5,
         "followers": 100,
@@ -271,7 +283,241 @@ def sample_pull_request_data():
         "commits": 3,
         "additions": 50,
         "deletions": 10,
-        "changed_files": 5
+        "changed_files": 5,
+        # Additional fields required by Issue model
+        "author_association": "OWNER",
+        "url": "https://api.github.com/repos/testuser/test-repo/pulls/42",
+        "repository_url": "https://api.github.com/repos/testuser/test-repo"
+    }
+
+
+@pytest.fixture
+def sample_issue_data():
+    """Sample issue data for testing."""
+    return {
+        "id": 444555666,
+        "number": 42,
+        "title": "Test Issue",
+        "body": "This is a test issue for the GitHub CLI.",
+        "state": "open",
+        "locked": False,
+        "html_url": "https://github.com/testuser/test-repo/issues/42",
+        "created_at": "2023-11-01T00:00:00Z",
+        "updated_at": "2023-12-01T00:00:00Z",
+        "closed_at": None,
+        "assignees": [
+            {
+                "id": 987654321,
+                "login": "testuser",
+                "type": "User"
+            }
+        ],
+        "labels": [
+            {"name": "bug", "color": "d73a4a"},
+            {"name": "enhancement", "color": "a2eeef"}
+        ],
+        "milestone": {
+            "id": 123456,
+            "number": 1,
+            "title": "v1.0.0",
+            "state": "open"
+        },
+        "user": {
+            "id": 987654321,
+            "login": "testuser",
+            "type": "User"
+        },
+        "comments": 3,
+        "author_association": "OWNER",
+        "url": "https://api.github.com/repos/testuser/test-repo/issues/42",
+        "repository_url": "https://api.github.com/repos/testuser/test-repo"
+    }
+
+
+@pytest.fixture
+def sample_gist_data():
+    """Sample gist data for testing."""
+    return {
+        "id": "abc123def456789",
+        "description": "Test gist for GitHub CLI",
+        "public": True,
+        "html_url": "https://gist.github.com/abc123def456789",
+        "git_pull_url": "https://gist.github.com/abc123def456789.git",
+        "git_push_url": "https://gist.github.com/abc123def456789.git",
+        "created_at": "2023-11-01T00:00:00Z",
+        "updated_at": "2023-12-01T00:00:00Z",
+        "comments": 2,
+        "comments_url": "https://api.github.com/gists/abc123def456789/comments",
+        "owner": {
+            "id": 987654321,
+            "login": "testuser",
+            "type": "User",
+            "avatar_url": "https://github.com/images/error/testuser_happy.gif",
+            "html_url": "https://github.com/testuser"
+        },
+        "files": {
+            "test.py": {
+                "filename": "test.py",
+                "type": "application/x-python",
+                "language": "Python",
+                "raw_url": "https://gist.githubusercontent.com/testuser/abc123def456789/raw/test.py",
+                "size": 25,
+                "content": "print('Hello, World!')"
+            },
+            "README.md": {
+                "filename": "README.md",
+                "type": "text/markdown",
+                "language": "Markdown",
+                "raw_url": "https://gist.githubusercontent.com/testuser/abc123def456789/raw/README.md",
+                "size": 45,
+                "content": "# Test Gist\n\nThis is a test gist for the GitHub CLI."
+            }
+        },
+        "truncated": False
+    }
+
+
+@pytest.fixture
+def sample_workflow_data():
+    """Sample workflow data for testing."""
+    return {
+        "id": 123456,
+        "node_id": "W_kwDOABCDEF4ABCDEF",
+        "name": "CI",
+        "path": ".github/workflows/ci.yml",
+        "state": "active",
+        "created_at": "2023-11-01T00:00:00Z",
+        "updated_at": "2023-12-01T00:00:00Z",
+        "url": "https://api.github.com/repos/testuser/test-repo/actions/workflows/123456",
+        "html_url": "https://github.com/testuser/test-repo/actions/workflows/ci.yml",
+        "badge_url": "https://github.com/testuser/test-repo/workflows/CI/badge.svg"
+    }
+
+
+@pytest.fixture
+def sample_workflow_run_data():
+    """Sample workflow run data for testing."""
+    return {
+        "id": 789012,
+        "name": "CI",
+        "node_id": "WFR_kwDOABCDEF4ABCDEF",
+        "head_branch": "main",
+        "head_sha": "abc123def456",
+        "path": ".github/workflows/ci.yml",
+        "display_title": "Update README",
+        "run_number": 42,
+        "event": "push",
+        "status": "completed",
+        "conclusion": "success",
+        "workflow_id": 123456,
+        "check_suite_id": 456789,
+        "check_suite_node_id": "CS_kwDOABCDEF4ABCDEF",
+        "url": "https://api.github.com/repos/testuser/test-repo/actions/runs/789012",
+        "html_url": "https://github.com/testuser/test-repo/actions/runs/789012",
+        "created_at": "2023-12-01T00:00:00Z",
+        "updated_at": "2023-12-01T00:05:00Z",
+        "run_started_at": "2023-12-01T00:00:30Z",
+        "jobs_url": "https://api.github.com/repos/testuser/test-repo/actions/runs/789012/jobs",
+        "logs_url": "https://api.github.com/repos/testuser/test-repo/actions/runs/789012/logs",
+        "check_suite_url": "https://api.github.com/repos/testuser/test-repo/check-suites/456789",
+        "artifacts_url": "https://api.github.com/repos/testuser/test-repo/actions/runs/789012/artifacts",
+        "cancel_url": "https://api.github.com/repos/testuser/test-repo/actions/runs/789012/cancel",
+        "rerun_url": "https://api.github.com/repos/testuser/test-repo/actions/runs/789012/rerun",
+        "previous_attempt_url": None,
+        "workflow_url": "https://api.github.com/repos/testuser/test-repo/actions/workflows/123456",
+        "head_commit": {
+            "id": "abc123def456",
+            "tree_id": "def456abc123",
+            "message": "Update README",
+            "timestamp": "2023-12-01T00:00:00Z",
+            "author": {
+                "name": "Test User",
+                "email": "test@example.com"
+            },
+            "committer": {
+                "name": "Test User",
+                "email": "test@example.com"
+            }
+        },
+        "repository": {
+            "id": 111222333,
+            "node_id": "R_kwDOABCDEF",
+            "name": "test-repo",
+            "full_name": "testuser/test-repo",
+            "private": False,
+            "owner": {
+                "login": "testuser",
+                "id": 987654321,
+                "type": "User"
+            }
+        },
+        "head_repository": {
+            "id": 111222333,
+            "node_id": "R_kwDOABCDEF",
+            "name": "test-repo",
+            "full_name": "testuser/test-repo",
+            "private": False,
+            "owner": {
+                "login": "testuser",
+                "id": 987654321,
+                "type": "User"
+            }
+        }
+    }
+
+
+@pytest.fixture
+def sample_workflow_job_data():
+    """Sample workflow job data for testing."""
+    return {
+        "id": 345678,
+        "run_id": 789012,
+        "workflow_name": "CI",
+        "head_branch": "main",
+        "run_url": "https://api.github.com/repos/testuser/test-repo/actions/runs/789012",
+        "run_attempt": 1,
+        "node_id": "J_kwDOABCDEF4ABCDEF",
+        "head_sha": "abc123def456",
+        "url": "https://api.github.com/repos/testuser/test-repo/actions/jobs/345678",
+        "html_url": "https://github.com/testuser/test-repo/actions/runs/789012/job/345678",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2023-12-01T00:00:30Z",
+        "started_at": "2023-12-01T00:01:00Z",
+        "completed_at": "2023-12-01T00:04:30Z",
+        "name": "test",
+        "steps": [
+            {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2023-12-01T00:01:00Z",
+                "completed_at": "2023-12-01T00:01:30Z"
+            },
+            {
+                "name": "Run tests",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2023-12-01T00:01:30Z",
+                "completed_at": "2023-12-01T00:04:00Z"
+            },
+            {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2023-12-01T00:04:00Z",
+                "completed_at": "2023-12-01T00:04:30Z"
+            }
+        ],
+        "check_run_url": "https://api.github.com/repos/testuser/test-repo/check-runs/345678",
+        "labels": ["ubuntu-latest"],
+        "runner_id": 1,
+        "runner_name": "GitHub Actions 1",
+        "runner_group_id": 1,
+        "runner_group_name": "GitHub Actions"
     }
 
 

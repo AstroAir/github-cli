@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch, mock_open
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
-from github_cli.auth.token_manager import TokenManager, TokenData
+from github_cli.auth.token_manager import TokenManager
 from github_cli.utils.config import Config
 from github_cli.utils.exceptions import AuthenticationError
 

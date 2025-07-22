@@ -1,5 +1,7 @@
 """
 Unit tests for git-related terminal UI methods.
+
+Tests the git display methods in TerminalUI.
 """
 
 import pytest
@@ -7,7 +9,6 @@ from unittest.mock import Mock, patch
 from typing import Dict, Any, List
 
 from github_cli.ui.terminal import TerminalUI
-from github_cli.git.commands import _add_git_methods_to_terminal
 
 
 @pytest.mark.unit
@@ -16,13 +17,11 @@ class TestGitTerminalMethods:
 
     def setup_method(self):
         """Set up test fixtures."""
-        # Ensure git methods are added to TerminalUI
-        _add_git_methods_to_terminal()
-        
         # Create a mock TerminalUI instance
         self.mock_client = Mock()
         self.terminal = TerminalUI(self.mock_client)
-        self.terminal.console = Mock()
+        # Mock the underlying terminal to avoid actual UI calls
+        self.terminal._terminal = Mock()
 
     def test_display_git_branches_with_branches(self):
         """Test displaying git branches when branches exist."""
