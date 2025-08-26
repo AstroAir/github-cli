@@ -25,7 +25,7 @@ from .accessibility import (
 
 __all__ = [
     'VisualFeedbackManager',
-    'FeedbackState', 
+    'FeedbackState',
     'VisualFeedbackConfig',
     'AnimatedProgressIndicator',
     'EmphasizedDisplay',
@@ -36,7 +36,7 @@ __all__ = [
     'AuthView',
     'BaseAuthView',
     'CompactAuthView',
-    'StandardAuthView', 
+    'StandardAuthView',
     'ExpandedAuthView',
     'AccessibilityManager',
     'AccessibilityLevel',

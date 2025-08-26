@@ -26,7 +26,7 @@ class TestTerminalUI:
         # Mock console
         self.mock_console = Mock(spec=Console)
         
-        with patch('github_cli.ui.terminal.Console', return_value=self.mock_console):
+        with patch('github_cli.ui.terminal.terminal.Console', return_value=self.mock_console):
             self.terminal_ui = TerminalUI(self.mock_client)
 
     def test_terminal_ui_initialization(self):

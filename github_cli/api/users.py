@@ -31,7 +31,7 @@ async def get_user(
     else:
         response = await client.get("/user")
 
-    return User.from_json(response)
+    return User.from_json(response.data)
 
 
 async def get_authenticated_user(client: GitHubClient) -> User:
@@ -396,7 +396,7 @@ async def update_user_profile(
         data["location"] = location
 
     if hireable is not None:
-        data["hireable"] = hireable
+        data["hireable"] = str(hireable).lower()
 
     if bio is not None:
         data["bio"] = bio
@@ -409,11 +409,11 @@ async def update_user_profile(
         return await get_authenticated_user(client)
 
     response = await client.patch("/user", data=data)
-    return User.from_json(response)
+    return User.from_json(response.data)
 
 
 # Handler function for CLI commands
-async def handle_user_command(args: Dict[str, Any], client: GitHubClient, ui) -> None:
+async def handle_user_command(args: Dict[str, Any], client: GitHubClient, ui: Any) -> None:
     """Handle user commands from the CLI"""
     action = args.get("user_action")
 
@@ -618,15 +618,15 @@ async def handle_user_command(args: Dict[str, Any], client: GitHubClient, ui) ->
 
             if target:
                 # Check if username follows target
-                following = await check_following(client, username, target)
-                if following:
+                is_following = await check_following(client, username, target)
+                if is_following:
                     ui.display_info(f"{username} follows {target}")
                 else:
                     ui.display_info(f"{username} does not follow {target}")
             else:
                 # Check if authenticated user follows username
-                following = await check_following(client, username)
-                if following:
+                is_following = await check_following(client, username)
+                if is_following:
                     ui.display_info(f"You follow {username}")
                 else:
                     ui.display_info(f"You do not follow {username}")

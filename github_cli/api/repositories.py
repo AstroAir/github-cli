@@ -70,7 +70,7 @@ class RepositoryAPI:
 
     async def create_repo(self, name: str, description: Optional[str] = None,
                           private: bool = False, org: Optional[str] = None,
-                          **kwargs) -> Repository:
+                          **kwargs: Any) -> Repository:
         """Create a new repository"""
         if org:
             endpoint = f"orgs/{org}/repos"
@@ -89,7 +89,7 @@ class RepositoryAPI:
         response = await self.client.post(endpoint, data=data)
         return Repository.from_json(response.data)
 
-    async def update_repo(self, repo_name: str, **kwargs) -> Repository:
+    async def update_repo(self, repo_name: str, **kwargs: Any) -> Repository:
         """Update a repository"""
         endpoint = f"repos/{repo_name}"
         response = await self.client.patch(endpoint, data=kwargs)
@@ -107,7 +107,7 @@ class RepositoryAPI:
         headers = {"Accept": "application/vnd.github.mercy-preview+json"}
 
         response = await self.client.get(endpoint, params={"headers": headers})
-        return response.data.get("names", [])
+        return response.data.get("names", [])  # type: ignore[no-any-return]
 
     async def add_topics(self, repo_name: str, topics: List[str]) -> List[str]:
         """Add topics to a repository"""
@@ -124,7 +124,7 @@ class RepositoryAPI:
         # Update topics
         data = {"names": new_topics}
         response = await self.client.put(endpoint, data, headers=headers)
-        return response.data.get("names", [])
+        return response.data.get("names", [])  # type: ignore[no-any-return]
 
     async def get_repo_stats(self, repo_name: str) -> Dict[str, Any]:
         """Get repository statistics"""
@@ -132,25 +132,29 @@ class RepositoryAPI:
 
         # Get contributors stats
         try:
-            stats["contributors"] = await self.client.get(f"repos/{repo_name}/stats/contributors")
+            response = await self.client.get(f"repos/{repo_name}/stats/contributors")
+            stats["contributors"] = response.data
         except GitHubCLIError:
             stats["contributors"] = []
 
         # Get commit activity
         try:
-            stats["commit_activity"] = await self.client.get(f"repos/{repo_name}/stats/commit_activity")
+            response = await self.client.get(f"repos/{repo_name}/stats/commit_activity")
+            stats["commit_activity"] = response.data
         except GitHubCLIError:
             stats["commit_activity"] = []
 
         # Get code frequency
         try:
-            stats["code_frequency"] = await self.client.get(f"repos/{repo_name}/stats/code_frequency")
+            response = await self.client.get(f"repos/{repo_name}/stats/code_frequency")
+            stats["code_frequency"] = response.data
         except GitHubCLIError:
             stats["code_frequency"] = []
 
         # Get participation stats
         try:
-            stats["participation"] = await self.client.get(f"repos/{repo_name}/stats/participation")
+            response = await self.client.get(f"repos/{repo_name}/stats/participation")
+            stats["participation"] = response.data
         except GitHubCLIError:
             stats["participation"] = {"all": [], "owner": []}
 

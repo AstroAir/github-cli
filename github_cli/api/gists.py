@@ -3,7 +3,7 @@ GitHub Gists API module
 """
 
 import asyncio
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Union, cast
 from datetime import datetime
 
 from github_cli.api.client import GitHubClient
@@ -29,7 +29,7 @@ class GistsAPI:
 
         try:
             response = await self.client.get(endpoint, params=params)
-            return response
+            return cast(List[Dict[str, Any]], response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to list gists: {str(e)}")
 
@@ -39,7 +39,7 @@ class GistsAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return response
+            return cast(Dict[str, Any], response.data)
         except NotFoundError:
             raise GitHubCLIError(f"Gist {gist_id} not found")
         except GitHubCLIError as e:
@@ -61,7 +61,7 @@ class GistsAPI:
 
         try:
             response = await self.client.post(endpoint, data=data)
-            return response
+            return cast(Dict[str, Any], response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to create gist: {str(e)}")
 
@@ -79,7 +79,7 @@ class GistsAPI:
 
         try:
             response = await self.client.patch(endpoint, data=data)
-            return response
+            return cast(Dict[str, Any], response.data)
         except NotFoundError:
             raise GitHubCLIError(f"Gist {gist_id} not found")
         except GitHubCLIError as e:
@@ -101,7 +101,7 @@ class GistsAPI:
         endpoint = f"gists/{gist_id}/star"
 
         try:
-            await self.client.put(endpoint)
+            await self.client.put(endpoint, data={})
         except NotFoundError:
             raise GitHubCLIError(f"Gist {gist_id} not found")
         except GitHubCLIError as e:
@@ -143,7 +143,7 @@ class GistCommands:
         """List gists command"""
         try:
             gists = await self.api.list_gists(username)
-            self.terminal.display_gists(gists)
+            self.terminal.display_gists(gists)  # type: ignore[attr-defined]
         except GitHubCLIError as e:
             self.terminal.display_error(f"Failed to list gists: {e}")
 
@@ -151,7 +151,8 @@ class GistCommands:
         """View gist command"""
         try:
             gist = await self.api.get_gist(gist_id)
-            self.terminal.display_gist_detail(gist)
+            self.terminal.display_gist_detail(
+                gist)  # type: ignore[attr-defined]
         except GitHubCLIError as e:
             self.terminal.display_error(f"Failed to view gist: {e}")
 
@@ -186,14 +187,14 @@ class GistCommands:
 
 
 # Add display methods to TerminalUI if they don't exist
-def _add_gist_methods_to_terminal():
+def _add_gist_methods_to_terminal() -> None:
     """Add gist display methods to TerminalUI class"""
     from rich.table import Table
     from rich.panel import Panel
     from rich.syntax import Syntax
     from rich import box
 
-    def display_gists(self, gists: List[Dict[str, Any]]) -> None:
+    def display_gists(self: Any, gists: List[Dict[str, Any]]) -> None:
         """Display a list of gists"""
         if not gists:
             self.display_info("No gists found")
@@ -222,7 +223,7 @@ def _add_gist_methods_to_terminal():
 
         self.console.print(table)
 
-    def display_gist_detail(self, gist: Dict[str, Any]) -> None:
+    def display_gist_detail(self: Any, gist: Dict[str, Any]) -> None:
         """Display detailed gist information"""
         # Gist header
         header = f"Gist: {gist['id']}"
@@ -252,7 +253,8 @@ def _add_gist_methods_to_terminal():
             self.console.print(Panel(syntax, title=filename, box=box.ROUNDED))
 
     # Add methods to TerminalUI class
-    TerminalUI.display_gists = display_gists
+    TerminalUI.display_gists = display_gists  # type: ignore[attr-defined]
+    # type: ignore[attr-defined]
     TerminalUI.display_gist_detail = display_gist_detail
 
 

@@ -64,12 +64,12 @@ async def search_repositories(
 
     # Extract metadata
     metadata = {
-        "total_count": response.get("total_count", 0),
-        "incomplete_results": response.get("incomplete_results", False)
+        "total_count": response.data.get("total_count", 0),
+        "incomplete_results": response.data.get("incomplete_results", False)
     }
 
     # Process results
-    items = response.get("items", [])
+    items = response.data.get("items", [])
 
     # Apply max_results limit if specified
     if max_results:
@@ -134,12 +134,12 @@ async def search_code(
 
     # Extract metadata
     metadata = {
-        "total_count": response.get("total_count", 0),
-        "incomplete_results": response.get("incomplete_results", False)
+        "total_count": response.data.get("total_count", 0),
+        "incomplete_results": response.data.get("incomplete_results", False)
     }
 
     # Process results
-    items = response.get("items", [])
+    items = response.data.get("items", [])
 
     # Apply max_results limit if specified
     if max_results:
@@ -200,12 +200,12 @@ async def search_users(
 
     # Extract metadata
     metadata = {
-        "total_count": response.get("total_count", 0),
-        "incomplete_results": response.get("incomplete_results", False)
+        "total_count": response.data.get("total_count", 0),
+        "incomplete_results": response.data.get("incomplete_results", False)
     }
 
     # Process results
-    items = response.get("items", [])
+    items = response.data.get("items", [])
 
     # Apply max_results limit if specified
     if max_results:
@@ -269,12 +269,12 @@ async def search_issues(
 
     # Extract metadata
     metadata = {
-        "total_count": response.get("total_count", 0),
-        "incomplete_results": response.get("incomplete_results", False)
+        "total_count": response.data.get("total_count", 0),
+        "incomplete_results": response.data.get("incomplete_results", False)
     }
 
     # Process results
-    items = response.get("items", [])
+    items = response.data.get("items", [])
 
     # Apply max_results limit if specified
     if max_results:
@@ -336,12 +336,12 @@ async def search_commits(
 
     # Extract metadata
     metadata = {
-        "total_count": response.get("total_count", 0),
-        "incomplete_results": response.get("incomplete_results", False)
+        "total_count": response.data.get("total_count", 0),
+        "incomplete_results": response.data.get("incomplete_results", False)
     }
 
     # Process results
-    items = response.get("items", [])
+    items = response.data.get("items", [])
 
     # Apply max_results limit if specified
     if max_results:
@@ -387,12 +387,12 @@ async def search_topics(
 
     # Extract metadata
     metadata = {
-        "total_count": response.get("total_count", 0),
-        "incomplete_results": response.get("incomplete_results", False)
+        "total_count": response.data.get("total_count", 0),
+        "incomplete_results": response.data.get("incomplete_results", False)
     }
 
     # Process results
-    items = response.get("items", [])
+    items = response.data.get("items", [])
 
     # Apply max_results limit if specified
     if max_results:
@@ -402,7 +402,7 @@ async def search_topics(
 
 
 # Handler function for CLI commands
-async def handle_search_command(args: Dict[str, Any], client: GitHubClient, ui) -> None:
+async def handle_search_command(args: Dict[str, Any], client: GitHubClient, ui: Any) -> None:
     """Handle search commands from the CLI"""
     action = args.get("search_action")
     query = args.get("query", "")
@@ -446,7 +446,7 @@ async def handle_search_command(args: Dict[str, Any], client: GitHubClient, ui) 
 
         elif action == "code":
             # Search for code
-            results, metadata = await search_code(
+            code_results, metadata = await search_code(
                 client,
                 query,
                 max_results=limit
@@ -455,7 +455,7 @@ async def handle_search_command(args: Dict[str, Any], client: GitHubClient, ui) 
             ui.display_heading(f"Code Search: {query}")
             ui.display_info(f"Found {metadata['total_count']} code results")
 
-            for idx, item in enumerate(results):
+            for idx, item in enumerate(code_results):
                 repo = item.get("repository", {}).get("full_name", "Unknown")
                 path = item.get("path", "")
 
@@ -473,7 +473,7 @@ async def handle_search_command(args: Dict[str, Any], client: GitHubClient, ui) 
 
         elif action == "users":
             # Search for users
-            results, metadata = await search_users(
+            user_results, metadata = await search_users(
                 client,
                 query,
                 sort=sort,
@@ -490,7 +490,7 @@ async def handle_search_command(args: Dict[str, Any], client: GitHubClient, ui) 
                 title=f"Results ({len(results)} of {metadata['total_count']})"
             )
 
-            for user in results:
+            for user in user_results:
                 table.add_row(
                     user.login,
                     user.type,
@@ -501,7 +501,7 @@ async def handle_search_command(args: Dict[str, Any], client: GitHubClient, ui) 
 
         elif action == "issues":
             # Search for issues
-            results, metadata = await search_issues(
+            issue_results, metadata = await search_issues(
                 client,
                 query,
                 sort=sort,
@@ -519,7 +519,7 @@ async def handle_search_command(args: Dict[str, Any], client: GitHubClient, ui) 
                 title=f"Results ({len(results)} of {metadata['total_count']})"
             )
 
-            for item in results:
+            for item in issue_results:
                 repo = item.get("repository_url", "").split("/repos/")[-1]
                 table.add_row(
                     repo,
@@ -532,7 +532,7 @@ async def handle_search_command(args: Dict[str, Any], client: GitHubClient, ui) 
 
         elif action == "commits":
             # Search for commits
-            results, metadata = await search_commits(
+            commit_results, metadata = await search_commits(
                 client,
                 query,
                 sort=sort,
@@ -542,7 +542,7 @@ async def handle_search_command(args: Dict[str, Any], client: GitHubClient, ui) 
             ui.display_heading(f"Commits Search: {query}")
             ui.display_info(f"Found {metadata['total_count']} commits")
 
-            for idx, item in enumerate(results):
+            for idx, item in enumerate(commit_results):
                 commit = item.get("commit", {})
                 repo = item.get("repository", {}).get("full_name", "Unknown")
 
@@ -559,7 +559,7 @@ async def handle_search_command(args: Dict[str, Any], client: GitHubClient, ui) 
 
         elif action == "topics":
             # Search for topics
-            results, metadata = await search_topics(
+            topic_results, metadata = await search_topics(
                 client,
                 query,
                 max_results=limit
@@ -575,7 +575,7 @@ async def handle_search_command(args: Dict[str, Any], client: GitHubClient, ui) 
                 title=f"Results ({len(results)} of {metadata['total_count']})"
             )
 
-            for item in results:
+            for item in topic_results:
                 table.add_row(
                     item.get("name", ""),
                     item.get("description", "") or "",

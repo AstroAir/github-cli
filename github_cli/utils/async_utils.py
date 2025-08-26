@@ -4,7 +4,7 @@ Async utilities for GitHub CLI with enhanced concurrency and performance optimiz
 
 import asyncio
 import time
-from typing import Any, Awaitable, Callable, Dict, List, Optional, TypeVar, Union
+from typing import Any, Awaitable, Callable, Dict, List, Optional, TypeVar, Union, AsyncGenerator
 from dataclasses import dataclass, field
 from contextlib import asynccontextmanager
 from loguru import logger
@@ -215,7 +215,7 @@ class RateLimitedExecutor:
     def __init__(self, requests_per_second: float = 10.0, burst_size: int = 5):
         self.requests_per_second = requests_per_second
         self.burst_size = burst_size
-        self._tokens = burst_size
+        self._tokens = float(burst_size)
         self._last_update = time.time()
         self._lock = asyncio.Lock()
 
@@ -246,7 +246,7 @@ class RateLimitedExecutor:
 
 
 @asynccontextmanager
-async def timeout_context(timeout: float, operation_name: str = "operation"):
+async def timeout_context(timeout: float, operation_name: str = "operation") -> AsyncGenerator[None, None]:
     """Context manager for timeout handling with logging."""
     start_time = time.time()
     try:

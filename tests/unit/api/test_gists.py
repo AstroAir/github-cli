@@ -335,7 +335,7 @@ class TestGistsAPI:
         
         await self.gists_api.star_gist(gist_id)
         
-        self.mock_client.put.assert_called_once_with(f"gists/{gist_id}/star")
+        self.mock_client.put.assert_called_once_with(f"gists/{gist_id}/star", data={})
 
     @pytest.mark.asyncio
     async def test_unstar_gist_success(self):

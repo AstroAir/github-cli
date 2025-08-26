@@ -49,15 +49,15 @@ class TestAuthenticator:
     def test_token_manager_property(self):
         """Test token_manager property lazy loading."""
         authenticator = Authenticator(self.mock_config)
-        
-        with patch('github_cli.auth.authenticator.TokenManager') as mock_tm_class:
+
+        with patch('github_cli.auth.token_manager.TokenManager') as mock_tm_class:
             mock_tm_class.return_value = self.mock_token_manager
-            
+
             # First access should create the token manager
             token_manager = authenticator.token_manager
             assert token_manager == self.mock_token_manager
             mock_tm_class.assert_called_once_with(self.mock_config)
-            
+
             # Second access should return the same instance
             token_manager2 = authenticator.token_manager
             assert token_manager2 == self.mock_token_manager
@@ -66,10 +66,10 @@ class TestAuthenticator:
     def test_sso_handler_property(self):
         """Test sso_handler property lazy loading."""
         authenticator = Authenticator(self.mock_config)
-        
-        with patch('github_cli.auth.authenticator.SSOHandler') as mock_sso_class:
+
+        with patch('github_cli.auth.sso_handler.SSOHandler') as mock_sso_class:
             mock_sso_class.return_value = self.mock_sso_handler
-            
+
             # First access should create the SSO handler
             sso_handler = authenticator.sso_handler
             assert sso_handler == self.mock_sso_handler

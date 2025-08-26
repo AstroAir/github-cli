@@ -49,7 +49,8 @@ class Team:
     @property
     def organization_name(self) -> str:
         """Get the organization name"""
-        return self.organization.get("login", "Unknown")
+        login = self.organization.get("login", "Unknown")
+        return str(login) if login else "Unknown"
 
     @property
     def is_visible(self) -> bool:

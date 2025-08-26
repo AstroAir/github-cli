@@ -5,10 +5,9 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import (
-    Button, Checkbox, Input, Label, Static,
+    Button, Checkbox, Input, Label, Select, Static,
     Switch, TabbedContent, TabPane, LoadingIndicator
 )
-from textual.widgets._select import Select
 from loguru import logger
 
 from github_cli.utils.config import Config
@@ -402,7 +401,7 @@ class SettingsWidget(Container):
         loading_indicator = self.query_one("#settings-loading")
         loading_indicator.display = False
 
-    def _on_responsive_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_responsive_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle responsive layout changes."""
         if new_breakpoint:
             self._apply_responsive_styles()
@@ -431,7 +430,7 @@ class SettingsWidget(Container):
 
         breakpoint = self.layout_manager.get_current_breakpoint()
         if not breakpoint:
-            return
+            return  # type: ignore[unreachable]
 
         # Apply breakpoint-specific classes
         self.remove_class("xs", "sm", "md", "lg", "xl")
@@ -697,7 +696,7 @@ class SettingsWidget(Container):
 
         breakpoint = self.layout_manager.get_current_breakpoint()
         if not breakpoint:
-            return
+            return  # type: ignore[unreachable]
 
         # Apply breakpoint-specific classes
         self.remove_class("xs", "sm", "md", "lg", "xl")

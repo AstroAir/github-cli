@@ -17,8 +17,9 @@ The responsive CSS system provides adaptive styling for authentication screens a
 The responsive system uses three main breakpoints:
 
 ### Compact Layout (< 60 columns, < 15 rows)
+
 - **Target**: Small terminals, mobile-like environments
-- **Features**: 
+- **Features**:
   - Minimal padding and margins
   - Vertical button layouts
   - Text truncation enabled
@@ -26,6 +27,7 @@ The responsive system uses three main breakpoints:
   - Simplified visual hierarchy
 
 ### Standard Layout (60-100 columns, 15-25 rows)
+
 - **Target**: Medium terminals, typical desktop usage
 - **Features**:
   - Balanced spacing
@@ -35,6 +37,7 @@ The responsive system uses three main breakpoints:
   - Moderate information density
 
 ### Expanded Layout (> 100 columns, > 25 rows)
+
 - **Target**: Large terminals, wide screens
 - **Features**:
   - Comfortable spacing

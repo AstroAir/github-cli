@@ -71,7 +71,7 @@ class RepositoryDetailScreen(Screen[None]):
     def compose(self) -> ComposeResult:
         """Compose the repository detail screen with adaptive layout."""
         breakpoint = self.layout_manager.current_breakpoint if self.layout_manager else None
-        
+
         with Container(id="repo-detail-container", classes="adaptive-container"):
             # Title - always visible but compact if needed
             if breakpoint and breakpoint.name.startswith("horizontal_ultra"):
@@ -82,7 +82,7 @@ class RepositoryDetailScreen(Screen[None]):
             # Determine layout based on available height
             if self.layout_manager:
                 available_height = self.layout_manager._get_available_content_height()
-                
+
                 if available_height < 10:
                     # Ultra compact layout - single column with essential info only
                     yield from self._compose_ultra_compact_layout()
@@ -112,11 +112,11 @@ class RepositoryDetailScreen(Screen[None]):
                 with Vertical(classes="compact-info-panel"):
                     yield Label(f"📂 {self.repo.name}", classes="info-item")
                     yield Label(f"🔧 {self.repo.language or 'N/A'}", classes="info-item")
-                
+
                 with Vertical(classes="compact-stats-panel"):
                     yield Label(f"⭐ {self.repo.stargazers_count}", classes="stat-item")
                     yield Label(f"🍴 {self.repo.forks_count}", classes="stat-item")
-            
+
             # Show description if available
             if self.repo.description:
                 yield Label(f"📝 {self.repo.description[:80]}...", classes="compact-description")
@@ -150,12 +150,12 @@ class RepositoryDetailScreen(Screen[None]):
             with TabPane("Actions", id="actions-tab"):
                 yield Placeholder("GitHub Actions coming soon")
 
-    def _on_responsive_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_responsive_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle responsive layout changes."""
         # Refresh the entire screen when layout changes significantly
         if old_breakpoint and new_breakpoint:
             if (old_breakpoint.name.startswith("horizontal") != new_breakpoint.name.startswith("horizontal") or
-                old_breakpoint.compact_mode != new_breakpoint.compact_mode):
+                    old_breakpoint.compact_mode != new_breakpoint.compact_mode):
                 self.refresh()
 
     async def on_mount(self) -> None:
@@ -170,8 +170,6 @@ class RepositoryDetailScreen(Screen[None]):
             return
 
         breakpoint = self.layout_manager.get_current_breakpoint()
-        if not breakpoint:
-            return
 
         # Apply breakpoint-specific classes with cleanup
         container = self.query_one("#repo-detail-container")
@@ -182,7 +180,7 @@ class RepositoryDetailScreen(Screen[None]):
         # Handle priority-based element visibility
         self._manage_priority_elements(breakpoint)
 
-    def _manage_priority_elements(self, breakpoint) -> None:
+    def _manage_priority_elements(self, breakpoint: Any) -> None:
         """Manage element visibility based on priority and screen size."""
         try:
             # Hide low-priority elements in compact mode

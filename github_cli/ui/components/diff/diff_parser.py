@@ -7,11 +7,11 @@ from typing import Dict, List, Tuple
 
 class DiffParser:
     """Parser for git diff content."""
-    
+
     @staticmethod
     def split_diff_hunks(diff_content: str) -> Dict[str, str]:
         """Split diff content into file hunks."""
-        result = {}
+        result: dict[str, str] = {}
         current_file = None
         current_content = []
 
@@ -37,7 +37,7 @@ class DiffParser:
             result[current_file] = '\n'.join(current_content)
 
         return result
-    
+
     @staticmethod
     def parse_diff_for_side_by_side(diff_content: str) -> Tuple[List[str], List[str]]:
         """Parse diff content into before and after columns for side-by-side view."""
@@ -67,7 +67,7 @@ class DiffParser:
                 after_lines.append(line[1:])
 
         return before_lines, after_lines
-    
+
     @staticmethod
     def extract_file_info(diff_line: str) -> Dict[str, str]:
         """Extract file information from a diff header line."""
@@ -76,17 +76,17 @@ class DiffParser:
             "new_file": "",
             "operation": "modified"
         }
-        
+
         if diff_line.startswith('diff --git'):
             parts = diff_line.split(' ')
             if len(parts) >= 4:
                 # Extract file paths
                 old_path = parts[2][2:]  # Remove 'a/' prefix
                 new_path = parts[3][2:]  # Remove 'b/' prefix
-                
+
                 info["old_file"] = old_path
                 info["new_file"] = new_path
-                
+
                 # Determine operation type
                 if old_path == new_path:
                     info["operation"] = "modified"
@@ -96,9 +96,9 @@ class DiffParser:
                     info["operation"] = "deleted"
                 else:
                     info["operation"] = "renamed"
-        
+
         return info
-    
+
     @staticmethod
     def get_diff_stats(diff_content: str) -> Dict[str, int]:
         """Get statistics about the diff (additions, deletions, etc.)."""
@@ -107,15 +107,15 @@ class DiffParser:
             "deletions": 0,
             "files_changed": 0
         }
-        
+
         files = DiffParser.split_diff_hunks(diff_content)
         stats["files_changed"] = len(files)
-        
+
         for file_diff in files.values():
             for line in file_diff.split('\n'):
                 if line.startswith('+') and not line.startswith('+++'):
                     stats["additions"] += 1
                 elif line.startswith('-') and not line.startswith('---'):
                     stats["deletions"] += 1
-        
+
         return stats

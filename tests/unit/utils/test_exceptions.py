@@ -19,6 +19,18 @@ from github_cli.utils.exceptions import (
     APIError
 )
 
+# Alias for backward compatibility with tests
+ConfigurationError = ConfigError
+
+# Define missing exception classes for tests
+class RepositoryError(GitHubCLIError):
+    """Repository-related error for testing."""
+    def __init__(self, message: str, owner: str = None, repo: str = None, operation: str = None):
+        super().__init__(message)
+        self.owner = owner
+        self.repo = repo
+        self.operation = operation
+
 
 @pytest.mark.unit
 @pytest.mark.utils

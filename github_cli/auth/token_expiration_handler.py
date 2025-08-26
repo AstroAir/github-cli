@@ -155,7 +155,7 @@ class TokenExpirationHandler:
                 return None
 
             with open(token_file, 'r') as f:
-                return json.load(f)
+                return json.load(f)  # type: ignore[no-any-return]
         except Exception as e:
             logger.error(f"Error getting token data: {e}")
             return None
@@ -171,6 +171,7 @@ class TokenExpirationHandler:
         expires_in = token_data["expires_in"]
         expiry_time = created_at + expires_in
 
+        # type: ignore[no-any-return]
         return max(0, expiry_time - current_time)
 
     async def handle_token_expiration(self, context: AuthenticationContext) -> bool:

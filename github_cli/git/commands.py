@@ -36,7 +36,8 @@ class GitCommands:
             )
             return result.stdout.strip()
         except subprocess.CalledProcessError as e:
-            raise GitHubCLIError(f"Git command failed: {e.stderr.strip()}")
+            error_msg = e.stderr.strip() if e.stderr else "Unknown error"
+            raise GitHubCLIError("Git command failed: " + error_msg)
         except FileNotFoundError:
             raise GitHubCLIError("Git not found. Please install Git.")
 
@@ -55,9 +56,9 @@ class GitCommands:
                         return repo
                 elif remote_url.startswith("https://"):
                     # HTTPS format: https://github.com/owner/repo.git
-                    parts = remote_url.replace(
+                    parts_str = remote_url.replace(
                         "https://github.com/", "").replace(".git", "")
-                    return parts
+                    return parts_str
 
             return None
         except GitHubCLIError:
@@ -248,7 +249,7 @@ class GitCommands:
             raise GitHubCLIError(f"Failed to apply stash: {e}")
 
 
-async def handle_git_command(args, git_cmds: GitCommands):
+async def handle_git_command(args: Any, git_cmds: GitCommands) -> None:
     """Handle git command dispatch"""
     try:
         match args.action:

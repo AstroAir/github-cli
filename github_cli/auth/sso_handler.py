@@ -2,7 +2,7 @@
 SSO handler for GitHub authentication
 """
 
-from typing import Dict
+from typing import Dict, Any
 import time
 import webbrowser
 import aiohttp
@@ -16,7 +16,7 @@ class SSOHandler:
     def __init__(self, config: Config):
         """Initialize the SSO handler"""
         self.config = config
-        self.sso_pending = {}
+        self.sso_pending: dict[str, Any] = {}
 
     async def handle_sso_challenge(self, response_headers: Dict[str, str], token: str) -> None:
         """Handle an SSO authorization challenge"""

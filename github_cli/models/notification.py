@@ -56,17 +56,20 @@ class Notification:
     @property
     def repository_name(self) -> str:
         """Get the repository name"""
-        return self.repository.get("full_name", "unknown/unknown")
+        full_name = self.repository.get("full_name", "unknown/unknown")
+        return str(full_name) if full_name else "unknown/unknown"
 
     @property
     def subject_title(self) -> str:
         """Get the subject title"""
-        return self.subject.get("title", "No title")
+        title = self.subject.get("title", "No title")
+        return str(title) if title else "No title"
 
     @property
     def subject_type(self) -> str:
         """Get the subject type"""
-        return self.subject.get("type", "Unknown")
+        subject_type = self.subject.get("type", "Unknown")
+        return str(subject_type) if subject_type else "Unknown"
 
     @property
     def subject_url(self) -> Optional[str]:

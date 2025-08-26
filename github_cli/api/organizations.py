@@ -3,7 +3,7 @@ GitHub Organizations API module
 """
 
 import asyncio
-from typing import List, Dict, Any, Optional, Union, Tuple
+from typing import List, Dict, Any, Optional, Union, Tuple, cast
 from datetime import datetime
 
 from github_cli.api.client import GitHubClient
@@ -53,7 +53,8 @@ async def get_organization(
     Returns:
         Organization data
     """
-    return await client.get(f"/orgs/{org_name}")
+    response = await client.get(f"/orgs/{org_name}")
+    return cast(Dict[str, Any], response.data)
 
 
 async def get_organization_members(
@@ -141,7 +142,7 @@ async def get_team(
         Team object
     """
     response = await client.get(f"/orgs/{org_name}/teams/{team_slug}")
-    return Team.from_json(response)
+    return Team.from_json(response.data)
 
 
 async def get_team_members(
@@ -271,8 +272,8 @@ async def check_membership(
     try:
         response = await client.get(f"/orgs/{org_name}/memberships/{username}")
         return {
-            "state": response.get("state", ""),
-            "role": response.get("role", ""),
+            "state": response.data.get("state", ""),
+            "role": response.data.get("role", ""),
             "is_member": True
         }
     except APIError as e:
@@ -313,7 +314,7 @@ async def invite_user(
         data["team_ids"] = team_ids  # type: ignore
 
     response = await client.post(f"/orgs/{org_name}/memberships/{username}", data=data)
-    return response
+    return cast(Dict[str, Any], response.data)
 
 
 async def remove_member(
@@ -340,7 +341,7 @@ async def remove_member(
 
 
 # Handler function for CLI commands
-async def handle_org_command(args: Dict[str, Any], client: GitHubClient, ui) -> None:
+async def handle_org_command(args: Dict[str, Any], client: GitHubClient, ui: Any) -> None:
     """Handle organization commands from the CLI"""
     action = args.get("org_action")
 

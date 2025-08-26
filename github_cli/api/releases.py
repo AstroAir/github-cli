@@ -3,7 +3,7 @@ GitHub Releases API module
 """
 
 import asyncio
-from typing import List, Dict, Any, Optional, Union, Tuple
+from typing import List, Dict, Any, Optional, Union, Tuple, cast
 from datetime import datetime
 
 from github_cli.api.client import GitHubClient
@@ -67,7 +67,7 @@ async def get_release(
             # Get by tag
             response = await client.get(f"/repos/{owner}/{repo}/releases/tags/{release_id}")
 
-        return Release.from_json(response)
+        return Release.from_json(response.data)
     except APIError as e:
         if e.status_code == 404:
             raise ValueError(f"Release not found: {release_id}")
@@ -92,7 +92,7 @@ async def get_latest_release(
     """
     try:
         response = await client.get(f"/repos/{owner}/{repo}/releases/latest")
-        return Release.from_json(response)
+        return Release.from_json(response.data)
     except APIError as e:
         if e.status_code == 404:
             raise ValueError(f"No releases found for {owner}/{repo}")
@@ -149,11 +149,9 @@ async def create_release(
             data["make_latest"] = "true"
         elif make_latest is False:
             data["make_latest"] = "false"
-        else:
-            data["make_latest"] = "legacy"
 
     response = await client.post(f"/repos/{owner}/{repo}/releases", data=data)
-    return Release.from_json(response)
+    return Release.from_json(response.data)
 
 
 async def update_release(
@@ -208,24 +206,22 @@ async def update_release(
         data["body"] = body
 
     if draft is not None:
-        data["draft"] = draft
+        data["draft"] = str(draft).lower()
 
     if prerelease is not None:
-        data["prerelease"] = prerelease
+        data["prerelease"] = str(prerelease).lower()
 
     if make_latest is not None:
         if make_latest is True:
             data["make_latest"] = "true"
         elif make_latest is False:
             data["make_latest"] = "false"
-        else:
-            data["make_latest"] = "legacy"
 
     if not data:
         raise ValidationError("No update parameters provided")
 
     response = await client.patch(f"/repos/{owner}/{repo}/releases/{release_id}", data=data)
-    return Release.from_json(response)
+    return Release.from_json(response.data)
 
 
 async def delete_release(
@@ -324,7 +320,7 @@ async def list_release_assets(
         f"/repos/{owner}/{repo}/releases/{release_id}/assets"
     )
 
-    return response
+    return cast(List[Dict[str, Any]], response.data)
 
 
 async def delete_release_asset(
@@ -353,7 +349,7 @@ async def delete_release_asset(
 
 
 # Handler function for CLI commands
-async def handle_releases_command(args: Dict[str, Any], client: GitHubClient, ui) -> None:
+async def handle_releases_command(args: Dict[str, Any], client: GitHubClient, ui: Any) -> None:
     """Handle release commands from the CLI"""
     action = args.get("releases_action")
 

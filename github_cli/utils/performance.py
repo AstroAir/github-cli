@@ -74,7 +74,7 @@ class PerformanceMonitor:
         self._start_times[operation] = time.perf_counter()
         logger.debug(f"Started timing: {operation}")
 
-    def end_timing(self, operation: str, **kwargs) -> PerformanceMetrics:
+    def end_timing(self, operation: str, **kwargs: Any) -> PerformanceMetrics:
         """End timing an operation and record metrics."""
         if operation not in self._start_times:
             raise ValueError(
@@ -109,7 +109,7 @@ class PerformanceMonitor:
         logger.debug("Cleared all performance metrics")
 
 
-def async_performance_monitor(operation: str | None = None):
+def async_performance_monitor(operation: str | None = None) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awaitable[T]]]:
     """Decorator for monitoring async function performance."""
     def decorator(func: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
         op_name = operation or f"{func.__module__}.{func.__qualname__}"
@@ -131,7 +131,7 @@ def async_performance_monitor(operation: str | None = None):
     return decorator
 
 
-def performance_monitor(operation: str | None = None):
+def performance_monitor(operation: str | None = None) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """Decorator for monitoring sync function performance."""
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
         op_name = operation or f"{func.__module__}.{func.__qualname__}"
@@ -231,7 +231,7 @@ def cached_async(
     cache: AsyncCache | None = None,
     key_func: Callable[..., str] | None = None,
     ttl: float = 300.0
-):
+) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awaitable[T]]]:
     """Decorator for caching async function results."""
     if cache is None:
         cache = AsyncCache(ttl=ttl)
@@ -249,7 +249,7 @@ def cached_async(
             cached_result = cache.get(cache_key)
             if cached_result is not None:
                 logger.debug(f"Cache hit for {func.__qualname__}")
-                return cached_result
+                return cached_result  # type: ignore[no-any-return]
 
             # Compute result and cache it
             logger.debug(

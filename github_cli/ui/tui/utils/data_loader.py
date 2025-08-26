@@ -108,11 +108,11 @@ class PaginationState:
 class DataLoadable(Protocol[T_co]):
     """Protocol for data that can be loaded from GitHub API."""
 
-    async def load_data(self, client: GitHubClient, **kwargs) -> T_co:
+    async def load_data(self, client: GitHubClient, **kwargs: Any) -> T_co:
         """Load data from the GitHub API."""
         ...
 
-    def get_cache_key(self, **kwargs) -> str:
+    def get_cache_key(self, **kwargs: Any) -> str:
         """Get cache key for this data."""
         ...
 
@@ -209,10 +209,10 @@ class DataLoader(Generic[T]):
         self,
         key: str,
         loader_func: Callable[..., Any],
-        *args,
+        *args: Any,
         force_refresh: bool = False,
         use_cache: bool = True,
-        **kwargs
+        **kwargs: Any
     ) -> LoadResult[T]:
         """Load data with caching and state management."""
 
@@ -313,7 +313,7 @@ class DataLoader(Generic[T]):
         # Create cache key that includes pagination
         cache_key = f"{key}_page_{page}_per_page_{per_page}"
 
-        async def paginated_loader():
+        async def paginated_loader() -> Any:
             response = await self.client.get(endpoint, params=api_params)
 
             # Extract data from response
@@ -341,7 +341,7 @@ class DataLoader(Generic[T]):
             paginated_loader,
             force_refresh=force_refresh
         )
-        
+
         # Convert LoadResult[T] to LoadResult[list[T]]
         # Note: paginated_loader already returns a list, so we cast the result
         if result.is_success and result.data is not None:
@@ -363,13 +363,13 @@ class DataLoader(Generic[T]):
         self,
         key: str,
         loader_func: Callable[..., Any],
-        *args,
+        *args: Any,
         interval: timedelta = timedelta(minutes=5),
-        **kwargs
+        **kwargs: Any
     ) -> None:
         """Start background refresh for data."""
 
-        async def refresh_loop():
+        async def refresh_loop() -> None:
             while True:
                 try:
                     await asyncio.sleep(interval.total_seconds())

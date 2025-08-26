@@ -14,7 +14,7 @@ from github_cli.utils.exceptions import ConfigError
 class AuthPreferenceManager:
     """Manages authentication preferences with environment detection."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._preferences: Optional[AuthPreferences] = None
         self._terminal_info: Dict[str, Any] = {}
 
@@ -134,7 +134,7 @@ class AuthPreferenceManager:
 
         return settings
 
-    def update_preferences(self, **kwargs) -> None:
+    def update_preferences(self, **kwargs: Any) -> None:
         """Update preferences with validation."""
         prefs = self.preferences
 
@@ -192,7 +192,8 @@ class AuthPreferenceManager:
 
             pattern_size = pattern.get('terminal_size', '')
             if pattern_size == current_size:
-                return pattern.get('layout_used')
+                layout_used = pattern.get('layout_used')
+                return str(layout_used) if layout_used is not None else None
 
         return None
 

@@ -269,8 +269,8 @@ class TestActionsAPI:
         self.mock_client._request.return_value = mock_response
         
         result = await self.actions_api.get_workflow_run_logs(repo, run_id)
-        
-        assert result == mock_response
+
+        assert result == mock_response.data
         self.mock_client._request.assert_called_once_with(
             "GET", 
             f"repos/{repo}/actions/runs/{run_id}/logs",
@@ -336,8 +336,8 @@ class TestActionsAPI:
         self.mock_client._request.return_value = mock_response
         
         result = await self.actions_api.get_workflow_job_logs(repo, job_id)
-        
-        assert result == mock_response
+
+        assert result == mock_response.data
         self.mock_client._request.assert_called_once_with(
             "GET",
             f"repos/{repo}/actions/jobs/{job_id}/logs",

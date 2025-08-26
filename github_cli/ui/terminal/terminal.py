@@ -19,7 +19,7 @@ class TerminalUI:
         self.client = client
         self.console = Console()
         self.theme = "auto"
-        
+
         # Initialize components
         self.display = DisplayHandlers(self.console)
         self.formatter = UIFormatters()
@@ -51,8 +51,8 @@ class TerminalUI:
         self.console.print(formatted)
 
     # Input and interaction methods
-    def prompt(self, message: str, choices: Optional[List[str]] = None, 
-              default: Optional[str] = None) -> str:
+    def prompt(self, message: str, choices: Optional[List[str]] = None,
+               default: Optional[str] = None) -> str:
         """Prompt the user for input."""
         default_val = default if default is not None else ""
         if choices:
@@ -61,7 +61,8 @@ class TerminalUI:
 
     def confirm(self, message: str, default: bool = True) -> bool:
         """Ask for confirmation."""
-        return questionary.confirm(message, default=default).ask()
+        result = questionary.confirm(message, default=default).ask()
+        return bool(result) if result is not None else default
 
     # Delegate display methods to display handlers
     def display_repositories(self, repos: List) -> None:
@@ -100,7 +101,8 @@ class TerminalUI:
     def interactive_mode(self) -> None:
         """Start an interactive session."""
         self.display_heading("GitHub CLI Interactive Mode")
-        self.display_info("Type 'help' for available commands or 'exit' to quit")
+        self.display_info(
+            "Type 'help' for available commands or 'exit' to quit")
 
         while True:
             command = self.prompt("> ")
@@ -120,10 +122,12 @@ class TerminalUI:
                 self.display_warning(f"Unexpected error: {str(e)}")
                 self.display_error("This might be a bug. Please report it.")
 
-    async def start_interactive_mode(self, shortcuts_manager=None) -> None:
+    async def start_interactive_mode(self, shortcuts_manager: Any = None) -> None:
         """Start the interactive terminal mode."""
-        self.console.print("[bold green]Welcome to GitHub CLI Interactive Mode[/bold green]")
-        self.console.print("Type 'help' to see available commands or 'exit' to quit.")
+        self.console.print(
+            "[bold green]Welcome to GitHub CLI Interactive Mode[/bold green]")
+        self.console.print(
+            "Type 'help' to see available commands or 'exit' to quit.")
 
         while True:
             try:
@@ -189,7 +193,8 @@ class TerminalUI:
             return
 
         # Simplified command handling
-        self.console.print(f"[yellow]Command '{command}' is not yet implemented[/yellow]")
+        self.console.print(
+            f"[yellow]Command '{command}' is not yet implemented[/yellow]")
 
     # Utility methods
     def set_theme(self, theme: str) -> None:

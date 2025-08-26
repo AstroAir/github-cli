@@ -27,7 +27,7 @@ class ActionsAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return [Workflow.from_json(wf) for wf in response.get("workflows", [])]
+            return [Workflow.from_json(wf) for wf in response.data.get("workflows", [])]
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to list workflows: {str(e)}")
 
@@ -37,7 +37,7 @@ class ActionsAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return Workflow.from_json(response)
+            return Workflow.from_json(response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to get workflow: {str(e)}")
 
@@ -61,7 +61,8 @@ class ActionsAPI:
 
         try:
             response = await self.client.get(endpoint, params=params)
-            return [WorkflowRun.from_json(run) for run in response.get("workflow_runs", [])]
+            data = response.data
+            return [WorkflowRun.from_json(run) for run in data.get("workflow_runs", [])]
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to list workflow runs: {str(e)}")
 
@@ -71,7 +72,7 @@ class ActionsAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return WorkflowRun.from_json(response)
+            return WorkflowRun.from_json(response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to get workflow run: {str(e)}")
 
@@ -101,7 +102,8 @@ class ActionsAPI:
         headers = {"Accept": "application/vnd.github.v3.raw"}
 
         try:
-            return await self.client._request("GET", endpoint, headers=headers)
+            response = await self.client._request("GET", endpoint, headers=headers)
+            return str(response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to get workflow run logs: {str(e)}")
 
@@ -111,7 +113,8 @@ class ActionsAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return [WorkflowJob.from_json(job) for job in response.get("jobs", [])]
+            data = response.data
+            return [WorkflowJob.from_json(job) for job in data.get("jobs", [])]
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to list workflow run jobs: {str(e)}")
 
@@ -121,7 +124,7 @@ class ActionsAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return WorkflowJob.from_json(response)
+            return WorkflowJob.from_json(response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to get workflow job: {str(e)}")
 
@@ -131,7 +134,8 @@ class ActionsAPI:
         headers = {"Accept": "application/vnd.github.v3.raw"}
 
         try:
-            return await self.client._request("GET", endpoint, headers=headers)
+            response = await self.client._request("GET", endpoint, headers=headers)
+            return str(response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to get workflow job logs: {str(e)}")
 

@@ -27,12 +27,12 @@ from .screens.help import HelpScreen as HelpScreen_
 __all__ = [
     # Main application
     'GitHubTUIApp',
-    
+
     # Screen components
     'AuthScreen',
     'HelpScreen',
     'RepositoryDetailScreen',
-    'PullRequestDetailScreen', 
+    'PullRequestDetailScreen',
     'NotificationDetailScreen',
     'SearchResultDetailScreen',
     'ErrorDetailScreen',

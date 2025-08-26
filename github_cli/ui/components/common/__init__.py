@@ -11,7 +11,7 @@ from .footers import FooterFactory
 
 __all__ = [
     'BasePanelFactory',
-    'InfoPanel', 
+    'InfoPanel',
     'ErrorPanel',
     'BaseTable',
     'GitHubTable',

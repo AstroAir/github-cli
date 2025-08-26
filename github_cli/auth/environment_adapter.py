@@ -362,21 +362,21 @@ class EnvironmentAdapter:
 
         # Add environment-specific suggestions
         if capabilities.is_container:
-            error_info['suggestions'].extend([
+            error_info['suggestions'].extend([  # type: ignore[attr-defined]
                 "Check container network configuration",
                 "Ensure GitHub API access is allowed",
                 "Verify DNS resolution works"
             ])
 
         if capabilities.is_ssh_session:
-            error_info['suggestions'].extend([
+            error_info['suggestions'].extend([  # type: ignore[attr-defined]
                 "Check SSH tunnel configuration",
                 "Verify network access from SSH host",
                 "Consider using local authentication"
             ])
 
         if capabilities.network_restricted:
-            error_info['suggestions'].extend([
+            error_info['suggestions'].extend([  # type: ignore[attr-defined]
                 "Check firewall settings",
                 "Verify proxy configuration",
                 "Test GitHub API connectivity"

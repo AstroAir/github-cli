@@ -258,7 +258,7 @@ class Authenticator:
         try:
             # Clear the active token from storage
             self.token_manager.clear_token()
-            
+
             # Clear in-memory state
             self._token = None
             self._user_info = None
@@ -365,7 +365,7 @@ class Authenticator:
                     if response.status == 200:
                         data = await response.json()
                         logger.debug("Device code request successful")
-                        return data
+                        return data  # type: ignore[no-any-return]
                     else:
                         error_text = await response.text()
                         logger.error(
@@ -428,7 +428,7 @@ class Authenticator:
                                 data["created_at"] = int(time.time())
                                 logger.info("Token polling successful")
                                 print("\n✅ Authentication approved!")
-                                return data
+                                return data  # type: ignore[no-any-return]
 
                             case 200 if data.get("error") == "authorization_pending":
                                 # User hasn't authorized yet, continue polling

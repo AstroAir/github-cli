@@ -22,7 +22,7 @@ class Dashboard:
         self.console = Console()
         self.running = False
         self.update_interval = 60  # Refresh every minute
-        
+
         # Initialize components
         self.data_loader = DashboardDataLoader(client, terminal)
         self.layout_manager = DashboardLayoutManager()
@@ -39,10 +39,11 @@ class Dashboard:
 
         # Initial data load
         data = await self.data_loader.load_all_data()
-        
+
         # Add rate limit info to data if available
         if hasattr(self.client, 'rate_limit_remaining') and self.client.rate_limit_remaining is not None:
-            data["rate_limit_info"] = {"remaining": self.client.rate_limit_remaining}
+            data["rate_limit_info"] = {
+                "remaining": self.client.rate_limit_remaining}
 
         try:
             # Setup layout
@@ -52,11 +53,12 @@ class Dashboard:
                 while self.running:
                     # Refresh data periodically
                     data = await self.data_loader.load_all_data()
-                    
+
                     # Update rate limit info
                     if hasattr(self.client, 'rate_limit_remaining') and self.client.rate_limit_remaining is not None:
-                        data["rate_limit_info"] = {"remaining": self.client.rate_limit_remaining}
-                    
+                        data["rate_limit_info"] = {
+                            "remaining": self.client.rate_limit_remaining}
+
                     layout = self.layout_manager.create_layout(data)
                     live.update(layout)
 

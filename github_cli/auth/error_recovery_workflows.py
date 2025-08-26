@@ -70,7 +70,7 @@ class RecoveryResult:
 class ErrorRecoveryWorkflow:
     """Comprehensive error recovery workflow manager."""
 
-    def __init__(self, app) -> None:
+    def __init__(self, app: Any) -> None:
         self.app = app
         self.troubleshooting_guides = self._init_troubleshooting_guides()
         self.recovery_history: list[RecoveryResult] = []

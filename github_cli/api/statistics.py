@@ -55,7 +55,7 @@ class StatisticsAPI:
         """Get contributor statistics for a repository"""
         try:
             response = await self.client.get(f"repos/{repo}/stats/contributors")
-            return response
+            return response.data  # type: ignore[no-any-return]
         except GitHubCLIError as e:
             raise GitHubCLIError(
                 f"Failed to get contributor statistics: {str(e)}")
@@ -64,7 +64,7 @@ class StatisticsAPI:
         """Get weekly commit activity for a repository"""
         try:
             response = await self.client.get(f"repos/{repo}/stats/commit_activity")
-            return response
+            return response.data  # type: ignore[no-any-return]
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to get commit activity: {str(e)}")
 
@@ -72,7 +72,7 @@ class StatisticsAPI:
         """Get weekly code frequency for a repository"""
         try:
             response = await self.client.get(f"repos/{repo}/stats/code_frequency")
-            return response
+            return response.data  # type: ignore[no-any-return]
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to get code frequency: {str(e)}")
 
@@ -80,7 +80,7 @@ class StatisticsAPI:
         """Get punch card data for a repository"""
         try:
             response = await self.client.get(f"repos/{repo}/stats/punch_card")
-            return response
+            return response.data  # type: ignore[no-any-return]
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to get punch card data: {str(e)}")
 
@@ -115,7 +115,8 @@ class StatisticsAPI:
             user_info = await self.client.get(f"users/{username}")
 
             # Get user repos
-            repos = await self.client.get(f"users/{username}/repos", params={"per_page": 100})
+            repos_response = await self.client.get(f"users/{username}/repos", params={"per_page": 100})
+            repos = repos_response.data
 
             # Calculate stats
             total_stars = sum(repo.get("stargazers_count", 0)
@@ -124,7 +125,7 @@ class StatisticsAPI:
             total_watchers = sum(repo.get("watchers_count", 0)
                                  for repo in repos)
 
-            languages = {}
+            languages: dict[str, int] = {}
             for repo in repos:
                 if repo.get("language"):
                     lang = repo["language"]
@@ -151,17 +152,19 @@ class StatisticsAPI:
             org_info = await self.client.get(f"orgs/{org}")
 
             # Get org repos
-            repos = await self.client.get(f"orgs/{org}/repos", params={"per_page": 100})
+            repos_response = await self.client.get(f"orgs/{org}/repos", params={"per_page": 100})
+            repos = repos_response.data
 
             # Get org members
-            members = await self.client.get(f"orgs/{org}/members")
+            members_response = await self.client.get(f"orgs/{org}/members")
+            members = members_response.data
 
             # Calculate stats
             total_stars = sum(repo.get("stargazers_count", 0)
                               for repo in repos)
             total_forks = sum(repo.get("forks_count", 0) for repo in repos)
 
-            languages = {}
+            languages: dict[str, int] = {}
             for repo in repos:
                 if repo.get("language"):
                     lang = repo["language"]
@@ -196,7 +199,8 @@ class StatisticsCommands:
         """Show repository statistics"""
         try:
             stats = await self.api.get_repo_statistics(repo)
-            self.terminal.display_repo_statistics(stats)
+            self.terminal.display_repo_statistics(
+                stats)  # type: ignore[attr-defined]
         except GitHubCLIError as e:
             self.terminal.display_error(
                 f"Failed to get repository statistics: {e}")
@@ -205,7 +209,8 @@ class StatisticsCommands:
         """Show contributor statistics"""
         try:
             contributors = await self.api.get_contributor_stats(repo)
-            self.terminal.display_contributor_statistics(contributors)
+            self.terminal.display_contributor_statistics(
+                contributors)  # type: ignore[attr-defined]
         except GitHubCLIError as e:
             self.terminal.display_error(
                 f"Failed to get contributor statistics: {e}")
@@ -214,7 +219,8 @@ class StatisticsCommands:
         """Show traffic statistics"""
         try:
             traffic = await self.api.get_traffic_stats(repo)
-            self.terminal.display_traffic_statistics(traffic)
+            self.terminal.display_traffic_statistics(
+                traffic)  # type: ignore[attr-defined]
         except GitHubCLIError as e:
             self.terminal.display_error(
                 f"Failed to get traffic statistics: {e}")
@@ -223,7 +229,8 @@ class StatisticsCommands:
         """Show user statistics"""
         try:
             stats = await self.api.get_user_statistics(username)
-            self.terminal.display_user_statistics(stats)
+            self.terminal.display_user_statistics(
+                stats)  # type: ignore[attr-defined]
         except GitHubCLIError as e:
             self.terminal.display_error(f"Failed to get user statistics: {e}")
 
@@ -231,13 +238,14 @@ class StatisticsCommands:
         """Show organization statistics"""
         try:
             stats = await self.api.get_organization_statistics(org)
-            self.terminal.display_organization_statistics(stats)
+            self.terminal.display_organization_statistics(
+                stats)  # type: ignore[attr-defined]
         except GitHubCLIError as e:
             self.terminal.display_error(
                 f"Failed to get organization statistics: {e}")
 
 
-async def handle_stats_command(args, stats_cmds: StatisticsCommands):
+async def handle_stats_command(args: Any, stats_cmds: StatisticsCommands) -> None:
     """Handle statistics command dispatch"""
     try:
         match args.type:
@@ -285,14 +293,14 @@ async def handle_stats_command(args, stats_cmds: StatisticsCommands):
 
 
 # Add display methods to TerminalUI
-def _add_statistics_methods_to_terminal():
+def _add_statistics_methods_to_terminal() -> None:
     """Add statistics display methods to TerminalUI class"""
     from rich.table import Table
     from rich.panel import Panel
     from rich.progress import Progress, BarColumn, TextColumn
     from rich import box
 
-    def display_repo_statistics(self, stats: Dict[str, Any]) -> None:
+    def display_repo_statistics(self: Any, stats: Dict[str, Any]) -> None:
         """Display repository statistics"""
         repo = stats["repository"]
         contributors = stats.get("contributors", [])
@@ -345,7 +353,7 @@ def _add_statistics_methods_to_terminal():
                     progress.add_task(
                         f"{lang:.<20}", completed=percentage, total=100)
 
-    def display_contributor_statistics(self, contributors: List[Dict[str, Any]]) -> None:
+    def display_contributor_statistics(self: Any, contributors: List[Dict[str, Any]]) -> None:
         """Display contributor statistics"""
         if not contributors:
             self.display_info("No contributor statistics available")
@@ -373,7 +381,7 @@ def _add_statistics_methods_to_terminal():
 
         self.console.print(table)
 
-    def display_traffic_statistics(self, traffic: Dict[str, Any]) -> None:
+    def display_traffic_statistics(self: Any, traffic: Dict[str, Any]) -> None:
         """Display traffic statistics"""
         views = traffic.get("views", {})
         clones = traffic.get("clones", {})
@@ -409,7 +417,7 @@ def _add_statistics_methods_to_terminal():
 
             self.console.print(table)
 
-    def display_user_statistics(self, stats: Dict[str, Any]) -> None:
+    def display_user_statistics(self: Any, stats: Dict[str, Any]) -> None:
         """Display user statistics"""
         user = stats["user"]
         summary = stats["summary"]
@@ -442,7 +450,7 @@ def _add_statistics_methods_to_terminal():
 
             self.console.print(table)
 
-    def display_organization_statistics(self, stats: Dict[str, Any]) -> None:
+    def display_organization_statistics(self: Any, stats: Dict[str, Any]) -> None:
         """Display organization statistics"""
         org = stats["organization"]
         summary = stats["summary"]
@@ -463,10 +471,15 @@ def _add_statistics_methods_to_terminal():
                            title=header, box=box.ROUNDED))
 
     # Add methods to TerminalUI class
+    # type: ignore[attr-defined]
     TerminalUI.display_repo_statistics = display_repo_statistics
+    # type: ignore[attr-defined]
     TerminalUI.display_contributor_statistics = display_contributor_statistics
+    # type: ignore[attr-defined]
     TerminalUI.display_traffic_statistics = display_traffic_statistics
+    # type: ignore[attr-defined]
     TerminalUI.display_user_statistics = display_user_statistics
+    # type: ignore[attr-defined]
     TerminalUI.display_organization_statistics = display_organization_statistics
 
 

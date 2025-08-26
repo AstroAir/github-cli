@@ -9,7 +9,7 @@ from .notification_panel import NotificationPanel
 
 __all__ = [
     'RepositoryPanel',
-    'PullRequestPanel', 
+    'PullRequestPanel',
     'IssuePanel',
     'NotificationPanel',
 ]

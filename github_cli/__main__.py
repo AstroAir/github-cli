@@ -41,7 +41,7 @@ logger.add(
 
 
 @asynccontextmanager
-async def application_context():
+async def application_context() -> Any:
     """Application context manager for resource management."""
     config = Config()
     authenticator = Authenticator(config)
@@ -149,7 +149,7 @@ async def main() -> int:
             import threading
 
             # Run TUI in a separate thread since it needs its own event loop
-            def run_tui_in_thread():
+            def run_tui_in_thread() -> None:
                 run_tui()
 
             # Start TUI in a separate thread
@@ -188,7 +188,7 @@ async def main() -> int:
         return 1
 
 
-def _setup_auth_parser(subparsers) -> Any:
+def _setup_auth_parser(subparsers: Any) -> Any:
     """Setup authentication command parser."""
     auth_parser = subparsers.add_parser("auth", help="Authentication commands")
     auth_parser.add_argument(
@@ -207,7 +207,7 @@ def _setup_auth_parser(subparsers) -> Any:
     return auth_parser
 
 
-def _setup_repo_parser(subparsers) -> Any:
+def _setup_repo_parser(subparsers: Any) -> Any:
     """Setup repository command parser."""
     repo_parser = subparsers.add_parser("repo", help="Repository commands")
     repo_parser.add_argument(
@@ -228,7 +228,7 @@ def _setup_repo_parser(subparsers) -> Any:
     return repo_parser
 
 
-def _setup_pr_parser(subparsers) -> Any:
+def _setup_pr_parser(subparsers: Any) -> Any:
     """Setup pull request command parser."""
     pr_parser = subparsers.add_parser("pr", help="Pull request commands")
     pr_parser.add_argument(
@@ -250,7 +250,7 @@ def _setup_pr_parser(subparsers) -> Any:
     return pr_parser
 
 
-def _setup_actions_parser(subparsers) -> Any:
+def _setup_actions_parser(subparsers: Any) -> Any:
     """Setup GitHub Actions command parser."""
     actions_parser = subparsers.add_parser(
         "actions", help="GitHub Actions commands")
@@ -271,7 +271,7 @@ def _setup_actions_parser(subparsers) -> Any:
     return actions_parser
 
 
-def _setup_notifications_parser(subparsers) -> Any:
+def _setup_notifications_parser(subparsers: Any) -> Any:
     """Setup notifications command parser."""
     notifications_parser = subparsers.add_parser(
         "notifications", help="Notification commands")
@@ -307,7 +307,7 @@ def _setup_notifications_parser(subparsers) -> Any:
     return notifications_parser
 
 
-def _setup_user_parser(subparsers) -> Any:
+def _setup_user_parser(subparsers: Any) -> Any:
     """Setup user command parser."""
     user_parser = subparsers.add_parser("user", help="User commands")
     user_parser.add_argument(
@@ -323,7 +323,7 @@ def _setup_user_parser(subparsers) -> Any:
     return user_parser
 
 
-def _setup_org_parser(subparsers) -> Any:
+def _setup_org_parser(subparsers: Any) -> Any:
     """Setup organization command parser."""
     org_parser = subparsers.add_parser("org", help="Organization commands")
     org_parser.add_argument(
@@ -336,7 +336,7 @@ def _setup_org_parser(subparsers) -> Any:
     return org_parser
 
 
-def _setup_search_parser(subparsers) -> Any:
+def _setup_search_parser(subparsers: Any) -> Any:
     """Setup search command parser."""
     search_parser = subparsers.add_parser("search", help="Search commands")
     search_parser.add_argument(
@@ -361,7 +361,7 @@ def _setup_search_parser(subparsers) -> Any:
     return search_parser
 
 
-def _setup_release_parser(subparsers) -> Any:
+def _setup_release_parser(subparsers: Any) -> Any:
     """Setup release command parser."""
     release_parser = subparsers.add_parser("release", help="Release commands")
     release_parser.add_argument(
@@ -381,7 +381,7 @@ def _setup_release_parser(subparsers) -> Any:
 
 
 async def _handle_command(
-    args,
+    args: Any,
     # Removed unused config parameter
     authenticator: Authenticator,
     client: GitHubClient,
@@ -464,7 +464,7 @@ async def _handle_command(
             return 1
 
 
-async def _handle_auth_command(args, authenticator: Authenticator, ui: TerminalUI) -> int:
+async def _handle_auth_command(args: Any, authenticator: Authenticator, ui: TerminalUI) -> int:
     """Handle authentication commands with enhanced error handling."""
     try:
         match args.action:
@@ -525,7 +525,7 @@ async def _handle_auth_command(args, authenticator: Authenticator, ui: TerminalU
 
 # Placeholder command handlers - these would be implemented with proper command modules
 # Removed unused client and ui parameters from placeholder functions
-async def _handle_repo_command(args) -> int:
+async def _handle_repo_command(args: Any) -> int:
     """Handle repository commands."""
     console.print(
         f"[yellow]Repository command '{args.action}' not yet implemented.[/yellow]")
@@ -533,7 +533,7 @@ async def _handle_repo_command(args) -> int:
 
 
 # Removed unused client and ui parameters from placeholder functions
-async def _handle_pr_command(args) -> int:
+async def _handle_pr_command(args: Any) -> int:
     """Handle pull request commands."""
     console.print(
         f"[yellow]Pull request command '{args.action}' not yet implemented.[/yellow]")
@@ -541,7 +541,7 @@ async def _handle_pr_command(args) -> int:
 
 
 # Removed unused client and ui parameters from placeholder functions
-async def _handle_actions_command(args) -> int:
+async def _handle_actions_command(args: Any) -> int:
     """Handle GitHub Actions commands."""
     console.print(
         f"[yellow]Actions command '{args.action}' not yet implemented.[/yellow]")
@@ -549,7 +549,7 @@ async def _handle_actions_command(args) -> int:
 
 
 # Removed unused client and ui parameters from placeholder functions
-async def _handle_notifications_command(args) -> int:
+async def _handle_notifications_command(args: Any) -> int:
     """Handle notifications commands."""
     console.print(
         f"[yellow]Notifications command '{args.action}' not yet implemented.[/yellow]")
@@ -557,7 +557,7 @@ async def _handle_notifications_command(args) -> int:
 
 
 # Removed unused client and ui parameters from placeholder functions
-async def _handle_user_command(args) -> int:
+async def _handle_user_command(args: Any) -> int:
     """Handle user commands."""
     console.print(
         f"[yellow]User command '{args.action}' not yet implemented.[/yellow]")
@@ -565,7 +565,7 @@ async def _handle_user_command(args) -> int:
 
 
 # Removed unused client and ui parameters from placeholder functions
-async def _handle_org_command(args) -> int:
+async def _handle_org_command(args: Any) -> int:
     """Handle organization commands."""
     console.print(
         f"[yellow]Organization command '{args.action}' not yet implemented.[/yellow]")
@@ -573,7 +573,7 @@ async def _handle_org_command(args) -> int:
 
 
 # Removed unused client and ui parameters from placeholder functions
-async def _handle_search_command(args) -> int:
+async def _handle_search_command(args: Any) -> int:
     """Handle search commands."""
     console.print(
         f"[yellow]Search command '{args.action}' not yet implemented.[/yellow]")
@@ -581,7 +581,7 @@ async def _handle_search_command(args) -> int:
 
 
 # Removed unused client and ui parameters from placeholder functions
-async def _handle_release_command(args) -> int:
+async def _handle_release_command(args: Any) -> int:
     """Handle release commands."""
     console.print(
         f"[yellow]Release command '{args.action}' not yet implemented.[/yellow]")

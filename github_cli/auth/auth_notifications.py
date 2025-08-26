@@ -40,7 +40,7 @@ class AuthNotification:
 class AuthNotificationSystem:
     """System for managing authentication state change notifications."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.console = Console()
         self._subscribers: Dict[NotificationChannel, List[Callable[[AuthNotification], None]]] = {
             NotificationChannel.CONSOLE: [],

@@ -57,7 +57,7 @@ class PullRequest(BaseModel):
     @property
     def author(self) -> str:
         """Get author username."""
-        return self.user.get('login', 'Unknown')
+        return str(self.user.get('login', 'Unknown'))
 
     @property
     def branch_info(self) -> str:
@@ -152,7 +152,7 @@ class PullRequestDetailScreen(Screen[None]):
 
             yield LoadingIndicator(id="pr-detail-loading")
 
-    def _on_responsive_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_responsive_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle responsive layout changes."""
         if new_breakpoint:
             self._apply_responsive_layout()
@@ -163,8 +163,6 @@ class PullRequestDetailScreen(Screen[None]):
             return
 
         breakpoint = self.layout_manager.get_current_breakpoint()
-        if not breakpoint:
-            return
 
         # Apply breakpoint-specific classes
         container = self.query_one("#pr-detail-container")
@@ -349,7 +347,7 @@ class PullRequestManager:
                     prs_data = response.data['items']
                 else:
                     prs_data = response.get('items', []) if isinstance(
-                        response, dict) else []
+                        response, dict) else []  # type: ignore[unreachable]
 
             prs_data = response.data if hasattr(response, 'data') else response
             if isinstance(prs_data, dict) and 'items' in prs_data:
@@ -467,7 +465,8 @@ class PullRequestWidget(Container):
             yield Button("➕ New PR", id="new-pr", variant="primary", classes="adaptive-button priority-medium")
 
         # Pull request table with adaptive columns
-        pr_table = DataTable(id="pr-table", classes="pr-table adaptive-table")
+        pr_table: DataTable = DataTable(
+            id="pr-table", classes="pr-table adaptive-table")
         pr_table.add_columns("Title", "Author", "Branch", "Stats", "Created")
         yield pr_table
 
@@ -487,7 +486,7 @@ class PullRequestWidget(Container):
         # Load pull requests (all repositories by default)
         await self.pr_manager.load_pull_requests(pr_table)
 
-    def _on_responsive_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_responsive_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle responsive layout changes."""
         if new_breakpoint:
             self._apply_responsive_styles()
@@ -499,8 +498,6 @@ class PullRequestWidget(Container):
             return
 
         breakpoint = self.layout_manager.get_current_breakpoint()
-        if not breakpoint:
-            return
 
         # Apply breakpoint-specific classes
         self.remove_class("xs", "sm", "md", "lg", "xl")
@@ -524,8 +521,6 @@ class PullRequestWidget(Container):
             return
 
         breakpoint = self.layout_manager.get_current_breakpoint()
-        if not breakpoint:
-            return
 
         try:
             pr_table = self.query_one("#pr-table", DataTable)

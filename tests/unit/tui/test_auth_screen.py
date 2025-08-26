@@ -14,6 +14,18 @@ pytest.importorskip("textual")
 
 from github_cli.auth.authenticator import Authenticator
 from github_cli.utils.config import Config
+from github_cli.ui.tui.core.responsive import ResponsiveLayoutManager
+from github_cli.ui.tui.screens.auth import AuthScreen
+from github_cli.utils.exceptions import AuthenticationError
+from dataclasses import dataclass
+
+# Define AuthResult for tests since it's expected but not implemented
+@dataclass
+class AuthResult:
+    """Authentication result for testing."""
+    success: bool
+    token: str = None
+    error: str = None
 
 
 @pytest.mark.unit

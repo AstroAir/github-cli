@@ -15,17 +15,17 @@ from .terminal import TerminalUI as ModularTerminalUI
 class TerminalUI:
     """
     Backward-compatible wrapper for the modular terminal UI.
-    
+
     This class maintains the same API as the original TerminalUI while
     delegating to the new modular implementation.
     """
 
     def __init__(self, client: GitHubClient):
         self.client = client
-        
+
         # Use the new modular terminal UI
         self._terminal = ModularTerminalUI(client)
-        
+
         # Maintain backward compatibility properties
         self.console = self._terminal.console
         self.theme = self._terminal.theme
@@ -56,8 +56,8 @@ class TerminalUI:
         """Display a heading."""
         self._terminal.display_heading(heading)
 
-    def prompt(self, message: str, choices: Optional[List[str]] = None, 
-              default: Optional[str] = None) -> str:
+    def prompt(self, message: str, choices: Optional[List[str]] = None,
+               default: Optional[str] = None) -> str:
         """Prompt the user for input."""
         return self._terminal.prompt(message, choices, default)
 

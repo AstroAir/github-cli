@@ -77,7 +77,7 @@ class PullRequestAPI:
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to create pull request: {str(e)}")
 
-    async def update_pull_request(self, repo: str, number: int, **kwargs) -> PullRequest:
+    async def update_pull_request(self, repo: str, number: int, **kwargs: Any) -> PullRequest:
         """Update a pull request"""
         endpoint = f"repos/{repo}/pulls/{number}"
 
@@ -93,7 +93,7 @@ class PullRequestAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return response.data
+            return response.data  # type: ignore[no-any-return]
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to get pull request files: {str(e)}")
 
@@ -103,7 +103,7 @@ class PullRequestAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return response.data
+            return response.data  # type: ignore[no-any-return]
         except GitHubCLIError as e:
             raise GitHubCLIError(
                 f"Failed to get pull request commits: {str(e)}")
@@ -114,7 +114,7 @@ class PullRequestAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return response.data
+            return response.data  # type: ignore[no-any-return]
         except GitHubCLIError as e:
             raise GitHubCLIError(
                 f"Failed to get pull request reviews: {str(e)}")
@@ -141,7 +141,7 @@ class PullRequestAPI:
 
         try:
             response = await self.client.post(endpoint, data=data)
-            return response.data
+            return response.data  # type: ignore[no-any-return]
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to create review: {str(e)}")
 
@@ -167,7 +167,7 @@ class PullRequestAPI:
 
         try:
             response = await self.client.put(endpoint, data=data)
-            return response.data
+            return response.data  # type: ignore[no-any-return]
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to merge pull request: {str(e)}")
 
@@ -480,7 +480,8 @@ async def _show_pr_diff(repo: str, number: int, pr_api: PullRequestAPI, ui: Term
     headers = {"Accept": "application/vnd.github.v3.diff"}
 
     try:
-        diff = await pr_api.client._request("GET", endpoint, headers=headers)
+        response = await pr_api.client._request("GET", endpoint, headers=headers)
+        diff = response.data
 
         if ui.console.width > 120:
             # Wide terminal - show side by side

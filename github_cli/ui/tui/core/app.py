@@ -2,7 +2,7 @@
 
 import asyncio
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from textual import on, work
 from textual.app import App, ComposeResult
@@ -11,10 +11,10 @@ from textual.containers import Container, Horizontal, Vertical
 from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import (
-    Button, DataTable, Footer, Input, Label, LoadingIndicator,
-    Log, Placeholder, ProgressBar, Static, TabbedContent, TabPane, Tree
+    Button, Collapsible, DataTable, Footer, Header, Input, Label, LoadingIndicator,
+    Log, MarkdownViewer, Placeholder, ProgressBar, RichLog, Rule, SelectionList,
+    Sparkline, Static, TabbedContent, TabPane, Tree
 )
-from textual.widgets._header import Header
 from loguru import logger
 
 from github_cli.api.client import GitHubClient
@@ -73,7 +73,7 @@ class StatusBar(Static):
             # Full status bar for larger screens
             return f"{self.user_info} | {self.rate_limit} | {self.connection_status} | {self.terminal_size}"
 
-    def _on_layout_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_layout_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle layout changes."""
         self.terminal_size = f"📐 {self.layout_manager.app.size.width}×{self.layout_manager.app.size.height} ({new_breakpoint.name})"
         self.refresh()
@@ -98,7 +98,8 @@ class GitHubTUIApp(App[None]):
     TITLE = "GitHub CLI - Terminal User Interface"
     SUB_TITLE = "Advanced GitHub management in your terminal"
 
-    CSS_PATH = str(Path(__file__).parent.parent / "github_tui.tcss")  # External CSS file for styling
+    # External CSS file for styling
+    CSS_PATH = str(Path(__file__).parent.parent / "github_tui.tcss")
 
     BINDINGS: ClassVar[list[BindingType]] = [
         Binding("ctrl+c,q", "quit", "Quit", priority=True),
@@ -159,7 +160,7 @@ class GitHubTUIApp(App[None]):
         # Start background tasks
         self._start_background_tasks()
 
-    async def on_resize(self, event) -> None:
+    async def on_resize(self, event: Any) -> None:
         """Handle terminal resize events."""
         self.layout_manager.update_layout(event.size)
         await self._update_responsive_layout()
@@ -191,6 +192,9 @@ class GitHubTUIApp(App[None]):
                 # Horizontal layout for larger screens
                 yield from self._compose_horizontal_layout()
 
+            # Modern loading overlay
+            yield LoadingIndicator(id="loading-overlay")
+
         # Status bar with layout manager (conditionally visible)
         if status_bar_config["visible"]:
             self.status_bar = StatusBar(self.layout_manager)
@@ -218,8 +222,10 @@ class GitHubTUIApp(App[None]):
             if sidebar_config["visible"] and not breakpoint.name.startswith("horizontal"):
                 with Vertical(id="sidebar", classes="sidebar adaptive-sidebar"):
                     yield Tree("GitHub CLI", id="nav-tree")
+                    yield Rule(line_style="heavy")
                     yield Button("🔐 Login", id="login-btn", variant="primary")
                     yield Button("🚪 Logout", id="logout-btn", variant="error")
+                    yield Rule()
                     yield Button("🔄 Refresh", id="refresh-btn")
 
             # Main content area with responsive tabs
@@ -228,7 +234,7 @@ class GitHubTUIApp(App[None]):
     def _compose_vertical_layout(self) -> ComposeResult:
         """Compose vertical layout for small screens."""
         breakpoint = self.layout_manager.get_current_breakpoint()
-        
+
         with Vertical(id="content-area-vertical"):
             # Compact navigation bar for small screens
             if breakpoint.name not in ["horizontal_ultra_tight"]:
@@ -248,13 +254,14 @@ class GitHubTUIApp(App[None]):
 
         # Define all available components
         all_components = [
-            "dashboard", "repositories", "pull_requests", "actions", 
+            "dashboard", "repositories", "pull_requests", "actions",
             "notifications", "search", "settings"
         ]
 
         # Optimize layout based on height constraints
         if content_config.get("priority_based_layout", False):
-            visible_components = self.layout_manager.optimize_layout_for_height(all_components)
+            visible_components = self.layout_manager.optimize_layout_for_height(
+                all_components)
         else:
             visible_components = all_components
 
@@ -317,7 +324,7 @@ class GitHubTUIApp(App[None]):
         """Check and update authentication status."""
         try:
             authenticated = self.authenticator.is_authenticated()
-            
+
             if authenticated:
                 user_info = await self.authenticator.fetch_user_info()
                 if user_info:
@@ -330,16 +337,17 @@ class GitHubTUIApp(App[None]):
                     if self.status_bar:
                         self.status_bar.update_user_info(user_info.login)
                         self.status_bar.update_connection_status(True)
-                        
+
                     # Initialize GitHub client with authenticated state
                     if not self.client:
                         self.client = GitHubClient(self.authenticator)
-                    
+
                     # Update button visibility
                     self._update_auth_button_visibility(True)
                 else:
                     # Token exists but user info fetch failed - possibly expired token
-                    logger.warning("Token exists but user info fetch failed - token may be expired")
+                    logger.warning(
+                        "Token exists but user info fetch failed - token may be expired")
                     self._handle_authentication_failure()
             else:
                 # Not authenticated
@@ -357,10 +365,10 @@ class GitHubTUIApp(App[None]):
         if self.status_bar:
             self.status_bar.update_user_info(None)
             self.status_bar.update_connection_status(False)
-        
+
         # Update button visibility
         self._update_auth_button_visibility(False)
-        
+
         # Clear GitHub client
         self.client = None
 
@@ -369,7 +377,7 @@ class GitHubTUIApp(App[None]):
         try:
             login_btn = self.query_one("#login-btn", Button)
             logout_btn = self.query_one("#logout-btn", Button)
-            
+
             if authenticated:
                 login_btn.display = False
                 logout_btn.display = True
@@ -410,7 +418,7 @@ class GitHubTUIApp(App[None]):
         """Update the layout based on current responsive configuration."""
         try:
             breakpoint = self.layout_manager.get_current_breakpoint()
-            
+
             # Update main container classes
             try:
                 main_container = self.query_one("#main-container")
@@ -421,29 +429,29 @@ class GitHubTUIApp(App[None]):
                 main_container.add_class(breakpoint.name)
             except Exception:
                 pass
-            
+
             # Update header classes
             try:
                 header = self.query_one("Header")
                 header_config = self.layout_manager.get_header_config()
-                
+
                 if header_config["compact"]:
                     header.add_class("compact")
                 else:
                     header.remove_class("compact")
-                    
+
                 if header_config["height"] == 1:
                     header.add_class("ultra-compact")
                 else:
                     header.remove_class("ultra-compact")
             except Exception:
                 pass
-            
+
             # Update footer visibility
             try:
                 footer = self.query_one("Footer")
                 footer_config = self.layout_manager.get_footer_config()
-                
+
                 if footer_config["visible"]:
                     footer.remove_class("hidden")
                     footer.display = True
@@ -486,7 +494,7 @@ class GitHubTUIApp(App[None]):
         # For now, we'll just log the change
         logger.info("Switching to horizontal layout")
 
-    def _on_responsive_layout_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_responsive_layout_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle responsive layout changes."""
         logger.info(
             f"Layout changed from {old_breakpoint.name if old_breakpoint else 'None'} to {new_breakpoint.name}")
@@ -500,7 +508,8 @@ class GitHubTUIApp(App[None]):
 
         # Log layout change details
         if new_breakpoint.name.startswith("horizontal"):
-            logger.info(f"Switched to horizontal layout optimized for limited height: {new_breakpoint.name}")
+            logger.info(
+                f"Switched to horizontal layout optimized for limited height: {new_breakpoint.name}")
         elif new_breakpoint.compact_mode:
             logger.info(f"Switched to compact mode: {new_breakpoint.name}")
         else:
@@ -552,48 +561,44 @@ class GitHubTUIApp(App[None]):
                 # Ensure authenticator is properly initialized
                 if not self.authenticator:
                     self.authenticator = Authenticator(self.config)
-                    
+
                 # Ensure client is refreshed
                 if not self.client:
                     self.client = GitHubClient(self.authenticator)
 
                 # Push authentication screen and wait for result
                 try:
-                    result = await self.push_screen(AuthScreen(self.authenticator, self.layout_manager))
-                    
-                    # Handle the authentication result
-                    if result and result.success:
-                        # Refresh authentication status after successful login
-                        await self._check_authentication()
+                    await self.push_screen(AuthScreen(self.authenticator, self.layout_manager))
 
-                        if self.authenticated:
-                            self.notify(
-                                f"Successfully logged in as {self.current_user}", 
-                                severity="information", 
-                                timeout=5
-                            )
-                            logger.info(f"User successfully authenticated: {self.current_user}")
+                    # Refresh authentication status after screen closes
+                    await self._check_authentication()
 
-                            # Refresh all content that depends on authentication
-                            await self._refresh_authenticated_content()
-                        else:
-                            self.notify("Authentication verification failed", severity="error")
+                    if self.authenticated:
+                        self.notify(  # type: ignore[unreachable]
+                            f"Successfully logged in as {self.current_user}",
+                            severity="information",
+                            timeout=5
+                        )
+                        logger.info(
+                            f"User successfully authenticated: {self.current_user}")
+
+                        # Refresh all content that depends on authentication
+                        await self._refresh_authenticated_content()
                     else:
-                        # Handle authentication failure or cancellation
-                        if result and result.error:
-                            self.notify(f"Authentication failed: {result.error}", severity="error")
-                        else:
-                            self.notify("Authentication was cancelled", severity="warning")
-                            
+                        self.notify(
+                            "Authentication was cancelled or failed", severity="information")
+
                 except Exception as screen_error:
                     logger.error(f"Error in auth screen: {screen_error}")
-                    self.notify(f"Authentication screen error: {screen_error}", severity="error")
+                    self.notify(
+                        f"Authentication screen error: {screen_error}", severity="error")
 
         except Exception as e:
             logger.error(f"Error in login action: {e}")
             # Fallback error handling if error_handler fails
             if "Network" in str(e) or "timeout" in str(e).lower():
-                self.notify("Network error during authentication. Please check your connection.", severity="error")
+                self.notify(
+                    "Network error during authentication. Please check your connection.", severity="error")
             elif "Authentication" in str(e):
                 self.notify(f"Authentication error: {e}", severity="error")
             else:
@@ -605,7 +610,7 @@ class GitHubTUIApp(App[None]):
         """Refresh content that requires authentication."""
         try:
             logger.debug("Refreshing authenticated content")
-            
+
             # Update any placeholders with auth-dependent content
             if self.authenticated and self.client:
                 # Refresh repository content if visible
@@ -616,14 +621,15 @@ class GitHubTUIApp(App[None]):
                         pass
                 except Exception:
                     pass  # Tab might not exist or be visible
-                
+
                 # Refresh other auth-dependent tabs as needed
                 # This can be extended to refresh specific widgets or data
-                
+
             else:
                 # Update placeholders to show login required messages
-                auth_required_tabs = ["#repos-tab", "#prs-tab", "#actions-tab", "#notifications-tab", "#search-tab"]
-                
+                auth_required_tabs = [
+                    "#repos-tab", "#prs-tab", "#actions-tab", "#notifications-tab", "#search-tab"]
+
                 for tab_id in auth_required_tabs:
                     try:
                         tab = self.query_one(tab_id, TabPane)
@@ -631,7 +637,7 @@ class GitHubTUIApp(App[None]):
                         pass
                     except Exception:
                         pass  # Tab might not exist
-                        
+
         except Exception as e:
             logger.warning(f"Error refreshing authenticated content: {e}")
             # Don't let content refresh errors break the app
@@ -646,10 +652,10 @@ class GitHubTUIApp(App[None]):
             async with self.error_handler.error_boundary("logout"):
                 self.loading = True
                 self.notify("Logging out...", timeout=2)
-                
+
                 # Perform logout
                 await self.authenticator.logout()
-                
+
                 # Update state
                 self.authenticated = False
                 self.current_user = None
@@ -664,19 +670,19 @@ class GitHubTUIApp(App[None]):
 
                 self.notify("Successfully logged out", severity="information")
                 logger.info("User logged out")
-                
+
                 # Refresh UI to reflect unauthenticated state
                 await self._refresh_authenticated_content()
 
         except Exception as e:
             logger.error(f"Error during logout: {e}")
             self.notify(f"Logout failed: {e}", severity="error")
-            
+
             # Force state cleanup even if logout failed
             self.authenticated = False
             self.current_user = None
             self.client = None
-            
+
         finally:
             self.loading = False
 
@@ -728,21 +734,29 @@ class GitHubTUIApp(App[None]):
         """React to authentication state changes."""
         try:
             self._update_auth_button_visibility(authenticated)
-            
+
             # Refresh content that depends on authentication
             self.call_after_refresh(self._refresh_authenticated_content)
-            
+
             logger.debug(f"Authentication state updated: {authenticated}")
         except Exception as e:
             logger.debug(f"Could not update UI for auth state change: {e}")
             # UI might not be fully initialized yet
 
     def watch_loading(self, loading: bool) -> None:
-        """React to loading state changes."""
-        # Could show/hide loading indicators here
-        if hasattr(self, 'status_bar') and self.status_bar:
-            # Update status to show loading state
-            pass
+        """React to loading state changes with modern LoadingIndicator."""
+        try:
+            # Update status bar
+            if hasattr(self, 'status_bar') and self.status_bar:
+                self.status_bar.update_loading_state(loading)
+
+            # Show/hide loading overlay
+            loading_overlay = self.query_one("#loading-overlay", LoadingIndicator)
+            if loading_overlay:
+                loading_overlay.display = loading
+        except Exception as e:
+            logger.debug(f"Could not update loading state: {e}")
+            # UI might not be fully initialized yet
 
 
 # Main entry point for the TUI application

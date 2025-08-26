@@ -3,7 +3,7 @@ GitHub Issues API module
 """
 
 import asyncio
-from typing import List, Dict, Any, Optional, Union, Tuple
+from typing import List, Dict, Any, Optional, Union, Tuple, cast
 from datetime import datetime
 
 from github_cli.api.client import GitHubClient
@@ -71,7 +71,7 @@ class IssuesAPI:
 
         try:
             response = await self.client.get(endpoint, params=params)
-            return [Issue.from_json(issue) for issue in response]
+            return [Issue.from_json(issue) for issue in response.data]
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to list issues: {str(e)}")
 
@@ -81,7 +81,7 @@ class IssuesAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return Issue.from_json(response)
+            return Issue.from_json(response.data)
         except NotFoundError:
             raise GitHubCLIError(f"Issue #{number} not found in {repo}")
         except GitHubCLIError as e:
@@ -109,17 +109,17 @@ class IssuesAPI:
 
         try:
             response = await self.client.post(endpoint, data=data)
-            return Issue.from_json(response)
+            return Issue.from_json(response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to create issue: {str(e)}")
 
-    async def update_issue(self, repo: str, number: int, **kwargs) -> Issue:
+    async def update_issue(self, repo: str, number: int, **kwargs: Any) -> Issue:
         """Update an issue"""
         endpoint = f"repos/{repo}/issues/{number}"
 
         try:
             response = await self.client.patch(endpoint, data=kwargs)
-            return Issue.from_json(response)
+            return Issue.from_json(response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to update issue: {str(e)}")
 
@@ -128,7 +128,8 @@ class IssuesAPI:
         endpoint = f"repos/{repo}/issues/{number}/comments"
 
         try:
-            return await self.client.post(endpoint, data={"body": body})
+            response = await self.client.post(endpoint, data={"body": body})
+            return cast(Dict[str, Any], response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to add comment: {str(e)}")
 
@@ -137,7 +138,8 @@ class IssuesAPI:
         endpoint = f"repos/{repo}/issues/{number}/comments"
 
         try:
-            return await self.client.get(endpoint)
+            response = await self.client.get(endpoint)
+            return cast(List[Dict[str, Any]], response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to list comments: {str(e)}")
 

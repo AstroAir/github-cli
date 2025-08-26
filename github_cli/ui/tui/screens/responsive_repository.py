@@ -46,12 +46,12 @@ class ResponsiveRepositoryWidget(Container):
         """Compose the repository widget with adaptive layout."""
         # Use adaptive container class
         self.add_class("adaptive-container")
-        
+
         # Check if we should use compact layout
         if self.layout_manager:
             breakpoint = self.layout_manager.get_current_breakpoint()
             available_height = self.layout_manager._get_available_content_height()
-            
+
             if available_height < 10 or breakpoint.name.startswith("horizontal"):
                 yield from self._compose_compact_layout()
             else:
@@ -68,8 +68,8 @@ class ResponsiveRepositoryWidget(Container):
             yield Button("➕", id="new-repo", variant="primary", classes="compact-button")
 
         # Compact table with fewer columns
-        repo_table = DataTable(
-            id="repo-table", 
+        repo_table: DataTable = DataTable(
+            id="repo-table",
             classes="compact-repo-table",
             show_header=True,
             show_row_labels=False
@@ -91,15 +91,16 @@ class ResponsiveRepositoryWidget(Container):
             yield Button("➕ New Repo", id="new-repo", variant="primary", classes="full-button")
 
         # Full table with all columns
-        repo_table = DataTable(
-            id="repo-table", 
+        repo_table: DataTable = DataTable(
+            id="repo-table",
             classes="full-repo-table",
             show_header=True,
             show_row_labels=True
         )
 
         # Add full columns for normal view
-        repo_table.add_columns("Name", "Description", "Language", "Stars", "Forks", "Updated")
+        repo_table.add_columns("Name", "Description",
+                               "Language", "Stars", "Forks", "Updated")
         yield repo_table
 
         # Loading indicator
@@ -117,11 +118,11 @@ class ResponsiveRepositoryWidget(Container):
 
         # Load repositories
         await self.repo_manager.load_repositories(repo_table)
-        
+
         # Update table with responsive data
         await self._update_responsive_table(repo_table)
 
-    def _on_responsive_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_responsive_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle responsive layout changes."""
         if new_breakpoint:
             self._apply_responsive_styles()
@@ -133,11 +134,10 @@ class ResponsiveRepositoryWidget(Container):
             return
 
         breakpoint = self.layout_manager.get_current_breakpoint()
-        if not breakpoint:
-            return
 
         # Apply breakpoint-specific classes
-        self.remove_class("xs", "sm", "md", "lg", "xl", "horizontal_tight", "horizontal_ultra_tight")
+        self.remove_class("xs", "sm", "md", "lg", "xl",
+                          "horizontal_tight", "horizontal_ultra_tight")
         self.add_class(breakpoint.name)
 
         # Adapt controls layout for small screens
@@ -152,19 +152,19 @@ class ResponsiveRepositoryWidget(Container):
         except Exception:
             pass
 
-    def _adapt_table_for_layout(self, breakpoint) -> None:
+    def _adapt_table_for_layout(self, breakpoint: Any) -> None:
         """Adapt table layout based on breakpoint."""
         try:
             repo_table = self.query_one("#repo-table", DataTable)
-            
+
             # Force recreate table if layout changed significantly
-            if (breakpoint.name.startswith("horizontal") and 
-                not repo_table.has_class("compact-repo-table")):
+            if (breakpoint.name.startswith("horizontal") and
+                    not repo_table.has_class("compact-repo-table")):
                 asyncio.create_task(self._recreate_table_compact())
-            elif (not breakpoint.name.startswith("horizontal") and 
+            elif (not breakpoint.name.startswith("horizontal") and
                   repo_table.has_class("compact-repo-table")):
                 asyncio.create_task(self._recreate_table_full())
-                
+
         except Exception as e:
             logger.warning(f"Error adapting table layout: {e}")
 
@@ -173,18 +173,18 @@ class ResponsiveRepositoryWidget(Container):
         try:
             repo_table = self.query_one("#repo-table", DataTable)
             repo_table.clear()
-            
+
             # Update classes
             repo_table.remove_class("full-repo-table")
             repo_table.add_class("compact-repo-table")
-            
+
             # Clear and recreate columns
             repo_table.columns.clear()
             repo_table.add_columns("Repository", "Language", "★", "Updated")
-            
+
             # Reload data with compact format
             await self._update_responsive_table(repo_table)
-            
+
         except Exception as e:
             logger.error(f"Error recreating compact table: {e}")
 
@@ -193,32 +193,33 @@ class ResponsiveRepositoryWidget(Container):
         try:
             repo_table = self.query_one("#repo-table", DataTable)
             repo_table.clear()
-            
+
             # Update classes
             repo_table.remove_class("compact-repo-table")
             repo_table.add_class("full-repo-table")
-            
+
             # Clear and recreate columns
             repo_table.columns.clear()
-            repo_table.add_columns("Name", "Description", "Language", "Stars", "Forks", "Updated")
-            
+            repo_table.add_columns("Name", "Description",
+                                   "Language", "Stars", "Forks", "Updated")
+
             # Reload data with full format
             await self._update_responsive_table(repo_table)
-            
+
         except Exception as e:
             logger.error(f"Error recreating full table: {e}")
 
     async def _update_responsive_table(self, repo_table: DataTable) -> None:
         """Update the repository table with responsive data format."""
         repo_table.clear()
-        
+
         # Determine if we should use compact format
         compact_mode = False
         if self.layout_manager:
             breakpoint = self.layout_manager.get_current_breakpoint()
-            compact_mode = (breakpoint.compact_mode or 
-                          breakpoint.name.startswith("horizontal") or
-                          self.layout_manager._get_available_content_height() < 10)
+            compact_mode = (breakpoint.compact_mode or
+                            breakpoint.name.startswith("horizontal") or
+                            self.layout_manager._get_available_content_height() < 10)
 
         for repo in self.repo_manager.filtered_repos:
             if compact_mode:
@@ -234,7 +235,8 @@ class ResponsiveRepositoryWidget(Container):
                 # Full format for larger screens
                 repo_table.add_row(
                     repo.display_name,
-                    repo.description[:40] + "..." if repo.description and len(repo.description) > 40 else repo.description or "",
+                    repo.description[:40] + "..." if repo.description and len(
+                        repo.description) > 40 else repo.description or "",
                     repo.language or "N/A",
                     str(repo.stargazers_count),
                     str(repo.forks_count),
@@ -259,16 +261,19 @@ class ResponsiveRepositoryWidget(Container):
     @on(Button.Pressed, "#new-repo")
     async def create_new_repository(self) -> None:
         """Create a new repository (placeholder)."""
-        self.notify("Create new repository feature coming soon!", severity="information")
+        self.notify("Create new repository feature coming soon!",
+                    severity="information")
 
     @on(DataTable.RowSelected, "#repo-table")
     def on_repository_selected(self, event: DataTable.RowSelected) -> None:
         """Handle repository selection."""
         if event.row_key and event.row_key.value:
-            repo = self.repo_manager.get_repository_by_id(str(event.row_key.value))
+            repo = self.repo_manager.get_repository_by_id(
+                str(event.row_key.value))
             if repo:
                 # Open repository detail screen
-                detail_screen = ResponsiveRepositoryDetailScreen(repo, self.client, self.layout_manager)
+                detail_screen = ResponsiveRepositoryDetailScreen(
+                    repo, self.client, self.layout_manager)
                 self.app.push_screen(detail_screen)
 
 
@@ -288,7 +293,7 @@ class ResponsiveRepositoryDetailScreen(Screen[None]):
         if self.layout_manager:
             breakpoint = self.layout_manager.get_current_breakpoint()
             available_height = self.layout_manager._get_available_content_height()
-            
+
             if available_height < 8 or breakpoint.name == "horizontal_ultra_tight":
                 yield from self._compose_minimal_layout()
             elif available_height < 12 or breakpoint.name == "horizontal_tight":
@@ -304,7 +309,7 @@ class ResponsiveRepositoryDetailScreen(Screen[None]):
             # Single line with essential info
             info_text = f"📂 {self.repo.name} | {self.repo.language or 'N/A'} | ⭐{self.repo.stargazers_count} | 🍴{self.repo.forks_count}"
             yield Static(info_text, id="minimal-info")
-            
+
             # Single row of action buttons
             with Horizontal(id="minimal-actions", classes="minimal-actions"):
                 yield Button("🌐", id="open-browser", classes="minimal-button")
@@ -315,17 +320,17 @@ class ResponsiveRepositoryDetailScreen(Screen[None]):
         """Compact layout for limited height."""
         with Container(id="repo-detail-compact", classes="compact-container"):
             yield Static(self.repo.name, id="compact-title", classes="compact-title")
-            
+
             # Two-column layout for info
             with Horizontal(id="compact-info", classes="compact-info-row"):
                 with Vertical(classes="compact-info-col"):
                     yield Label(f"📂 {self.repo.name}")
                     yield Label(f"🔧 {self.repo.language or 'N/A'}")
-                    
+
                 with Vertical(classes="compact-info-col"):
                     yield Label(f"⭐ {self.repo.stargazers_count}")
                     yield Label(f"🍴 {self.repo.forks_count}")
-            
+
             # Action buttons in horizontal layout
             with Horizontal(id="compact-actions", classes="compact-actions"):
                 yield Button("🌐 Open", id="open-browser", classes="compact-button")
@@ -336,7 +341,7 @@ class ResponsiveRepositoryDetailScreen(Screen[None]):
         """Normal layout for adequate height."""
         with Container(id="repo-detail-normal", classes="normal-container"):
             yield Static(f"Repository: {self.repo.full_name}", id="normal-title", classes="normal-title")
-            
+
             # Full info layout
             with Horizontal(id="normal-info", classes="normal-info-row"):
                 with Vertical(id="basic-info", classes="info-panel"):
@@ -344,25 +349,25 @@ class ResponsiveRepositoryDetailScreen(Screen[None]):
                     yield Label(f"Description: {self.repo.description or 'No description'}")
                     yield Label(f"Language: {self.repo.language or 'Unknown'}")
                     yield Label(f"Private: {'Yes' if self.repo.private else 'No'}")
-                    
+
                 with Vertical(id="stats-info", classes="stats-panel"):
                     yield Label(f"⭐ Stars: {self.repo.stargazers_count}")
                     yield Label(f"🍴 Forks: {self.repo.forks_count}")
                     yield Label(f"📅 Updated: {self.repo.last_updated}")
-            
+
             # Action buttons
             with Horizontal(id="normal-actions", classes="normal-actions"):
                 yield Button("🌐 Open in Browser", id="open-browser", classes="normal-button")
                 yield Button("📋 Copy Clone URL", id="copy-clone", classes="normal-button")
                 yield Button("⬅️ Back", id="back-button", variant="primary", classes="normal-button")
 
-    def _on_responsive_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_responsive_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle responsive layout changes."""
         # Refresh the screen if the layout type changed significantly
         if old_breakpoint and new_breakpoint:
             old_is_horizontal = old_breakpoint.name.startswith("horizontal")
             new_is_horizontal = new_breakpoint.name.startswith("horizontal")
-            
+
             if old_is_horizontal != new_is_horizontal:
                 self.refresh()
 
@@ -372,9 +377,11 @@ class ResponsiveRepositoryDetailScreen(Screen[None]):
         import webbrowser
         try:
             if webbrowser.open(self.repo.html_url):
-                self.notify(f"🌐 Opened {self.repo.name} in browser", severity="information")
+                self.notify(
+                    f"🌐 Opened {self.repo.name} in browser", severity="information")
             else:
-                self.notify(f"⚠️ Could not open browser. URL: {self.repo.html_url}", severity="warning")
+                self.notify(
+                    f"⚠️ Could not open browser. URL: {self.repo.html_url}", severity="warning")
         except Exception as e:
             self.notify(f"❌ Failed to open browser: {e}", severity="error")
 
@@ -386,9 +393,11 @@ class ResponsiveRepositoryDetailScreen(Screen[None]):
             try:
                 import pyperclip
                 pyperclip.copy(clone_url)
-                self.notify(f"📋 Copied clone URL: {clone_url}", severity="information")
+                self.notify(
+                    f"📋 Copied clone URL: {clone_url}", severity="information")
             except ImportError:
-                self.notify(f"📄 Clone URL: {clone_url}", severity="information", timeout=10)
+                self.notify(f"📄 Clone URL: {clone_url}",
+                            severity="information", timeout=10)
         except Exception as e:
             self.notify(f"❌ Failed to copy clone URL: {e}", severity="error")
 
@@ -396,7 +405,8 @@ class ResponsiveRepositoryDetailScreen(Screen[None]):
     def close_detail(self) -> None:
         """Close the detail screen."""
         if self.layout_manager:
-            self.layout_manager.remove_resize_callback(self._on_responsive_change)
+            self.layout_manager.remove_resize_callback(
+                self._on_responsive_change)
         self.dismiss()
 
 

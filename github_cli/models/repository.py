@@ -73,7 +73,8 @@ class Repository:
     @property
     def owner_name(self) -> str:
         """Get the owner's login name"""
-        return self.owner.get("login", "")
+        login = self.owner.get("login", "")
+        return str(login) if login else ""
 
     @property
     def created_date(self) -> datetime:
@@ -89,5 +90,6 @@ class Repository:
     def license_name(self) -> Optional[str]:
         """Get the license name if available"""
         if self.license:
-            return self.license.get("name")
+            name = self.license.get("name")
+            return str(name) if name is not None else None
         return None

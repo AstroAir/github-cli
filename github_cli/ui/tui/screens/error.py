@@ -34,7 +34,7 @@ class ErrorDetailScreen(ModalScreen[None]):
         self.error = error
         self.show_technical_details = show_technical_details
 
-    def compose(self):
+    def compose(self) -> Any:
         with Container(id="error-modal", classes="error-modal"):
             yield Static("⚠️ Error Details", id="error-title", classes="error-title")
 
@@ -96,7 +96,7 @@ class RetryIndicatorWidget(Container):
         self.delay = delay
         self.cancelled = False
 
-    def compose(self):
+    def compose(self) -> Any:
         yield Static(f"Retry {self.attempt}/{self.max_attempts}", classes="retry-title")
         yield ProgressBar(total=int(self.delay), show_eta=True, id="retry-progress")
         yield Button("Cancel", id="cancel-retry", variant="error")
@@ -213,6 +213,7 @@ class TUIErrorHandler:
     async def show_error_dialog(self, error: GitHubCLIError, show_technical: bool = False) -> str | None:
         """Show detailed error dialog and return user choice."""
         try:
+            # type: ignore[func-returns-value]
             result = await self.app.push_screen(ErrorDetailScreen(error, show_technical))
             return result
         except Exception as e:
@@ -239,7 +240,7 @@ class TUIErrorHandler:
         self.app.notify(full_message, severity="error", timeout=10.0)
 
     @asynccontextmanager
-    async def error_boundary(self, operation_name: str = "operation"):
+    async def error_boundary(self, operation_name: str = "operation") -> Any:
         """Context manager for handling errors with automatic user feedback."""
         try:
             yield
@@ -274,9 +275,9 @@ class TUIErrorHandler:
                          *args: P.args,
                          **kwargs: P.kwargs) -> T:
         """Execute operation with retry logic and user feedback."""
-        last_error = None
+        last_error: GitHubCLIError | None = None
 
-        for attempt in range(1, self.retry_config['max_attempts'] + 1):
+        for attempt in range(1, int(self.retry_config['max_attempts']) + 1):
             try:
                 if attempt > 1:
                     # Calculate delay
@@ -289,7 +290,7 @@ class TUIErrorHandler:
                     # Show retry indicator if configured
                     if self.retry_config['show_progress']:
                         retry_widget = RetryIndicatorWidget(
-                            attempt, self.retry_config['max_attempts'], delay)
+                            attempt, int(self.retry_config['max_attempts']), delay)
                         # Mount retry widget temporarily
                         self.app.mount(retry_widget)
                         try:
@@ -306,7 +307,7 @@ class TUIErrorHandler:
                 if asyncio.iscoroutinefunction(operation):
                     return await operation(*args, **kwargs)  # type: ignore
                 else:
-                    return operation(*args, **kwargs)  # type: ignore
+                    return operation(*args, **kwargs)
 
             except (NetworkError, TimeoutError, APIError) as e:
                 last_error = e
@@ -343,7 +344,7 @@ def create_error_handler(app: App) -> TUIErrorHandler:
 
 
 # Decorator for automatic error handling
-def handle_errors(error_handler: TUIErrorHandler, operation_name: str = "operation"):
+def handle_errors(error_handler: TUIErrorHandler, operation_name: str = "operation") -> Any:
     """Decorator for automatic error handling with user feedback."""
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
         async def async_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
@@ -366,6 +367,7 @@ def handle_errors(error_handler: TUIErrorHandler, operation_name: str = "operati
                 error_handler.notify_error(github_error)
                 raise github_error
 
-        return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper  # type: ignore
+        # type: ignore
+        return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
 
     return decorator

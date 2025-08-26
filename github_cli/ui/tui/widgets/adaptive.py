@@ -7,7 +7,7 @@ automatically adapt to different terminal sizes and layout configurations.
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import DataTable, Static, Label
 from textual.geometry import Size
@@ -31,11 +31,11 @@ class ResponsiveWidget(Protocol):
 class AdaptiveContainer(Container, AdaptiveWidget):
     """Container that automatically adapts its layout based on available space."""
 
-    def __init__(self, layout_manager: ResponsiveLayoutManager, **kwargs) -> None:
+    def __init__(self, layout_manager: ResponsiveLayoutManager, **kwargs: Any) -> None:
         Container.__init__(self, **kwargs)
         AdaptiveWidget.__init__(self, layout_manager)
 
-        self._content_widgets = []
+        self._content_widgets: list[dict[str, Any]] = []
         self._layout_strategy = "auto"  # auto, horizontal, vertical, grid
 
     def set_layout_strategy(self, strategy: str) -> None:
@@ -43,7 +43,7 @@ class AdaptiveContainer(Container, AdaptiveWidget):
         self._layout_strategy = strategy
         self._update_container_layout()
 
-    def add_adaptive_content(self, widget, priority: int = 0, min_width: int = 0, min_height: int = 0) -> None:
+    def add_adaptive_content(self, widget: Any, priority: int = 0, min_width: int = 0, min_height: int = 0) -> None:
         """Add content with responsive priority and minimum size requirements."""
         self._content_widgets.append({
             'widget': widget,
@@ -54,7 +54,7 @@ class AdaptiveContainer(Container, AdaptiveWidget):
         })
         self._update_container_layout()
 
-    def _on_layout_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_layout_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle layout changes by reorganizing content."""
         self._update_container_layout()
 
@@ -100,14 +100,26 @@ class AdaptiveContainer(Container, AdaptiveWidget):
 
 
 class AdaptiveDataTable(DataTable, AdaptiveWidget):
-    """DataTable that automatically adjusts columns based on available space."""
+    """DataTable that automatically adjusts columns based on available space with modern features."""
 
-    def __init__(self, layout_manager: ResponsiveLayoutManager, **kwargs) -> None:
-        DataTable.__init__(self, **kwargs)
+    def __init__(self, layout_manager: ResponsiveLayoutManager, **kwargs: Any) -> None:
+        # Enhanced DataTable initialization
+        DataTable.__init__(
+            self,
+            show_header=kwargs.pop('show_header', True),
+            show_row_labels=kwargs.pop('show_row_labels', False),
+            zebra_stripes=kwargs.pop('zebra_stripes', True),
+            header_height=kwargs.pop('header_height', 1),
+            show_cursor=kwargs.pop('show_cursor', True),
+            cursor_foreground_priority=kwargs.pop('cursor_foreground_priority', "css"),
+            cursor_background_priority=kwargs.pop('cursor_background_priority', "css"),
+            **kwargs
+        )
         AdaptiveWidget.__init__(self, layout_manager)
 
-        self._column_configs = []
-        self._original_columns = []
+        self._column_configs: list[dict[str, Any]] = []
+        self._original_columns: list[Any] = []
+        self._row_data: list[tuple[str, list[Any]]] = []  # Store row data for re-rendering
 
     def add_adaptive_column(self,
                             label: str,
@@ -116,7 +128,7 @@ class AdaptiveDataTable(DataTable, AdaptiveWidget):
                             min_width: int = 10,
                             priority: int = 0,
                             hidden_in_compact: bool = False,
-                            **kwargs) -> None:
+                            **kwargs: Any) -> None:
         """Add a column with adaptive configuration."""
         self._column_configs.append({
             'label': label,
@@ -129,7 +141,73 @@ class AdaptiveDataTable(DataTable, AdaptiveWidget):
         })
         self._update_table_columns()
 
-    def _on_layout_change(self, old_breakpoint, new_breakpoint) -> None:
+    def add_enhanced_row(
+        self,
+        *cells: Any,
+        height: int | None = None,
+        key: str | None = None,
+        label: str | None = None
+    ) -> None:
+        """Add a row with enhanced features and store for re-rendering."""
+        # Store row data for adaptive re-rendering
+        row_key = key or str(len(self._row_data))
+        self._row_data.append((row_key, list(cells)))
+
+        # Add to table
+        self.add_row(*cells, height=height, key=key, label=label)
+
+    def clear_enhanced(self, columns: bool = False) -> None:
+        """Clear table data including stored row data."""
+        self._row_data.clear()
+        self.clear(columns=columns)
+
+    def refresh_adaptive_layout(self) -> None:
+        """Refresh the table layout and re-render all data."""
+        # Store current data
+        stored_data = self._row_data.copy()
+
+        # Update columns
+        self._update_table_columns()
+
+        # Re-add all data
+        for row_key, row_data in stored_data:
+            # Filter row data to match visible columns
+            visible_data = self._filter_row_data_for_visible_columns(row_data)
+            if visible_data:
+                self.add_row(*visible_data, key=row_key)
+
+    def _filter_row_data_for_visible_columns(self, row_data: list[Any]) -> list[Any]:
+        """Filter row data to match currently visible columns."""
+        if not self._column_configs:
+            return row_data
+
+        # Get currently visible column indices
+        visible_indices = []
+        for i, config in enumerate(self._column_configs):
+            if not self._is_column_hidden(config):
+                visible_indices.append(i)
+
+        # Return filtered data
+        return [row_data[i] if i < len(row_data) else "" for i in visible_indices]
+
+    def _is_column_hidden(self, config: dict[str, Any]) -> bool:
+        """Check if a column should be hidden based on current layout."""
+        if not self.layout_manager.current_breakpoint:
+            return False
+
+        breakpoint = self.layout_manager.current_breakpoint
+
+        # Hide based on compact mode
+        if config.get('hidden_in_compact', False) and breakpoint.compact_mode:
+            return True
+
+        # Hide based on screen size and priority
+        if breakpoint.name in ['xs', 'sm'] and config.get('priority', 0) < 1:
+            return True
+
+        return False
+
+    def _on_layout_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle layout changes by reconfiguring columns."""
         self._update_table_columns()
         self.refresh()
@@ -151,7 +229,7 @@ class AdaptiveDataTable(DataTable, AdaptiveWidget):
                                 key=lambda x: x['priority'], reverse=True)
 
         # Calculate which columns to show
-        visible_columns = []
+        visible_columns: list[dict[str, Any]] = []
         allocated_width = 0
 
         for col_config in sorted_columns:
@@ -185,12 +263,12 @@ class AdaptiveDataTable(DataTable, AdaptiveWidget):
 class AdaptiveInfoPanel(Container, AdaptiveWidget):
     """Information panel that adapts its content based on available space."""
 
-    def __init__(self, layout_manager: ResponsiveLayoutManager, **kwargs) -> None:
+    def __init__(self, layout_manager: ResponsiveLayoutManager, **kwargs: Any) -> None:
         Container.__init__(self, **kwargs)
         AdaptiveWidget.__init__(self, layout_manager)
 
-        self._info_items = []
-        self._compact_items = []
+        self._info_items: list[dict[str, Any]] = []
+        self._compact_items: list[dict[str, Any]] = []
 
     def add_info_item(self,
                       label: str,
@@ -216,7 +294,7 @@ class AdaptiveInfoPanel(Container, AdaptiveWidget):
                 break
         self._update_info_display()
 
-    def _on_layout_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_layout_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle layout changes by updating info display."""
         self._update_info_display()
 
@@ -249,7 +327,7 @@ class AdaptiveInfoPanel(Container, AdaptiveWidget):
                     self.mount(Label(f"{item['label']}: {item['value']}"))
 
 
-def create_adaptive_widget(widget_type: str, layout_manager: ResponsiveLayoutManager, **kwargs):
+def create_adaptive_widget(widget_type: str, layout_manager: ResponsiveLayoutManager, **kwargs: Any) -> Any:
     """Factory function to create adaptive widgets."""
     widget_map = {
         'container': AdaptiveContainer,
@@ -264,7 +342,7 @@ def create_adaptive_widget(widget_type: str, layout_manager: ResponsiveLayoutMan
         raise ValueError(f"Unknown adaptive widget type: {widget_type}")
 
 
-def apply_responsive_styles(widget, layout_manager: ResponsiveLayoutManager) -> None:
+def apply_responsive_styles(widget: Any, layout_manager: ResponsiveLayoutManager) -> None:
     """Apply responsive styles to a widget based on current layout."""
     if not layout_manager.current_breakpoint:
         return

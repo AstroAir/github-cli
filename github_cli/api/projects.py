@@ -3,7 +3,7 @@ GitHub Projects API module
 """
 
 import asyncio
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Union, cast
 from datetime import datetime
 
 from github_cli.api.client import GitHubClient
@@ -25,7 +25,7 @@ class ProjectsAPI:
 
         try:
             response = await self.client.get(endpoint, params=params)
-            return response
+            return cast(List[Dict[str, Any]], response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to list projects: {str(e)}")
 
@@ -36,7 +36,7 @@ class ProjectsAPI:
 
         try:
             response = await self.client.get(endpoint, params=params)
-            return response
+            return cast(List[Dict[str, Any]], response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(
                 f"Failed to list organization projects: {str(e)}")
@@ -47,7 +47,7 @@ class ProjectsAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return response
+            return cast(Dict[str, Any], response.data)
         except NotFoundError:
             raise GitHubCLIError(f"Project {project_id} not found")
         except GitHubCLIError as e:
@@ -63,7 +63,7 @@ class ProjectsAPI:
 
         try:
             response = await self.client.post(endpoint, data=data)
-            return response
+            return cast(Dict[str, Any], response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to create project: {str(e)}")
 
@@ -77,7 +77,7 @@ class ProjectsAPI:
 
         try:
             response = await self.client.post(endpoint, data=data)
-            return response
+            return cast(Dict[str, Any], response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(
                 f"Failed to create organization project: {str(e)}")
@@ -97,7 +97,7 @@ class ProjectsAPI:
 
         try:
             response = await self.client.patch(endpoint, data=data)
-            return response
+            return cast(Dict[str, Any], response.data)
         except NotFoundError:
             raise GitHubCLIError(f"Project {project_id} not found")
         except GitHubCLIError as e:
@@ -120,7 +120,7 @@ class ProjectsAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return response
+            return cast(List[Dict[str, Any]], response.data)
         except NotFoundError:
             raise GitHubCLIError(f"Project {project_id} not found")
         except GitHubCLIError as e:
@@ -134,7 +134,7 @@ class ProjectsAPI:
 
         try:
             response = await self.client.post(endpoint, data=data)
-            return response
+            return cast(Dict[str, Any], response.data)
         except NotFoundError:
             raise GitHubCLIError(f"Project {project_id} not found")
         except GitHubCLIError as e:
@@ -146,7 +146,7 @@ class ProjectsAPI:
 
         try:
             response = await self.client.get(endpoint)
-            return response
+            return cast(List[Dict[str, Any]], response.data)
         except NotFoundError:
             raise GitHubCLIError(f"Column {column_id} not found")
         except GitHubCLIError as e:
@@ -173,6 +173,7 @@ class ProjectCommands:
                     "Must specify either --repo or --org")
                 return
 
+            # type: ignore[attr-defined]
             self.terminal.display_projects(projects)
         except GitHubCLIError as e:
             self.terminal.display_error(f"Failed to list projects: {e}")
@@ -182,7 +183,8 @@ class ProjectCommands:
         try:
             project = await self.api.get_project(project_id)
             columns = await self.api.list_project_columns(project_id)
-            self.terminal.display_project_detail(project, columns)
+            self.terminal.display_project_detail(
+                project, columns)  # type: ignore[attr-defined]
         except GitHubCLIError as e:
             self.terminal.display_error(f"Failed to view project: {e}")
 
@@ -210,13 +212,13 @@ class ProjectCommands:
 
 
 # Add display methods to TerminalUI
-def _add_project_methods_to_terminal():
+def _add_project_methods_to_terminal() -> None:
     """Add project display methods to TerminalUI class"""
     from rich.table import Table
     from rich.panel import Panel
     from rich import box
 
-    def display_projects(self, projects: List[Dict[str, Any]]) -> None:
+    def display_projects(self: Any, projects: List[Dict[str, Any]]) -> None:
         """Display a list of projects"""
         if not projects:
             self.display_info("No projects found")
@@ -243,7 +245,7 @@ def _add_project_methods_to_terminal():
 
         self.console.print(table)
 
-    def display_project_detail(self, project: Dict[str, Any], columns: List[Dict[str, Any]]) -> None:
+    def display_project_detail(self: Any, project: Dict[str, Any], columns: List[Dict[str, Any]]) -> None:
         """Display detailed project information"""
         # Project header
         header = f"Project: {project.get('name', 'Unknown')}"
@@ -285,7 +287,9 @@ def _add_project_methods_to_terminal():
             self.console.print(table)
 
     # Add methods to TerminalUI class
+    # type: ignore[attr-defined]
     TerminalUI.display_projects = display_projects
+    # type: ignore[attr-defined]
     TerminalUI.display_project_detail = display_project_detail
 
 

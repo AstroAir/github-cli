@@ -101,7 +101,8 @@ class TerminalUI:
 
     def confirm(self, message: str, default: bool = True) -> bool:
         """Ask for confirmation"""
-        return questionary.confirm(message, default=default).ask()
+        result = questionary.confirm(message, default=default).ask()
+        return bool(result) if result is not None else default
 
     def interactive_mode(self) -> None:
         """Start an interactive session"""
@@ -274,7 +275,7 @@ class TerminalUI:
         syntax = Syntax(code, language, theme="monokai", line_numbers=True)
         self.console.print(syntax)
 
-    async def start_interactive_mode(self, shortcuts_manager=None) -> None:
+    async def start_interactive_mode(self, shortcuts_manager: Any = None) -> None:
         """Start the interactive terminal mode"""
         self.console.print(
             "[bold green]Welcome to GitHub CLI Interactive Mode[/bold green]")

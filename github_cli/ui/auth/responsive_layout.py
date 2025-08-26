@@ -127,18 +127,19 @@ class ResponsiveAuthLayout:
         # Check if preferred layout is valid for current terminal size
         if preferred_layout in self.AUTH_BREAKPOINTS:
             breakpoint = self.AUTH_BREAKPOINTS[preferred_layout]
-            if (width >= breakpoint["min_width"] and
-                    height >= breakpoint["min_height"]):
+            if (width >= breakpoint["min_width"] and  # type: ignore[operator]
+                    height >= breakpoint["min_height"]):  # type: ignore[operator]
                 return preferred_layout  # type: ignore
 
         # Fallback to automatic detection if preference doesn't fit
         for layout_name in ["expanded", "standard", "compact"]:
             breakpoint = self.AUTH_BREAKPOINTS[layout_name]
-            if (width >= breakpoint["min_width"] and
+            if (width >= breakpoint["min_width"] and  # type: ignore[operator]
+                # type: ignore[operator]
                 height >= breakpoint["min_height"] and
-                width <= breakpoint["max_width"] and
-                    height <= breakpoint["max_height"]):
-                return breakpoint["layout_type"]
+                width <= breakpoint["max_width"] and  # type: ignore[operator]
+                    height <= breakpoint["max_height"]):  # type: ignore[operator]
+                return breakpoint["layout_type"]  # type: ignore[return-value]
 
         # Final fallback to compact for very small terminals
         return "compact"
@@ -221,7 +222,7 @@ class ResponsiveAuthLayout:
         return AuthLayoutConfig(
             layout_type=layout_type,
             show_device_code_emphasis=True,
-            **config
+            **config  # type: ignore[arg-type]
         )
 
     def create_auth_view(self, config: AuthLayoutConfig) -> AuthView:

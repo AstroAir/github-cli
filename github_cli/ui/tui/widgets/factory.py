@@ -7,13 +7,13 @@ consistent, responsive, and accessible TUI widgets.
 
 from __future__ import annotations
 
-from typing import Any, Protocol, TypeVar, Generic, Callable
+from typing import Any, Protocol, TypeVar, Generic, Callable, Literal
 from abc import ABC, abstractmethod
 
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import (
-    Button, DataTable, Input, Label, LoadingIndicator,
-    Static, Switch, Select, ProgressBar, TabbedContent, TabPane
+    Button, DataTable, Input, Label, LoadingIndicator, MaskedInput,
+    Static, Switch, Select, ProgressBar, TabbedContent, TabPane, Rule
 )
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -67,7 +67,7 @@ class InteractiveWidget(ABC, Generic[T]):
         ...
 
     @abstractmethod
-    async def load_data(self, **kwargs) -> None:
+    async def load_data(self, **kwargs: Any) -> None:
         """Load data for the widget."""
         ...
 
@@ -85,30 +85,121 @@ class InteractiveWidget(ABC, Generic[T]):
 
 
 class ResponsiveTable(DataTable, AdaptiveWidget):
-    """Responsive data table with adaptive column management."""
+    """Responsive data table with adaptive column management and modern features."""
 
     def __init__(
         self,
         layout_manager: ResponsiveLayoutManager,
         column_configs: list[dict[str, Any]],
-        **kwargs
+        **kwargs: Any
     ) -> None:
-        DataTable.__init__(self, **kwargs)
+        # Enhanced DataTable initialization with modern features
+        DataTable.__init__(
+            self,
+            show_header=kwargs.pop('show_header', True),
+            show_row_labels=kwargs.pop('show_row_labels', False),
+            zebra_stripes=kwargs.pop('zebra_stripes', True),
+            header_height=kwargs.pop('header_height', 1),
+            show_cursor=kwargs.pop('show_cursor', True),
+            cursor_foreground_priority=kwargs.pop('cursor_foreground_priority', "css"),
+            cursor_background_priority=kwargs.pop('cursor_background_priority', "css"),
+            **kwargs
+        )
         AdaptiveWidget.__init__(self, layout_manager)
 
         self.column_configs = column_configs
+        self._sortable_columns: set[str] = set()
+        self._filterable_columns: set[str] = set()
         self._setup_columns()
 
     def _setup_columns(self) -> None:
-        """Setup columns based on configuration."""
+        """Setup columns based on configuration with enhanced features."""
         for config in self.column_configs:
+            # Add column with enhanced configuration
+            column_key = config.get('key', config['label'].lower())
             self.add_column(
                 config['label'],
                 width=config.get('width'),
-                key=config.get('key', config['label'].lower())
+                key=column_key
             )
 
-    def _on_layout_change(self, old_breakpoint, new_breakpoint) -> None:
+            # Track sortable and filterable columns
+            if config.get('sortable', False):
+                self._sortable_columns.add(column_key)
+            if config.get('filterable', False):
+                self._filterable_columns.add(column_key)
+
+    def add_enhanced_row(
+        self,
+        *cells: Any,
+        height: int | None = None,
+        key: str | None = None,
+        label: str | None = None
+    ) -> None:
+        """Add a row with enhanced features."""
+        self.add_row(*cells, height=height, key=key, label=label)
+
+    def sort_by_column(self, column_key: str, reverse: bool = False) -> None:
+        """Sort table by column if sortable."""
+        if column_key in self._sortable_columns:
+            # Get current data
+            rows = []
+            for row_key in self.rows:
+                row = self.get_row(row_key)
+                rows.append((str(row_key), row))
+
+            # Find column index by matching the column key
+            column_index = None
+            for i, config in enumerate(self.column_configs):
+                if config.get('key', config['label'].lower()) == column_key:
+                    column_index = i
+                    break
+
+            if column_index is not None:
+                # Sort rows by column value
+                rows.sort(key=lambda x: str(x[1][column_index]) if len(x[1]) > column_index else "", reverse=reverse)
+
+                # Clear and re-add sorted rows
+                self.clear()
+                for row_key, row_data in rows:
+                    self.add_row(*row_data, key=row_key)
+
+    def filter_rows(self, filter_func: Callable[[list[Any]], bool]) -> None:
+        """Filter table rows based on a filter function."""
+        # Get all current rows
+        all_rows = []
+        for row_key in self.rows:
+            row = self.get_row(row_key)
+            all_rows.append((str(row_key), row))
+
+        # Clear table
+        self.clear()
+
+        # Re-add filtered rows
+        for row_key, row_data in all_rows:
+            if filter_func(row_data):
+                self.add_row(*row_data, key=row_key)
+
+    def highlight_row(self, row_key: str, highlight: bool = True) -> None:
+        """Highlight or unhighlight a specific row."""
+        try:
+            if highlight:
+                self.add_class(f"highlight-row-{row_key}")
+            else:
+                self.remove_class(f"highlight-row-{row_key}")
+        except Exception:
+            pass  # Row might not exist
+
+    def get_selected_data(self) -> list[Any] | None:
+        """Get data from the currently selected row."""
+        if self.cursor_row is not None:
+            try:
+                return self.get_row_at(self.cursor_row)
+            except Exception:
+                return None
+        return None
+
+    def _on_layout_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Adapt table columns based on layout changes."""
         if not new_breakpoint:
             return
@@ -138,7 +229,7 @@ class ActionPanel(Container):
         self,
         actions: list[dict[str, Any]],
         layout_manager: ResponsiveLayoutManager | None = None,
-        **kwargs
+        **kwargs: Any
     ) -> None:
         super().__init__(**kwargs)
         self.actions = actions
@@ -159,7 +250,7 @@ class ActionPanel(Container):
                 )
                 yield button
 
-    def _on_responsive_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_responsive_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle responsive layout changes."""
         if not new_breakpoint:
             return
@@ -185,7 +276,7 @@ class ActionPanel(Container):
 class LoadingStateWidget(Container):
     """Widget for displaying loading states with progress indication."""
 
-    def __init__(self, message: str = "Loading...", **kwargs) -> None:
+    def __init__(self, message: str = "Loading...", **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.message = message
         self.progress = 0
@@ -235,7 +326,7 @@ class SearchableWidget(Container):
         self,
         placeholder: str = "Search...",
         search_callback: Callable[[str], None] | None = None,
-        **kwargs
+        **kwargs: Any
     ) -> None:
         super().__init__(**kwargs)
         self.placeholder = placeholder
@@ -252,14 +343,14 @@ class SearchableWidget(Container):
             yield Button("🔍", id="search-button", classes="search-button")
             yield Button("❌", id="clear-search", classes="clear-search-button")
 
-    def on_input_changed(self, event) -> None:
+    def on_input_changed(self, event: Any) -> None:
         """Handle search input changes."""
         if event.input.id == "search-input":
             self.search_term = event.value
             if self.search_callback:
                 self.search_callback(self.search_term)
 
-    def on_button_pressed(self, event) -> None:
+    def on_button_pressed(self, event: Any) -> None:
         """Handle search button presses."""
         if event.button.id == "clear-search":
             search_input = self.query_one("#search-input", Input)
@@ -276,7 +367,7 @@ class InfoPanel(Container):
         self,
         info_items: list[dict[str, Any]],
         layout_manager: ResponsiveLayoutManager | None = None,
-        **kwargs
+        **kwargs: Any
     ) -> None:
         super().__init__(**kwargs)
         self.info_items = info_items
@@ -316,7 +407,7 @@ def create_responsive_table(
     layout_manager: ResponsiveLayoutManager,
     columns: list[dict[str, Any]],
     table_id: str = "data-table",
-    **kwargs
+    **kwargs: Any
 ) -> ResponsiveTable:
     """Create a responsive data table with standard configuration."""
     return ResponsiveTable(
@@ -432,7 +523,7 @@ class KeyboardShortcutMixin:
 class AccessibilityMixin:
     """Mixin for accessibility features."""
 
-    def add_accessibility_attributes(self, widget: Any, **attrs) -> None:
+    def add_accessibility_attributes(self, widget: Any, **attrs: Any) -> None:
         """Add accessibility attributes to a widget."""
         # This would depend on Textual's accessibility support
         # For now, we can add classes and IDs for screen readers
@@ -517,3 +608,195 @@ def compose_dashboard_layout(
             with Vertical(classes="dashboard-item adaptive-panel"):
                 yield Static(title, classes="dashboard-item-title")
                 yield widget
+
+
+# Modern widget factory functions for enhanced basic widgets
+
+def create_enhanced_button(
+    label: str,
+    button_id: str,
+    variant: Literal["default", "primary", "success", "warning", "error"] = "default",
+    tooltip: str | None = None,
+    disabled: bool = False,
+    **kwargs: Any
+) -> Button:
+    """Create an enhanced button with modern features."""
+    button = Button(
+        label,
+        id=button_id,
+        variant=variant,
+        disabled=disabled,
+        **kwargs
+    )
+
+    # Add tooltip if provided (using classes for CSS styling)
+    if tooltip:
+        button.tooltip = tooltip
+        button.add_class("has-tooltip")
+
+    return button
+
+
+def create_enhanced_input(
+    placeholder: str = "",
+    input_id: str = "input",
+    input_type: str = "text",
+    max_length: int | None = None,
+    password: bool = False,
+    **kwargs: Any
+) -> Input:
+    """Create an enhanced input with modern features."""
+    input_widget = Input(
+        placeholder=placeholder,
+        id=input_id,
+        password=password,
+        **kwargs
+    )
+
+    if max_length:
+        input_widget.max_length = max_length
+
+    # Add type-specific classes for styling
+    input_widget.add_class(f"input-{input_type}")
+
+    return input_widget
+
+
+def create_masked_input(
+    template: str,
+    placeholder: str = "",
+    input_id: str = "masked-input",
+    **kwargs: Any
+) -> MaskedInput:
+    """Create a masked input for formatted data entry."""
+    return MaskedInput(
+        template=template,
+        placeholder=placeholder,
+        id=input_id,
+        classes="masked-input enhanced-input",
+        **kwargs
+    )
+
+
+def create_enhanced_static(
+    content: str,
+    static_id: str = "static",
+    markup: bool = True,
+    expand: bool = False,
+    **kwargs: Any
+) -> Static:
+    """Create an enhanced static text widget."""
+    static = Static(
+        content,
+        id=static_id,
+        markup=markup,
+        expand=expand,
+        **kwargs
+    )
+
+    # Add enhanced styling classes
+    static.add_class("enhanced-static")
+
+    return static
+
+
+def create_enhanced_label(
+    text: str,
+    label_id: str = "label",
+    for_widget: str | None = None,
+    **kwargs: Any
+) -> Label:
+    """Create an enhanced label with accessibility features."""
+    label = Label(
+        text,
+        id=label_id,
+        **kwargs
+    )
+
+    # Associate with widget if provided
+    if for_widget:
+        label.add_class(f"label-for-{for_widget}")
+
+    # Add enhanced styling
+    label.add_class("enhanced-label")
+
+    return label
+
+
+def create_visual_separator(
+    line_style: Literal["ascii", "blank", "dashed", "double", "heavy", "hidden", "none", "solid", "thick"] = "solid",
+    orientation: Literal["horizontal", "vertical"] = "horizontal",
+    separator_id: str = "separator"
+) -> Rule:
+    """Create a visual separator using Rule widget."""
+    return Rule(
+        line_style=line_style,
+        orientation=orientation,
+        id=separator_id,
+        classes=f"separator separator-{orientation}"
+    )
+
+
+def create_enhanced_datatable(
+    columns: list[dict[str, Any]],
+    table_id: str = "enhanced-table",
+    sortable: bool = True,
+    filterable: bool = True,
+    zebra_stripes: bool = True,
+    show_cursor: bool = True,
+    **kwargs: Any
+) -> DataTable:
+    """Create an enhanced DataTable with modern features."""
+    # Create table with enhanced configuration
+    table: DataTable = DataTable(
+        id=table_id,
+        show_header=kwargs.pop('show_header', True),
+        show_row_labels=kwargs.pop('show_row_labels', False),
+        zebra_stripes=zebra_stripes,
+        header_height=kwargs.pop('header_height', 1),
+        show_cursor=show_cursor,
+        cursor_foreground_priority=kwargs.pop('cursor_foreground_priority', "css"),
+        cursor_background_priority=kwargs.pop('cursor_background_priority', "css"),
+        classes="enhanced-datatable modern-table",
+        **kwargs
+    )
+
+    # Add columns with enhanced configuration
+    for column_config in columns:
+        table.add_column(
+            column_config['label'],
+            width=column_config.get('width'),
+            key=column_config.get('key', column_config['label'].lower())
+        )
+
+    # Add enhanced styling classes
+    if sortable:
+        table.add_class("sortable-table")
+    if filterable:
+        table.add_class("filterable-table")
+
+    return table
+
+
+def create_responsive_enhanced_table(
+    layout_manager: ResponsiveLayoutManager,
+    columns: list[dict[str, Any]],
+    table_id: str = "responsive-enhanced-table",
+    **kwargs: Any
+) -> ResponsiveTable:
+    """Create a responsive table with all modern enhancements."""
+    # Mark columns as sortable and filterable by default
+    enhanced_columns = []
+    for column in columns:
+        enhanced_column = column.copy()
+        enhanced_column.setdefault('sortable', True)
+        enhanced_column.setdefault('filterable', True)
+        enhanced_columns.append(enhanced_column)
+
+    return ResponsiveTable(
+        layout_manager=layout_manager,
+        column_configs=enhanced_columns,
+        id=table_id,
+        classes="responsive-enhanced-table modern-table adaptive-table",
+        **kwargs
+    )

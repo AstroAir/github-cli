@@ -19,7 +19,7 @@ from . import components
 
 __all__ = [
     'Dashboard',
-    'TerminalUI', 
+    'TerminalUI',
     'DiffViewer',
     'tui',
     'auth',

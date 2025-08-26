@@ -20,12 +20,7 @@ from github_cli.models.pull_request import PullRequest
 from github_cli.models.issue import Issue
 
 
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the default event loop for the test session."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
+# Remove the custom event_loop fixture to use pytest-asyncio's default
 
 
 @pytest.fixture
@@ -578,4 +573,7 @@ def pytest_configure(config):
     )
     config.addinivalue_line(
         "markers", "models: marks tests that test data models"
+    )
+    config.addinivalue_line(
+        "markers", "utils: marks tests for utility modules"
     )

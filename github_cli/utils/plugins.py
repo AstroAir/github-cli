@@ -75,7 +75,7 @@ class PluginManager:
         """Get all registered plugin commands"""
         return self.plugin_commands.copy()
 
-    def execute_plugin_command(self, command: str, *args, **kwargs) -> Any:
+    def execute_plugin_command(self, command: str, *args: Any, **kwargs: Any) -> Any:
         """Execute a plugin command"""
         if command not in self.plugin_commands:
             raise GitHubCLIError(f"Plugin command '{command}' not found")

@@ -20,7 +20,7 @@ setup(
         "loguru>=0.7.0",
         "pydantic>=2.5.0",
         "httpx>=0.25.0",
-        "textual>=0.41.0",
+        "textual>=0.85.0",
         "textual-dev>=1.2.0",
         "rich-argparse>=1.3.0",
         "pyperclip>=1.8.0",

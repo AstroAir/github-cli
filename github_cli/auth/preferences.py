@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from pathlib import Path
 from typing import Any, Dict, Optional, Literal
 
@@ -42,8 +42,8 @@ class AuthPreferences:
     verbose_descriptions: bool = False
 
     # Terminal environment preferences
-    terminal_capabilities: Dict[str, Any] = None
-    environment_optimizations: Dict[str, Any] = None
+    terminal_capabilities: Dict[str, Any] = field(default_factory=dict)
+    environment_optimizations: Dict[str, Any] = field(default_factory=dict)
 
     # Authentication flow preferences
     preferred_retry_count: int = 3
@@ -51,12 +51,11 @@ class AuthPreferences:
     remember_auth_patterns: bool = True
     skip_confirmation_prompts: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize default values for mutable fields."""
-        if self.terminal_capabilities is None:
-            self.terminal_capabilities = {}
-        if self.environment_optimizations is None:
-            self.environment_optimizations = {}
+        # Fields are now initialized with field(default_factory=dict)
+        # so no additional initialization needed
+        pass
 
     @classmethod
     def get_config_path(cls) -> Path:
@@ -102,7 +101,7 @@ class AuthPreferences:
         except (OSError, TypeError) as e:
             raise ConfigError(f"Failed to save auth preferences: {e}")
 
-    def update(self, **kwargs) -> None:
+    def update(self, **kwargs: Any) -> None:
         """Update preferences with new values and save."""
         for key, value in kwargs.items():
             if hasattr(self, key):
@@ -144,7 +143,8 @@ class AuthPreferences:
 
     def get_terminal_optimization(self, terminal_name: str) -> Dict[str, Any]:
         """Get terminal-specific optimizations."""
-        return self.environment_optimizations.get(terminal_name, {})
+        result = self.environment_optimizations.get(terminal_name, {})
+        return result if isinstance(result, dict) else {}
 
     def set_terminal_optimization(self, terminal_name: str, optimizations: Dict[str, Any]) -> None:
         """Set terminal-specific optimizations."""

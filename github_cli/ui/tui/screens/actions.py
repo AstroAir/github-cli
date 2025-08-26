@@ -168,7 +168,7 @@ class WorkflowRunDetailScreen(Screen[None]):
 
             with TabbedContent(id="workflow-tabs", classes="adaptive-tabs"):
                 with TabPane("Jobs", id="jobs-tab"):
-                    jobs_table = DataTable(
+                    jobs_table: DataTable = DataTable(
                         id="jobs-table", classes="jobs-table adaptive-table")
                     jobs_table.add_columns(
                         "Job", "Status", "Started", "Duration")
@@ -386,7 +386,7 @@ class WorkflowRunDetailScreen(Screen[None]):
                 except Exception as e:
                     self.notify(f"Failed to open job: {e}", severity="error")
 
-    def _on_responsive_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_responsive_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle responsive layout changes."""
         if new_breakpoint:
             self._apply_responsive_layout()
@@ -397,8 +397,6 @@ class WorkflowRunDetailScreen(Screen[None]):
             return
 
         breakpoint = self.layout_manager.get_current_breakpoint()
-        if not breakpoint:
-            return
 
         # Apply breakpoint-specific classes
         container = self.query_one("#workflow-detail-container")
@@ -572,7 +570,7 @@ class ActionsWidget(Container):
             yield Button("⚙️ Workflows", id="view-workflows", classes="adaptive-button priority-medium")
 
         # Workflow runs table with adaptive columns
-        runs_table = DataTable(
+        runs_table: DataTable = DataTable(
             id="actions-table", classes="workflow-table adaptive-table")
         runs_table.add_columns("Workflow", "Status", "Branch", "Created")
         yield runs_table
@@ -593,7 +591,7 @@ class ActionsWidget(Container):
         # Note: We need a repository to load runs
         self.notify("Enter a repository name to view workflow runs", timeout=5)
 
-    def _on_responsive_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_responsive_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle responsive layout changes."""
         if new_breakpoint:
             self._apply_responsive_styles()
@@ -605,8 +603,6 @@ class ActionsWidget(Container):
             return
 
         breakpoint = self.layout_manager.get_current_breakpoint()
-        if not breakpoint:
-            return
 
         # Apply breakpoint-specific classes
         self.remove_class("xs", "sm", "md", "lg", "xl")
@@ -630,8 +626,6 @@ class ActionsWidget(Container):
             return
 
         breakpoint = self.layout_manager.get_current_breakpoint()
-        if not breakpoint:
-            return
 
         try:
             runs_table = self.query_one("#actions-table", DataTable)

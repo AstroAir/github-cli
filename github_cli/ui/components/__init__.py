@@ -6,7 +6,7 @@ This package contains shared UI components that can be used across different int
 
 # Import all component modules for easy access
 from . import common
-from . import github  
+from . import github
 from . import diff
 
 # Re-export main classes for convenience
@@ -19,19 +19,19 @@ __all__ = [
     'common',
     'BasePanelFactory',
     'InfoPanel',
-    'ErrorPanel', 
+    'ErrorPanel',
     'BaseTable',
     'GitHubTable',
     'HeaderFactory',
     'FooterFactory',
-    
+
     # GitHub components
     'github',
     'RepositoryPanel',
     'PullRequestPanel',
-    'IssuePanel', 
+    'IssuePanel',
     'NotificationPanel',
-    
+
     # Diff components
     'diff',
     'DiffParser',

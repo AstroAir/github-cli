@@ -179,7 +179,8 @@ class ResponsiveLayoutManager:
                 return next(bp for bp in self.BREAKPOINTS if bp.name == "horizontal_tight")
 
         # Find the largest breakpoint that fits (excluding horizontal-specific ones)
-        regular_breakpoints = [bp for bp in self.BREAKPOINTS if not bp.name.startswith("horizontal")]
+        regular_breakpoints = [
+            bp for bp in self.BREAKPOINTS if not bp.name.startswith("horizontal")]
         selected_breakpoint = regular_breakpoints[0]  # Default to smallest
 
         for breakpoint in reversed(regular_breakpoints):
@@ -252,7 +253,7 @@ class ResponsiveLayoutManager:
         """Get maximum number of tabs that can be displayed."""
         if not self.current_breakpoint:
             return 6
-        
+
         if self.current_breakpoint.name.startswith("horizontal_ultra"):
             return 4
         elif self.current_breakpoint.name.startswith("horizontal_tight"):
@@ -266,15 +267,15 @@ class ResponsiveLayoutManager:
         """Calculate available height for content after UI chrome."""
         if not self.current_breakpoint:
             return max(10, self.app.size.height - 5)
-        
+
         total_height = self.app.size.height
         used_height = (
-            self.current_breakpoint.header_height + 
-            self.current_breakpoint.footer_height + 
+            self.current_breakpoint.header_height +
+            self.current_breakpoint.footer_height +
             self.current_breakpoint.status_bar_height +
             1  # Tab bar
         )
-        
+
         return max(5, total_height - used_height)
 
     def get_header_config(self) -> dict:
@@ -320,26 +321,26 @@ class ResponsiveLayoutManager:
             return False
 
         available_height = self._get_available_content_height()
-        
+
         # Hide low priority components first
         if priority == "low" and available_height < 15:
             return True
-        
+
         # Hide medium priority components in very tight spaces
         if priority == "medium" and available_height < 10:
             return True
-        
+
         # Only hide high priority components in extreme cases
         if priority == "high" and available_height < 6:
             return True
-        
+
         return False
 
     def get_component_priorities(self) -> dict[str, str]:
         """Get component priorities for layout optimization."""
         return {
             "repositories": "high",
-            "pull_requests": "high", 
+            "pull_requests": "high",
             "issues": "high",
             "actions": "medium",
             "notifications": "medium",
@@ -358,8 +359,9 @@ class ResponsiveLayoutManager:
 
         # Sort components by priority
         prioritized_components = sorted(
-            components, 
-            key=lambda x: {"high": 3, "medium": 2, "low": 1}.get(priorities.get(x, "medium"), 2),
+            components,
+            key=lambda x: {"high": 3, "medium": 2, "low": 1}.get(
+                priorities.get(x, "medium"), 2),
             reverse=True
         )
 

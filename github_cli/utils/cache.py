@@ -73,7 +73,7 @@ class CacheManager:
         # Runtime cache for frequently accessed items
         self._memory_cache: Dict[str, CacheEntry] = {}
         self._last_cleanup = time.time()
-        
+
         # Logger
         self.logger = logger
 
@@ -100,7 +100,7 @@ class CacheManager:
         shard_dir.mkdir(exist_ok=True)
         return shard_dir / f"{cache_key[2:]}.json"
 
-    async def get(self, key: str, default: Optional[T] = None) -> Optional[T]:
+    async def get(self, key: str, default: Optional[Any] = None) -> Optional[Any]:
         """Get value from cache with async support and performance tracking."""
         if self.mode == "ignore":
             self._stats["misses"] += 1
@@ -162,7 +162,7 @@ class CacheManager:
         """Load cache file synchronously."""
         try:
             with open(cache_file, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                return json.load(f)  # type: ignore[no-any-return]
         except (json.JSONDecodeError, IOError) as e:
             logger.warning(f"Failed to load cache file {cache_file}: {e}")
             # Remove corrupted file
@@ -393,7 +393,7 @@ class CacheManager:
     async def get_or_set(self, key: str, factory: Callable[[], Any], ttl: Optional[int] = None) -> Any:
         """Get from cache or set using factory function if not found."""
         # Try to get from cache first
-        result = await self.get(key)
+        result = await self.get(key, default=None)
         if result is not None:
             return result
 
@@ -411,19 +411,6 @@ class CacheManager:
         except Exception as e:
             logger.error(f"Factory function error for key {key}: {e}")
             raise
-        cache_data = {
-            'data': value,
-            'created_at': current_time,
-            'expires_at': current_time + ttl_value,
-            'key': key
-        }
-
-        try:
-            with open(cache_file, 'w', encoding='utf-8') as f:
-                json.dump(cache_data, f, default=str, indent=2)
-
-        except OSError as e:
-            self.logger.warning(f"Failed to write cache for key {key}: {e}")
 
     def delete(self, key: str) -> None:
         """Delete value from cache"""
@@ -444,7 +431,8 @@ class CacheManager:
             with open(cache_file, 'r', encoding='utf-8') as f:
                 cache_data = json.load(f)
 
-            return cache_data.get('expires_at', 0) >= time.time()
+            expires_at = cache_data.get('expires_at', 0)
+            return bool(expires_at >= time.time())
 
         except (json.JSONDecodeError, OSError):
             return False
@@ -504,7 +492,7 @@ class CacheManager:
         cache_key = f"api:{endpoint}:{json.dumps(params, sort_keys=True)}"
         await self.set(cache_key, response, ttl)
 
-    def get_cached_api_response(self, endpoint: str, params: Dict[str, Any]) -> Any:
+    async def get_cached_api_response(self, endpoint: str, params: Dict[str, Any]) -> Any:
         """Get cached API response"""
         cache_key = f"api:{endpoint}:{json.dumps(params, sort_keys=True)}"
-        return self.get(cache_key)
+        return await self.get(cache_key)

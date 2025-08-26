@@ -3,7 +3,7 @@ GitHub Notifications API module
 """
 
 import asyncio
-from typing import List, Dict, Any, Optional, Union, Tuple
+from typing import List, Dict, Any, Optional, Union, Tuple, cast
 from datetime import datetime
 
 from github_cli.api.client import GitHubClient
@@ -52,7 +52,8 @@ class NotificationsAPI:
             params["before"] = before
 
         try:
-            return await self.client.get("notifications", params=params)
+            response = await self.client.get("notifications", params=params)
+            return cast(List[Dict[str, Any]], response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to list notifications: {str(e)}")
 
@@ -100,7 +101,8 @@ class NotificationsAPI:
         endpoint = f"notifications/threads/{thread_id}"
 
         try:
-            return await self.client.get(endpoint)
+            response = await self.client.get(endpoint)
+            return cast(Dict[str, Any], response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(
                 f"Failed to get notification thread: {str(e)}")
@@ -114,7 +116,8 @@ class NotificationsAPI:
         }
 
         try:
-            return await self.client.put(endpoint, data=data)
+            response = await self.client.put(endpoint, data=data)
+            return cast(Dict[str, Any], response.data)
         except GitHubCLIError as e:
             raise GitHubCLIError(f"Failed to update subscription: {str(e)}")
 

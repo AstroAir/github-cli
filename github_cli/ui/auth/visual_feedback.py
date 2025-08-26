@@ -83,7 +83,7 @@ class AnimatedProgressIndicator(Static):
         Binding("space", "toggle_details", "Toggle Details", show=False),
     ]
 
-    def __init__(self, config: AuthLayoutConfig, feedback_config: VisualFeedbackConfig, **kwargs) -> None:
+    def __init__(self, config: AuthLayoutConfig, feedback_config: VisualFeedbackConfig, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.config = config
         self.feedback_config = feedback_config
@@ -296,7 +296,7 @@ class EmphasizedDisplay(Static):
     is_highlighted = reactive(False)
 
     def __init__(self, content: str, config: AuthLayoutConfig,
-                 feedback_config: VisualFeedbackConfig, **kwargs) -> None:
+                 feedback_config: VisualFeedbackConfig, **kwargs: Any) -> None:
         super().__init__(content, **kwargs)
         self.config = config
         self.feedback_config = feedback_config
@@ -404,7 +404,7 @@ class StateIndicator(Static):
 
     current_state = reactive(FeedbackState.IDLE)
 
-    def __init__(self, config: AuthLayoutConfig, feedback_config: VisualFeedbackConfig, **kwargs) -> None:
+    def __init__(self, config: AuthLayoutConfig, feedback_config: VisualFeedbackConfig, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.config = config
         self.feedback_config = feedback_config
@@ -533,7 +533,7 @@ class AccessibleFocusIndicator(Static):
     is_focused = reactive(False)
     focus_style = reactive("outline")
 
-    def __init__(self, target_widget: Widget, feedback_config: VisualFeedbackConfig, **kwargs) -> None:
+    def __init__(self, target_widget: Widget, feedback_config: VisualFeedbackConfig, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.target_widget = target_widget
         self.feedback_config = feedback_config
@@ -646,7 +646,7 @@ class VisualFeedbackManager:
 
     def get_feedback_widgets(self) -> dict[str, Widget]:
         """Get all feedback widgets for layout composition."""
-        widgets = {
+        widgets: dict[str, Widget] = {
             "progress_indicator": self.progress_indicator,
             "state_indicator": self.state_indicator
         }

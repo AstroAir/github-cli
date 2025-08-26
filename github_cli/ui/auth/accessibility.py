@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import os
 from github_cli.auth.common import (
-    platform, subprocess, asyncio, dataclass, field, Any, Dict, List, Optional, 
+    platform, subprocess, asyncio, dataclass, field, Any, Dict, List, Optional,
     Enum, logger, Screen
 )
 from github_cli.auth.preferences import AuthPreferences
@@ -70,7 +70,7 @@ class AccessibilitySettings:
 
     # Content preferences
     simplified_interface: bool = False
-    
+
     # General accessibility mode
     accessibility_mode: bool = False
 
@@ -247,13 +247,15 @@ class AccessibilityDetector:
             elif system == "windows":
                 # Check Windows animation settings
                 result = subprocess.run(
-                    ["reg", "query", "HKCU\\Control Panel\\Desktop\\WindowMetrics", "/v", "MinAnimate"],
+                    ["reg", "query", "HKCU\\Control Panel\\Desktop\\WindowMetrics",
+                        "/v", "MinAnimate"],
                     capture_output=True, text=True, timeout=5
                 )
                 return "0" in result.stdout
             elif system == "linux":
                 result = subprocess.run(
-                    ["gsettings", "get", "org.gnome.desktop.interface", "enable-animations"],
+                    ["gsettings", "get", "org.gnome.desktop.interface",
+                        "enable-animations"],
                     capture_output=True, text=True, timeout=5
                 )
                 return "false" in result.stdout.lower()
@@ -326,9 +328,9 @@ class AccessibilityManager:
 
     def _get_accessibility_level(self) -> AccessibilityLevel:
         """Get current accessibility level."""
-        if (self.settings.screen_reader_enabled and 
-            self.settings.keyboard_only_navigation and 
-            self.settings.high_contrast_mode):
+        if (self.settings.screen_reader_enabled and
+            self.settings.keyboard_only_navigation and
+                self.settings.high_contrast_mode):
             return AccessibilityLevel.FULL
         elif self.settings.screen_reader_enabled:
             return AccessibilityLevel.ENHANCED
@@ -426,17 +428,17 @@ class AccessibilityManager:
         """Enhance widget accessibility with ARIA-like attributes."""
         if not hasattr(widget, '_accessibility_enhanced'):
             widget._accessibility_enhanced = True
-            
+
         # Set attributes using setattr to handle Mock objects
         setattr(widget, 'accessibility_role', role)
         setattr(widget, 'accessibility_description', description)
         setattr(widget, 'accessibility_label', label or description)
-        
+
         # Add accessibility attributes if the widget supports them
         if hasattr(widget, 'set_attribute'):
             widget.set_attribute('role', role)
             widget.set_attribute('aria-label', label or description)
-            
+
         return widget
 
     def create_accessible_button(self, text: str, action: str = "", description: str = "") -> Any:
@@ -444,21 +446,21 @@ class AccessibilityManager:
         try:
             from textual.widgets import Button
             button = Button(text, id=action or text.lower().replace(' ', '-'))
-            
+
             # Set accessibility attributes
             setattr(button, 'accessibility_role', 'button')
             setattr(button, 'accessibility_label', text)
             setattr(button, 'accessibility_description', description or text)
-            
+
             # Add keyboard navigation support
             if self.settings.keyboard_only_navigation:
                 button.can_focus = True
-                
+
             return button
         except ImportError:
             # Fallback if textual is not available
             class MockButton:
-                def __init__(self, text: str, **kwargs):
+                def __init__(self, text: str, **kwargs: Any) -> None:
                     self.text = text
                     self.kwargs = kwargs
                     self.accessibility_role = "button"
@@ -471,17 +473,17 @@ class AccessibilityManager:
         try:
             from textual.widgets import Static
             static = Static(text)
-            
+
             # Set accessibility attributes
             setattr(static, 'accessibility_role', role or 'text')
             setattr(static, 'accessibility_label', text)
             setattr(static, 'accessibility_description', description or text)
-            
+
             return static
         except ImportError:
             # Fallback if textual is not available
             class MockStatic:
-                def __init__(self, text: str, **kwargs):
+                def __init__(self, text: str, **kwargs: Any) -> None:
                     self.text = text
                     self.kwargs = kwargs
                     self.accessibility_role = role or 'text'
@@ -493,7 +495,7 @@ class AccessibilityManager:
         """Announce authentication step to screen reader."""
         if not self.settings.screen_reader_enabled:
             return
-            
+
         # Map step names to user-friendly messages
         step_messages = {
             "initializing": "Initializing authentication process",
@@ -503,52 +505,52 @@ class AccessibilityManager:
             "completed": "Authentication completed",
             "failed": "Authentication failed"
         }
-        
+
         message = step_messages.get(step, f"Authentication step: {step}")
         if description:
             message += f" - {description}"
-            
+
         await self.announce(message, "normal")
 
     async def announce_progress_update(self, progress: float, description: str = "") -> None:
         """Announce progress update to screen reader."""
         if not self.settings.screen_reader_enabled:
             return
-            
+
         # Only announce if progress has increased significantly (at least 10%)
-        if (self.last_progress_announcement is not None and 
-            progress <= self.last_progress_announcement):
+        if (self.last_progress_announcement is not None and
+                progress <= self.last_progress_announcement):
             return
-            
+
         self.last_progress_announcement = progress
         percentage = int(progress * 100)
         message = f"Progress: {percentage}%"
         if description:
             message += f" - {description}"
-            
+
         await self.announce(message, "normal")
 
     async def announce_error(self, error_message: str, recovery_options: Optional[List[str]] = None) -> None:
         """Announce error with recovery options to screen reader."""
         if not self.settings.screen_reader_enabled:
             return
-            
+
         message = f"Error: {error_message}"
         if recovery_options:
             message += f". Available options: {', '.join(recovery_options)}"
-            
+
         await self.announce(message, "urgent")
 
     def get_keyboard_shortcuts(self) -> List[Any]:
         """Get keyboard shortcuts based on accessibility settings."""
         shortcuts = []
-        
+
         # Basic shortcuts
         class MockBinding:
             def __init__(self, key: str, description: str):
                 self.key = key
                 self.description = description
-                
+
         shortcuts.extend([
             MockBinding("tab", "Navigate forward"),
             MockBinding("shift+tab", "Navigate backward"),
@@ -556,14 +558,14 @@ class AccessibilityManager:
             MockBinding("escape", "Cancel"),
             MockBinding("space", "Select/Toggle")
         ])
-        
+
         if self.settings.screen_reader_enabled:
             shortcuts.extend([
                 MockBinding("ctrl+alt+a", "Announce current status"),
                 MockBinding("ctrl+alt+h", "Read help information"),
                 MockBinding("ctrl+alt+p", "Read progress information")
             ])
-            
+
         if self.settings.keyboard_only_navigation:
             shortcuts.extend([
                 MockBinding("ctrl+home", "Go to first item"),
@@ -571,7 +573,7 @@ class AccessibilityManager:
                 MockBinding("f1", "Context help"),
                 MockBinding("ctrl+h", "Help")
             ])
-            
+
         return shortcuts
 
     def apply_accessibility_theme(self, app: Any) -> None:
@@ -613,7 +615,7 @@ class AccessibilityManager:
                 border: solid yellow;
             }
             """
-            
+
             # Try different ways to add CSS based on the app type
             if hasattr(app, 'stylesheet') and hasattr(app.stylesheet, 'add_source'):
                 app.stylesheet.add_source(high_contrast_css)
@@ -622,7 +624,7 @@ class AccessibilityManager:
             elif hasattr(app, 'stylesheet'):
                 # Mock object might just have stylesheet attribute
                 app.stylesheet.add_source(high_contrast_css)
-                
+
         if self.settings.large_text_mode:
             # Apply large text theme
             large_text_css = """
@@ -639,7 +641,7 @@ class AccessibilityManager:
                 text-size: 14px;
             }
             """
-            
+
             # Try different ways to add CSS based on the app type
             if hasattr(app, 'stylesheet') and hasattr(app.stylesheet, 'add_source'):
                 app.stylesheet.add_source(large_text_css)
@@ -653,11 +655,11 @@ class AccessibilityManager:
         """Create an accessibility help screen."""
         from textual.screen import Screen
         from textual.widgets import Static
-        
+
         class AccessibilityHelpScreen(Screen):
             """Screen showing accessibility help information."""
-            
-            def compose(self):
+
+            def compose(self) -> Any:
                 yield Static(
                     "Accessibility Help\n\n"
                     "Keyboard Shortcuts:\n"
@@ -675,9 +677,9 @@ class AccessibilityManager:
                     "Press any key to close this help.",
                     id="help-content"
                 )
-            
-            async def on_key(self, event):
+
+            async def on_key(self, event: Any) -> Any:
                 """Close help on any key press."""
                 self.dismiss()
-        
+
         return AccessibilityHelpScreen()

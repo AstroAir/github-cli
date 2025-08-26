@@ -56,7 +56,7 @@ class Notification(BaseModel):
     @property
     def repository_name(self) -> str:
         """Get repository name."""
-        return self.repository.get('full_name', 'Unknown')
+        return str(self.repository.get('full_name', 'Unknown'))
 
     @property
     def subject_type(self) -> str:
@@ -144,7 +144,7 @@ class NotificationDetailScreen(Screen[None]):
 
             yield LoadingIndicator(id="details-loading")
 
-    def _on_responsive_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_responsive_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle responsive layout changes."""
         if new_breakpoint:
             self._apply_responsive_layout()
@@ -155,8 +155,6 @@ class NotificationDetailScreen(Screen[None]):
             return
 
         breakpoint = self.layout_manager.get_current_breakpoint()
-        if not breakpoint:
-            return
 
         # Apply breakpoint-specific classes
         container = self.query_one("#notification-detail-container")
@@ -203,8 +201,6 @@ class NotificationDetailScreen(Screen[None]):
                 # Extract data from response
                 if hasattr(response, 'data') and isinstance(response.data, dict):
                     self.subject_details = response.data
-                elif isinstance(response, dict):
-                    self.subject_details = response
                 else:
                     self.subject_details = {}
 
@@ -548,7 +544,7 @@ class NotificationWidget(Container):
             yield Button("🔕 Mark All Unread", id="mark-all-unread", variant="warning", classes="adaptive-button priority-low")
 
         # Notifications table with adaptive columns
-        notifications_table = DataTable(
+        notifications_table: DataTable = DataTable(
             id="notifications-table", classes="notification-table adaptive-table")
         notifications_table.add_columns(
             "Title", "Repository", "Reason", "Updated")
@@ -570,7 +566,7 @@ class NotificationWidget(Container):
         # Load notifications (unread only by default)
         await self.notification_manager.load_notifications(notifications_table, unread_only=True)
 
-    def _on_responsive_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_responsive_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle responsive layout changes."""
         if new_breakpoint:
             self._apply_responsive_styles()
@@ -582,8 +578,6 @@ class NotificationWidget(Container):
             return
 
         breakpoint = self.layout_manager.get_current_breakpoint()
-        if not breakpoint:
-            return
 
         # Apply breakpoint-specific classes
         self.remove_class("xs", "sm", "md", "lg", "xl")
@@ -607,8 +601,6 @@ class NotificationWidget(Container):
             return
 
         breakpoint = self.layout_manager.get_current_breakpoint()
-        if not breakpoint:
-            return
 
         try:
             notifications_table = self.query_one(

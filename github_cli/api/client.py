@@ -78,7 +78,8 @@ class GitHubClient:
         if self._token_expiration_handler is None:
             from github_cli.auth.token_expiration_handler import TokenExpirationHandler, TokenExpirationConfig
             config = TokenExpirationConfig()
-            self._token_expiration_handler = TokenExpirationHandler(self.authenticator, config)
+            self._token_expiration_handler = TokenExpirationHandler(
+                self.authenticator, config)
         return self._token_expiration_handler
 
     @asynccontextmanager
@@ -424,6 +425,6 @@ class GitHubClient:
         """Async context manager entry."""
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Async context manager exit."""
         await self.close()

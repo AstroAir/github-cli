@@ -8,9 +8,8 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import (
     Button, DataTable, Input, Label, LoadingIndicator,
-    Markdown, Static, TabbedContent, TabPane
+    Markdown, Select, Static, TabbedContent, TabPane
 )
-from textual.widgets._select import Select
 from loguru import logger
 from pydantic import BaseModel
 
@@ -222,14 +221,16 @@ class SearchManager:
             case "topics":
                 return "/search/topics", {**base_params, "sort": "created"}
             case _:
+                # type: ignore[unreachable]
                 return "/search/repositories", base_params
 
     def _convert_to_search_results(self, items: list[dict[str, Any]], search_type: SearchType) -> list[SearchResult]:
         """Convert API response items to SearchResult objects."""
-        results = []
+        results: list[SearchResult] = []
 
         for item in items:
             try:
+                result: SearchResult
                 match search_type:
                     case "repositories":
                         result = RepositorySearchResult(
@@ -321,18 +322,6 @@ class SearchManager:
                             }
                         )
 
-                    case _:
-                        result = SearchResult(
-                            id=item.get('id', 0),
-                            title=str(
-                                item.get('name', item.get('title', 'Unknown'))),
-                            description=item.get('description'),
-                            url=item.get('html_url', ''),
-                            score=item.get('score'),
-                            type=search_type,
-                            extra_data=item
-                        )
-
                 results.append(result)
 
             except Exception as e:
@@ -368,7 +357,7 @@ class SearchResultDetailScreen:
         self.result = result
         self.client = client
 
-    def compose(self):
+    def compose(self) -> ComposeResult:
         """Compose the search result detail screen."""
         with Container(id="search-result-detail"):
             yield Static(f"Search Result: {self.result.title}", id="result-title")
@@ -439,7 +428,7 @@ class SearchWidget(Container):
         # Search results with adaptive layout
         with TabbedContent(id="search-results-tabs", classes="adaptive-tabs"):
             with TabPane("Results", id="results-tab"):
-                results_table = DataTable(
+                results_table: DataTable = DataTable(
                     id="search-results-table", classes="search-results adaptive-table")
                 results_table.add_columns("Title", "Description", "Score")
                 yield results_table
@@ -460,7 +449,7 @@ class SearchWidget(Container):
         if self.layout_manager:
             self._apply_responsive_styles()
 
-    def _on_responsive_change(self, old_breakpoint, new_breakpoint) -> None:
+    def _on_responsive_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle responsive layout changes."""
         if new_breakpoint:
             self._apply_responsive_styles()
@@ -472,8 +461,6 @@ class SearchWidget(Container):
             return
 
         breakpoint = self.layout_manager.get_current_breakpoint()
-        if not breakpoint:
-            return
 
         # Apply breakpoint-specific classes
         self.remove_class("xs", "sm", "md", "lg", "xl")
@@ -497,8 +484,6 @@ class SearchWidget(Container):
             return
 
         breakpoint = self.layout_manager.get_current_breakpoint()
-        if not breakpoint:
-            return
 
         try:
             # Hide/show help section based on screen size

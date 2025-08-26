@@ -15,19 +15,19 @@ from .dashboard import Dashboard as ModularDashboard
 class Dashboard:
     """
     Backward-compatible wrapper for the modular dashboard.
-    
+
     This class maintains the same API as the original Dashboard while
     delegating to the new modular implementation.
     """
-    
+
     def __init__(self, client: GitHubClient, terminal: TerminalUI):
         self.client = client
         self.terminal = terminal
         self.console = Console()
-        
+
         # Use the new modular dashboard
         self._dashboard = ModularDashboard(client, terminal)
-        
+
         # Maintain backward compatibility properties
         self.running = False
         self.update_interval = 60
@@ -40,7 +40,7 @@ class Dashboard:
     async def start(self) -> None:
         """Start the dashboard."""
         await self._dashboard.start()
-        
+
         # Update legacy properties for backward compatibility
         self.running = self._dashboard.running
         self.data = self._dashboard.get_cached_data()

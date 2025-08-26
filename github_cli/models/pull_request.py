@@ -75,23 +75,27 @@ class PullRequest(Issue):
     @property
     def head_ref(self) -> str:
         """Get the head reference (branch name)"""
-        return self.head.get("ref", "")
+        ref = self.head.get("ref", "")
+        return str(ref) if ref else ""
 
     @property
     def base_ref(self) -> str:
         """Get the base reference (branch name)"""
-        return self.base.get("ref", "")
+        ref = self.base.get("ref", "")
+        return str(ref) if ref else ""
 
     @property
     def head_repo_full_name(self) -> Optional[str]:
         """Get the full name of the head repository"""
         if self.head.get("repo"):
-            return self.head["repo"].get("full_name")
+            full_name = self.head["repo"].get("full_name")
+            return str(full_name) if full_name is not None else None
         return None
 
     @property
     def base_repo_full_name(self) -> Optional[str]:
         """Get the full name of the base repository"""
         if self.base.get("repo"):
-            return self.base["repo"].get("full_name")
+            full_name = self.base["repo"].get("full_name")
+            return str(full_name) if full_name is not None else None
         return None

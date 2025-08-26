@@ -19,7 +19,7 @@ try:
     from loguru import logger
 except ImportError:
     import logging
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)  # type: ignore[assignment]
 
 # Textual UI components
 from textual.app import ComposeResult
@@ -34,6 +34,8 @@ from textual.events import Key, Focus, Blur
 from github_cli.utils.exceptions import AuthenticationError
 
 # Define authentication enums and classes here to avoid circular imports
+
+
 class AuthErrorType(Enum):
     """Types of authentication errors."""
     NETWORK = "network"
@@ -68,6 +70,7 @@ class AuthResult:
     preferences_updated: bool = False
     recovery_action: AuthRecoveryAction | None = None
     error_type: AuthErrorType | None = None
+
 
 # Common re-exports for convenience
 __all__ = [

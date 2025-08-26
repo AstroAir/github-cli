@@ -70,7 +70,8 @@ class Release:
     def author_name(self) -> str:
         """Get the username of the release author"""
         if self.author and "login" in self.author:
-            return self.author["login"]
+            login = self.author["login"]
+            return str(login) if login else "Unknown"
         return "Unknown"
 
     @property

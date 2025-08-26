@@ -35,7 +35,7 @@ class EnvironmentCapabilities:
 class EnvironmentDetector:
     """Detects environment capabilities and provides adaptation strategies."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._capabilities: Optional[EnvironmentCapabilities] = None
         self._network_diagnostics: dict[str, Any] = {}
 

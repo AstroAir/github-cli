@@ -9,7 +9,7 @@ from unittest.mock import Mock, AsyncMock, patch
 from datetime import datetime, timezone
 
 from github_cli.api import users
-from github_cli.api.client import GitHubClient, APIResponse
+from github_cli.api.client import GitHubClient, APIResponse, RateLimitInfo
 from github_cli.models.user import User
 from github_cli.models.repository import Repository
 from github_cli.utils.exceptions import APIError, ValidationError
@@ -27,7 +27,12 @@ class TestUsersAPI:
     @pytest.mark.asyncio
     async def test_get_user_by_username(self, sample_user_data):
         """Test getting a user by username."""
-        mock_response = sample_user_data
+        mock_response = APIResponse(
+            data=sample_user_data,
+            status_code=200,
+            rate_limit=RateLimitInfo(),
+            headers={}
+        )
         self.mock_client.get = AsyncMock(return_value=mock_response)
 
         mock_user = Mock(spec=User)
@@ -40,7 +45,12 @@ class TestUsersAPI:
     @pytest.mark.asyncio
     async def test_get_authenticated_user(self, sample_user_data):
         """Test getting the authenticated user."""
-        mock_response = sample_user_data
+        mock_response = APIResponse(
+            data=sample_user_data,
+            status_code=200,
+            rate_limit=RateLimitInfo(),
+            headers={}
+        )
         self.mock_client.get = AsyncMock(return_value=mock_response)
 
         mock_user = Mock(spec=User)
@@ -53,7 +63,12 @@ class TestUsersAPI:
     @pytest.mark.asyncio
     async def test_get_authenticated_user_direct(self, sample_user_data):
         """Test getting authenticated user using direct function."""
-        mock_response = sample_user_data
+        mock_response = APIResponse(
+            data=sample_user_data,
+            status_code=200,
+            rate_limit=RateLimitInfo(),
+            headers={}
+        )
         self.mock_client.get = AsyncMock(return_value=mock_response)
 
         mock_user = Mock(spec=User)

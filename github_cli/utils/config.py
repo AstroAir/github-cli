@@ -119,4 +119,20 @@ class Config:
         """Reset the configuration to defaults"""
         if self.config_file.exists():
             self.config_file.unlink()
-        self.__init__(self.config_dir)
+        # Reinitialize the instance
+        self.__init__(self.config_dir)  # type: ignore[misc]
+
+    def get_auth_dir(self) -> Path:
+        """Get the authentication directory path"""
+        return self.config_dir / "auth"
+
+    def get_cache_dir(self) -> Path:
+        """Get the cache directory path"""
+        if os.name == 'nt':  # Windows
+            base_dir = Path(os.environ.get(
+                'LOCALAPPDATA', os.path.expanduser('~')))
+            return base_dir / 'github-cli' / 'cache'
+        else:  # Unix/Mac
+            base_dir = Path(os.environ.get('XDG_CACHE_HOME',
+                            os.path.expanduser('~/.cache')))
+            return base_dir / 'github-cli'

@@ -126,7 +126,7 @@ class User:
         """Check if this user is actually an organization"""
         return self.type.lower() == "organization"
 
-    async def get_followers(self, client, per_page: int = 100, max_pages: int = 1) -> List['User']:
+    async def get_followers(self, client: Any, per_page: int = 100, max_pages: int = 1) -> List['User']:
         """
         Get followers of this user
 
@@ -147,7 +147,7 @@ class User:
 
         return [User.from_json(item) for item in response]
 
-    async def get_following(self, client, per_page: int = 100, max_pages: int = 1) -> List['User']:
+    async def get_following(self, client: Any, per_page: int = 100, max_pages: int = 1) -> List['User']:
         """
         Get users that this user is following
 
@@ -168,7 +168,7 @@ class User:
 
         return [User.from_json(item) for item in response]
 
-    async def is_following(self, client, target_user: str) -> bool:
+    async def is_following(self, client: Any, target_user: str) -> bool:
         """
         Check if this user follows another user
 
@@ -185,7 +185,7 @@ class User:
         except Exception:
             return False
 
-    async def follow(self, client, target_user: str) -> bool:
+    async def follow(self, client: Any, target_user: str) -> bool:
         """
         Follow a user (authenticated user only)
 
@@ -202,7 +202,7 @@ class User:
         except Exception:
             return False
 
-    async def unfollow(self, client, target_user: str) -> bool:
+    async def unfollow(self, client: Any, target_user: str) -> bool:
         """
         Unfollow a user (authenticated user only)
 

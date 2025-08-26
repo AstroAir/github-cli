@@ -14,7 +14,7 @@ from .components.diff import DiffViewer as ModularDiffViewer
 class DiffViewer:
     """
     Backward-compatible wrapper for the modular diff viewer.
-    
+
     This class maintains the same API as the original DiffViewer while
     delegating to the new modular implementation.
     """
@@ -44,7 +44,8 @@ class DiffViewer:
 
     def _display_file_side_by_side(self, file_path: str, diff_content: str, width: int) -> None:
         """Display side-by-side diff for a single file (legacy method)."""
-        before_lines, after_lines = self._viewer.parser.parse_diff_for_side_by_side(diff_content)
+        before_lines, after_lines = self._viewer.parser.parse_diff_for_side_by_side(
+            diff_content)
         columns = self._viewer.renderer.render_file_side_by_side(
             file_path, before_lines, after_lines, width
         )
@@ -62,12 +63,16 @@ class DiffViewer:
     def get_diff_stats(self, diff_content: str) -> dict:
         """Get statistics about the diff."""
         return self._viewer.parser.get_diff_stats(diff_content)
-        before_lines = []
-        after_lines = []
+
+    def _parse_diff_lines(self, diff_content: str) -> tuple[list[str], list[str]]:
+        """Parse diff content into before and after lines."""
+        before_lines: list[str] = []
+        after_lines: list[str] = []
 
         # Skip header lines
         content_lines = diff_content.split('\n')
         start_index = 0
+
         for i, line in enumerate(content_lines):
             if line.startswith('@@'):
                 start_index = i + 1

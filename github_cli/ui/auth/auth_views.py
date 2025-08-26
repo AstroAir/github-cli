@@ -8,7 +8,7 @@ to different terminal sizes and layout requirements.
 from __future__ import annotations
 
 from github_cli.auth.common import (
-    Any, Container, Horizontal, Vertical, Grid, Static, Label, Button, 
+    Any, Container, Horizontal, Vertical, Grid, Static, Label, Button,
     ProgressBar, ComposeResult
 )
 from textual.widget import Widget

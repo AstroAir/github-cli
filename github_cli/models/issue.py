@@ -76,7 +76,8 @@ class Issue:
     @property
     def creator_name(self) -> str:
         """Get the creator's login name"""
-        return self.user.get("login", "")
+        login = self.user.get("login", "")
+        return str(login) if login else ""
 
     @property
     def label_names(self) -> List[str]:
