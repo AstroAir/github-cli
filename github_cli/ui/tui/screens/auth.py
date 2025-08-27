@@ -13,7 +13,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding, BindingType
 from textual.containers import Container, Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, Static
+from textual.widgets import Button, Input, LoadingIndicator, Rule, Static
 
 from github_cli.auth.authenticator import Authenticator
 from github_cli.auth.common import AuthResult, AuthenticationError
@@ -23,6 +23,10 @@ from github_cli.auth.progress_tracker import AuthProgressTracker, AuthStep
 from github_cli.utils.config import Config
 from github_cli.utils.performance import logger
 from github_cli.ui.tui.core.responsive import ResponsiveLayoutManager
+from github_cli.ui.tui.widgets import (
+    create_enhanced_button, create_enhanced_static, create_visual_separator,
+    create_link_widget, create_collapsible_section, create_pretty_display
+)
 
 
 class AuthScreen(Screen[AuthResult]):
@@ -88,57 +92,112 @@ class AuthScreen(Screen[AuthResult]):
             yield from self._compose_expanded_layout()
 
     def _compose_compact_layout(self) -> ComposeResult:
-        """Compose compact layout for small terminals."""
+        """Compose compact layout for small terminals with modern widgets."""
         with Container(id="auth-container", classes="auth-screen compact"):
-            # Header
-            yield Static("🔐 GitHub Auth", id="auth-header", classes="auth-header compact")
+            # Enhanced header
+            yield create_enhanced_static(
+                "🔐 GitHub Auth",
+                static_id="auth-header",
+                markup=True
+            )
 
-            # Device code display
-            yield Static("Code: ----", id="device-code", classes="device-code compact")
+            # Visual separator
+            yield create_visual_separator("solid", "horizontal", "header-separator")
 
-            # Progress indicator
+            # Device code display with enhanced styling
+            yield create_enhanced_static(
+                "Code: ----",
+                static_id="device-code",
+                markup=True
+            )
+
+            # Modern progress indicator
             if self.progress_tracker:
                 progress_widgets = self.progress_tracker.get_progress_widgets()
                 yield progress_widgets["progress_indicator"]
             else:
-                yield Static("⏳ Loading...", id="progress-indicator")
+                yield LoadingIndicator(id="progress-indicator")
 
-            # Status display
+            # Status display with enhanced styling
             if self.progress_tracker:
                 progress_widgets = self.progress_tracker.get_progress_widgets()
                 yield progress_widgets["status_display"]
             else:
-                yield Static("Ready", id="status-display")
+                yield create_enhanced_static(
+                    "Ready",
+                    static_id="status-display",
+                    markup=True
+                )
 
-            # Action buttons (vertical layout)
+            # Visual separator before actions
+            yield create_visual_separator("dashed", "horizontal", "actions-separator")
+
+            # Enhanced action buttons (vertical layout)
             with Vertical(id="auth-actions", classes="actions-container compact"):
-                yield Button("Retry", id="retry-btn", variant="primary", classes="retry-btn")
-                yield Button("Cancel", id="cancel-btn", variant="error", classes="cancel-btn")
+                yield create_enhanced_button(
+                    "Retry",
+                    "retry-btn",
+                    variant="primary",
+                    tooltip="Retry authentication process"
+                )
+                yield create_enhanced_button(
+                    "Cancel",
+                    "cancel-btn",
+                    variant="error",
+                    tooltip="Cancel authentication and exit"
+                )
 
     def _compose_standard_layout(self) -> ComposeResult:
-        """Compose standard layout for medium terminals."""
+        """Compose standard layout for medium terminals with modern widgets."""
         with Container(id="auth-container", classes="auth-screen standard"):
-            # Header
-            yield Static("🔐 GitHub Authentication", id="auth-header", classes="auth-header standard")
+            # Enhanced header
+            yield create_enhanced_static(
+                "🔐 GitHub Authentication",
+                static_id="auth-header",
+                markup=True
+            )
 
-            # Instructions
+            # Visual separator
+            yield create_visual_separator("heavy", "horizontal", "header-separator")
+
+            # Enhanced instructions
             instructions = (
+                "[bold cyan]Authentication Steps:[/bold cyan]\n"
                 "1. Your browser will open automatically\n"
                 "2. Enter the device code shown below\n"
                 "3. Authorize GitHub CLI access\n"
                 "4. Return to this terminal"
             )
-            yield Static(instructions, id="auth-instructions", classes="auth-instructions standard")
+            yield create_enhanced_static(
+                instructions,
+                static_id="auth-instructions",
+                markup=True
+            )
 
             # Content row with device code and progress
             with Horizontal(id="auth-content-row", classes="auth-content-row"):
-                # Device code section
+                # Device code section with enhanced styling
                 with Vertical(id="device-code-section", classes="device-code-section"):
-                    yield Static("Device Code:", id="device-code-label", classes="device-code-label")
-                    yield Static("Loading...", id="device-code", classes="device-code standard")
-                    yield Static("URL: Loading...", id="verification-url", classes="verification-url")
+                    yield create_enhanced_static(
+                        "[bold yellow]Device Code:[/bold yellow]",
+                        static_id="device-code-label",
+                        markup=True
+                    )
+                    yield create_enhanced_static(
+                        "[bold green]Loading...[/bold green]",
+                        static_id="device-code",
+                        markup=True
+                    )
+                    yield create_enhanced_static(
+                        "[dim]URL: Loading...[/dim]",
+                        static_id="verification-url",
+                        markup=True
+                    )
 
-                # Progress section
+                # Visual separator between sections
+                yield create_visual_separator("solid", "vertical", "content-separator")
+
+                # Progress section with modern indicators
                 with Vertical(id="progress-section", classes="progress-section"):
                     if self.progress_tracker:
                         progress_widgets = self.progress_tracker.get_progress_widgets()
@@ -146,58 +205,105 @@ class AuthScreen(Screen[AuthResult]):
                         if "countdown_timer" in progress_widgets:
                             yield progress_widgets["countdown_timer"]
                     else:
-                        yield Static("⏳ Loading...", id="progress-indicator")
+                        yield LoadingIndicator(id="progress-indicator")
 
-            # Status display
+            # Enhanced status display
             if self.progress_tracker:
                 progress_widgets = self.progress_tracker.get_progress_widgets()
                 yield progress_widgets["status_display"]
             else:
-                yield Static("Ready", id="status-display")
+                yield create_enhanced_static(
+                    "[bold blue]Ready[/bold blue]",
+                    static_id="status-display",
+                    markup=True
+                )
 
-            # Action buttons (horizontal layout)
+            # Visual separator before actions
+            yield create_visual_separator("dashed", "horizontal", "actions-separator")
+
+            # Enhanced action buttons (horizontal layout)
             with Horizontal(id="auth-actions", classes="actions-container standard"):
-                yield Button("Retry Authentication", id="retry-btn", variant="primary", classes="retry-btn")
-                yield Button("Cancel", id="cancel-btn", variant="error", classes="cancel-btn")
+                yield create_enhanced_button(
+                    "🔄 Retry Authentication",
+                    "retry-btn",
+                    variant="primary",
+                    tooltip="Retry authentication process"
+                )
+                yield create_enhanced_button(
+                    "❌ Cancel",
+                    "cancel-btn",
+                    variant="error",
+                    tooltip="Cancel authentication and exit"
+                )
 
     def _compose_expanded_layout(self) -> ComposeResult:
         """Compose expanded layout for large terminals."""
         with Container(id="auth-container", classes="auth-screen expanded"):
-            # Header
-            yield Static("🔐 GitHub CLI Authentication", id="auth-header", classes="auth-header expanded")
+            # Enhanced header
+            yield create_enhanced_static(
+                "🔐 GitHub CLI Authentication",
+                static_id="auth-header",
+                markup=True
+            )
+
+            # Visual separator
+            yield create_visual_separator("heavy", "horizontal", "header-separator")
 
             # Main content grid
             with Horizontal(id="auth-main-content", classes="auth-main-content"):
                 # Left column: Instructions and help
                 with Vertical(id="auth-left-column", classes="auth-left-column"):
                     instructions = (
-                        "Welcome to GitHub CLI Authentication\n\n"
-                        "To authenticate with GitHub:\n"
+                        "[bold cyan]Welcome to GitHub CLI Authentication[/bold cyan]\n\n"
+                        "[yellow]To authenticate with GitHub:[/yellow]\n"
                         "1. Your default browser will open automatically\n"
                         "2. Copy and enter the device code displayed below\n"
                         "3. Review and authorize GitHub CLI access permissions\n"
                         "4. Return to this terminal to continue\n\n"
-                        "If the browser doesn't open, manually visit the URL shown."
+                        "[dim]If the browser doesn't open, manually visit the URL shown.[/dim]"
                     )
-                    yield Static(instructions, id="auth-instructions", classes="auth-instructions expanded")
+                    yield create_enhanced_static(
+                        instructions,
+                        static_id="auth-instructions",
+                        markup=True
+                    )
 
-                    # Help section
+                    # Visual separator
+                    yield create_visual_separator("dashed", "horizontal", "help-separator")
+
+                    # Enhanced help section
                     help_text = (
-                        "Troubleshooting:\n\n"
-                        "• Browser not opening? Copy the URL manually\n"
-                        "• Code expired? Click 'Retry Authentication'\n"
-                        "• Network issues? Check your connection\n"
-                        "• Still having trouble? Press 'h' for more options"
+                        "[bold yellow]Troubleshooting:[/bold yellow]\n\n"
+                        "• [green]Browser not opening?[/green] Copy the URL manually\n"
+                        "• [green]Code expired?[/green] Click 'Retry Authentication'\n"
+                        "• [green]Network issues?[/green] Check your connection\n"
+                        "• [green]Still having trouble?[/green] Press 'h' for more options"
                     )
-                    yield Static(help_text, id="auth-help", classes="help-section expanded")
+                    yield create_enhanced_static(
+                        help_text,
+                        static_id="auth-help",
+                        markup=True
+                    )
 
                 # Right column: Device code and progress
                 with Vertical(id="auth-right-column", classes="auth-right-column"):
-                    # Device code container
+                    # Enhanced device code container
                     with Container(id="device-code-container", classes="device-code-container expanded"):
-                        yield Static("Device Code", id="device-code-label", classes="device-code-label")
-                        yield Static("Loading...", id="device-code", classes="device-code-value expanded")
-                        yield Static("Verification URL: Loading...", id="verification-url", classes="verification-url expanded")
+                        yield create_enhanced_static(
+                            "[bold yellow]Device Code[/bold yellow]",
+                            static_id="device-code-label",
+                            markup=True
+                        )
+                        yield create_enhanced_static(
+                            "[bold green]Loading...[/bold green]",
+                            static_id="device-code",
+                            markup=True
+                        )
+                        yield create_enhanced_static(
+                            "[dim]Verification URL: Loading...[/dim]",
+                            static_id="verification-url",
+                            markup=True
+                        )
 
                     # Progress container
                     if self.progress_tracker:

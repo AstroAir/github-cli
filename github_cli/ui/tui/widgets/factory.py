@@ -12,8 +12,10 @@ from abc import ABC, abstractmethod
 
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import (
-    Button, DataTable, Input, Label, LoadingIndicator, MaskedInput,
-    Static, Switch, Select, ProgressBar, TabbedContent, TabPane, Rule
+    Button, Checkbox, Collapsible, ContentSwitcher, DataTable, Digits, DirectoryTree,
+    Input, Label, Link, ListView, LoadingIndicator, MaskedInput, OptionList, Pretty,
+    ProgressBar, RadioButton, RadioSet, Rule, Select, Static, Switch, TabbedContent,
+    TabPane, TextArea
 )
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -798,5 +800,206 @@ def create_responsive_enhanced_table(
         column_configs=enhanced_columns,
         id=table_id,
         classes="responsive-enhanced-table modern-table adaptive-table",
+        **kwargs
+    )
+
+
+# New widget factory functions for modern Textual widgets
+
+def create_digits_display(
+    value: str | int | float = "",
+    digits_id: str = "digits",
+    **kwargs: Any
+) -> Digits:
+    """Create a digits widget for displaying large numbers."""
+    return Digits(
+        value=str(value),
+        id=digits_id,
+        classes="digits-display enhanced-digits",
+        **kwargs
+    )
+
+
+def create_link_widget(
+    text: str,
+    url: str,
+    link_id: str = "link",
+    **kwargs: Any
+) -> Link:
+    """Create a clickable link widget."""
+    return Link(
+        text=text,
+        url=url,
+        id=link_id,
+        classes="link-widget enhanced-link",
+        **kwargs
+    )
+
+
+def create_list_view(
+    items: list[Any] | None = None,
+    list_id: str = "list-view",
+    **kwargs: Any
+) -> ListView:
+    """Create a list view widget for simple item display."""
+    list_view = ListView(
+        id=list_id,
+        classes="list-view enhanced-list",
+        **kwargs
+    )
+
+    # Note: Items should be added after mounting, not during creation
+    # This factory creates the widget, items can be added later via append()
+
+    return list_view
+
+
+def create_option_list(
+    options: list[str] | None = None,
+    option_list_id: str = "option-list",
+    **kwargs: Any
+) -> OptionList:
+    """Create an option list widget for selections."""
+    option_list = OptionList(
+        id=option_list_id,
+        classes="option-list enhanced-options",
+        **kwargs
+    )
+
+    if options:
+        for text in options:
+            option_list.add_option(text)
+
+    return option_list
+
+
+def create_pretty_display(
+    content: Any,
+    pretty_id: str = "pretty",
+    **kwargs: Any
+) -> Pretty:
+    """Create a pretty widget for formatted object display."""
+    return Pretty(
+        content,
+        id=pretty_id,
+        classes="pretty-display enhanced-pretty",
+        **kwargs
+    )
+
+
+def create_checkbox(
+    label: str = "",
+    value: bool = False,
+    checkbox_id: str = "checkbox",
+    **kwargs: Any
+) -> Checkbox:
+    """Create a checkbox widget."""
+    return Checkbox(
+        label=label,
+        value=value,
+        id=checkbox_id,
+        classes="checkbox enhanced-checkbox",
+        **kwargs
+    )
+
+
+def create_radio_button(
+    label: str = "",
+    value: bool = False,
+    radio_id: str = "radio",
+    **kwargs: Any
+) -> RadioButton:
+    """Create a radio button widget."""
+    return RadioButton(
+        label=label,
+        value=value,
+        id=radio_id,
+        classes="radio-button enhanced-radio",
+        **kwargs
+    )
+
+
+def create_radio_set(
+    radio_set_id: str = "radio-set",
+    **kwargs: Any
+) -> RadioSet:
+    """Create a radio set widget for exclusive selections.
+
+    Note: RadioSet in Textual 4.0 is a container for RadioButton widgets.
+    Individual RadioButton widgets should be added as children after creation.
+    """
+    radio_set = RadioSet(
+        id=radio_set_id,
+        classes="radio-set enhanced-radio-set",
+        **kwargs
+    )
+
+    return radio_set
+
+
+def create_text_area(
+    text: str = "",
+    language: str | None = None,
+    text_area_id: str = "text-area",
+    read_only: bool = False,
+    **kwargs: Any
+) -> TextArea:
+    """Create a text area widget with optional syntax highlighting."""
+    return TextArea(
+        text=text,
+        language=language,
+        read_only=read_only,
+        id=text_area_id,
+        classes="text-area enhanced-text-area",
+        **kwargs
+    )
+
+
+def create_collapsible_section(
+    title: str,
+    content: Any = None,
+    collapsed: bool = False,
+    collapsible_id: str = "collapsible",
+    **kwargs: Any
+) -> Collapsible:
+    """Create a collapsible section widget."""
+    collapsible = Collapsible(
+        title=title,
+        collapsed=collapsed,
+        id=collapsible_id,
+        classes="collapsible-section enhanced-collapsible",
+        **kwargs
+    )
+
+    if content:
+        collapsible.compose_add_child(content)
+
+    return collapsible
+
+
+def create_content_switcher(
+    initial: str | None = None,
+    switcher_id: str = "content-switcher",
+    **kwargs: Any
+) -> ContentSwitcher:
+    """Create a content switcher widget."""
+    return ContentSwitcher(
+        initial=initial,
+        id=switcher_id,
+        classes="content-switcher enhanced-switcher",
+        **kwargs
+    )
+
+
+def create_directory_tree(
+    path: str,
+    tree_id: str = "directory-tree",
+    **kwargs: Any
+) -> DirectoryTree:
+    """Create a directory tree widget."""
+    return DirectoryTree(
+        path=path,
+        id=tree_id,
+        classes="directory-tree enhanced-tree",
         **kwargs
     )

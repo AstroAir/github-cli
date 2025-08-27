@@ -9,8 +9,9 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import (
-    Button, DataTable, Input, Label, LoadingIndicator,
-    Markdown, Placeholder, Static, TabbedContent, TabPane
+    Button, Collapsible, DataTable, Digits, Input, Label, Link, ListView,
+    LoadingIndicator, Markdown, Placeholder, Pretty, Rule, Static,
+    TabbedContent, TabPane
 )
 from loguru import logger
 from pydantic import BaseModel
@@ -19,6 +20,11 @@ from github_cli.api.client import GitHubClient
 from github_cli.utils.exceptions import GitHubCLIError
 # Add responsive imports
 from github_cli.ui.tui.core.responsive import ResponsiveLayoutManager
+from github_cli.ui.tui.widgets import (
+    create_enhanced_static, create_visual_separator, create_enhanced_button,
+    create_digits_display, create_link_widget, create_list_view, create_pretty_display,
+    create_collapsible_section
+)
 
 
 class Repository(BaseModel):
@@ -97,58 +103,189 @@ class RepositoryDetailScreen(Screen[None]):
                 yield from self._compose_normal_layout()
 
     def _compose_ultra_compact_layout(self) -> ComposeResult:
-        """Ultra compact layout for very small heights."""
+        """Ultra compact layout for very small heights with modern widgets."""
         with Container(id="repo-info-compact", classes="adaptive-layout"):
-            # Single line with most critical info
-            info_text = f"📂 {self.repo.name} ({self.repo.language or 'N/A'}) ⭐{self.repo.stargazers_count} 🍴{self.repo.forks_count}"
-            if self.repo.description:
-                info_text += f" - {self.repo.description[:50]}..."
-            yield Static(info_text, classes="ultra-compact-info")
+            # Use modern widgets for better display
+            with Horizontal():
+                # Repository name with link
+                yield create_link_widget(
+                    f"📂 {self.repo.name}",
+                    self.repo.html_url,
+                    link_id="repo-link"
+                )
+
+                # Statistics using Digits widgets
+                yield create_digits_display(
+                    self.repo.stargazers_count,
+                    digits_id="stars-count"
+                )
+                yield Static("⭐", classes="stat-icon")
+
+                yield create_digits_display(
+                    self.repo.forks_count,
+                    digits_id="forks-count"
+                )
+                yield Static("🍴", classes="stat-icon")
 
     def _compose_compact_layout(self) -> ComposeResult:
-        """Compact layout for small heights."""
+        """Compact layout for small heights with modern collapsible sections."""
         with Container(id="repo-info-compact", classes="adaptive-layout"):
+            # Essential info with modern widgets
             with Horizontal():
                 with Vertical(classes="compact-info-panel"):
-                    yield Label(f"📂 {self.repo.name}", classes="info-item")
-                    yield Label(f"🔧 {self.repo.language or 'N/A'}", classes="info-item")
+                    # Repository name as clickable link
+                    yield create_link_widget(
+                        f"📂 {self.repo.name}",
+                        self.repo.html_url,
+                        link_id="compact-repo-link"
+                    )
+                    yield create_enhanced_static(
+                        f"🔧 {self.repo.language or 'N/A'}",
+                        static_id="compact-language",
+                        markup=True
+                    )
 
                 with Vertical(classes="compact-stats-panel"):
-                    yield Label(f"⭐ {self.repo.stargazers_count}", classes="stat-item")
-                    yield Label(f"🍴 {self.repo.forks_count}", classes="stat-item")
+                    # Use Digits widgets for statistics
+                    with Horizontal():
+                        yield Static("⭐", classes="stat-icon")
+                        yield create_digits_display(
+                            self.repo.stargazers_count,
+                            digits_id="compact-stars"
+                        )
+                    with Horizontal():
+                        yield Static("🍴", classes="stat-icon")
+                        yield create_digits_display(
+                            self.repo.forks_count,
+                            digits_id="compact-forks"
+                        )
 
-            # Show description if available
+            # Modern collapsible details section
+            yield create_collapsible_section(
+                title="ℹ️ Repository Details",
+                collapsed=True,
+                collapsible_id="compact-details"
+            )
+
+            # Add content to collapsible section programmatically
             if self.repo.description:
-                yield Label(f"📝 {self.repo.description[:80]}...", classes="compact-description")
+                yield create_enhanced_static(
+                    f"📝 {self.repo.description}",
+                    static_id="compact-description",
+                    markup=True
+                )
 
     def _compose_normal_layout(self) -> ComposeResult:
-        """Normal layout for adequate heights."""
+        """Normal layout for adequate heights with modern Collapsible sections."""
         with Container(id="repo-info", classes="adaptive-layout"):
-            with Vertical(id="repo-basic-info", classes="adaptive-panel priority-high"):
-                yield Label(f"Name: {self.repo.name}", classes="info-item")
-                yield Label(f"Description: {self.repo.description or 'No description'}", classes="info-item")
-                yield Label(f"Language: {self.repo.language or 'Unknown'}", classes="info-item")
-                yield Label(f"Private: {'Yes' if self.repo.private else 'No'}", classes="info-item")
-                yield Label(f"Fork: {'Yes' if self.repo.fork else 'No'}", classes="info-item priority-medium")
+            # Basic Information Collapsible Section
+            with Collapsible(
+                title="📂 Repository Information",
+                collapsed=False,
+                id="basic-info-collapsible",
+                classes="adaptive-panel priority-high"
+            ):
+                yield create_enhanced_static(
+                    f"[bold cyan]Name:[/bold cyan] {self.repo.name}",
+                    static_id="repo-name",
+                    markup=True
+                )
+                yield create_enhanced_static(
+                    f"[bold cyan]Description:[/bold cyan] {self.repo.description or 'No description'}",
+                    static_id="repo-description",
+                    markup=True
+                )
+                yield create_enhanced_static(
+                    f"[bold cyan]Language:[/bold cyan] {self.repo.language or 'Unknown'}",
+                    static_id="repo-language",
+                    markup=True
+                )
+                yield create_enhanced_static(
+                    f"[bold cyan]Private:[/bold cyan] {'Yes' if self.repo.private else 'No'}",
+                    static_id="repo-private",
+                    markup=True
+                )
+                yield create_enhanced_static(
+                    f"[bold cyan]Fork:[/bold cyan] {'Yes' if self.repo.fork else 'No'}",
+                    static_id="repo-fork",
+                    markup=True
+                )
 
-            with Vertical(id="repo-stats", classes="adaptive-panel priority-medium"):
-                yield Label(f"⭐ Stars: {self.repo.stargazers_count}", classes="stat-item")
-                yield Label(f"🍴 Forks: {self.repo.forks_count}", classes="stat-item")
-                yield Label(f"📅 Updated: {self.repo.last_updated}", classes="stat-item priority-low")
+            # Statistics Collapsible Section
+            with Collapsible(
+                title="📊 Repository Statistics",
+                collapsed=False,
+                id="stats-collapsible",
+                classes="adaptive-panel priority-medium"
+            ):
+                yield create_enhanced_static(
+                    f"[bold yellow]⭐ Stars:[/bold yellow] {self.repo.stargazers_count}",
+                    static_id="repo-stars",
+                    markup=True
+                )
+                yield create_enhanced_static(
+                    f"[bold yellow]🍴 Forks:[/bold yellow] {self.repo.forks_count}",
+                    static_id="repo-forks",
+                    markup=True
+                )
+                yield create_enhanced_static(
+                    f"[bold yellow]📅 Updated:[/bold yellow] {self.repo.last_updated}",
+                    static_id="repo-updated",
+                    markup=True
+                )
 
-        # Tabs only for normal layout
-        with TabbedContent(id="repo-tabs", classes="adaptive-tabs"):
-            with TabPane("Files", id="files-tab"):
-                yield Placeholder("File browser coming soon")
+            # Visual separator
+            yield create_visual_separator("heavy", "horizontal", "info-separator")
 
-            with TabPane("Issues", id="issues-tab"):
-                yield Placeholder("Issues list coming soon")
+        # Enhanced tabs with modern content organization
+        with TabbedContent(id="repo-tabs", classes="adaptive-tabs modern-tabs"):
+            with TabPane("📁 Files", id="files-tab"):
+                with Collapsible(
+                    title="🗂️ File Browser",
+                    collapsed=False,
+                    id="files-collapsible"
+                ):
+                    yield create_enhanced_static(
+                        "[dim]File browser functionality coming soon...[/dim]",
+                        static_id="files-placeholder",
+                        markup=True
+                    )
 
-            with TabPane("Pull Requests", id="prs-tab"):
-                yield Placeholder("Pull requests coming soon")
+            with TabPane("🐛 Issues", id="issues-tab"):
+                with Collapsible(
+                    title="📋 Issue Management",
+                    collapsed=False,
+                    id="issues-collapsible"
+                ):
+                    yield create_enhanced_static(
+                        "[dim]Issues list and management coming soon...[/dim]",
+                        static_id="issues-placeholder",
+                        markup=True
+                    )
 
-            with TabPane("Actions", id="actions-tab"):
-                yield Placeholder("GitHub Actions coming soon")
+            with TabPane("🔀 Pull Requests", id="prs-tab"):
+                with Collapsible(
+                    title="🔄 Pull Request Management",
+                    collapsed=False,
+                    id="prs-collapsible"
+                ):
+                    yield create_enhanced_static(
+                        "[dim]Pull requests list and management coming soon...[/dim]",
+                        static_id="prs-placeholder",
+                        markup=True
+                    )
+
+            with TabPane("⚡ Actions", id="actions-tab"):
+                with Collapsible(
+                    title="🚀 GitHub Actions",
+                    collapsed=False,
+                    id="actions-collapsible"
+                ):
+                    yield create_enhanced_static(
+                        "[dim]GitHub Actions workflows and runs coming soon...[/dim]",
+                        static_id="actions-placeholder",
+                        markup=True
+                    )
 
     def _on_responsive_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
         """Handle responsive layout changes."""
@@ -324,6 +461,46 @@ class RepositoryManager:
             if str(repo.id) == repo_id:
                 return repo
         return None
+
+    def create_code_viewer(self, file_content: str, language: str | None = None) -> ComposeResult:
+        """Create a modern code viewer using TextArea widget."""
+        # Use TextArea for syntax-highlighted code display
+        yield create_text_area(
+            text=file_content,
+            language=language,
+            text_area_id="code-viewer",
+            read_only=True
+        )
+
+    def create_repository_stats_display(self) -> ComposeResult:
+        """Create a modern statistics display using new widgets."""
+        with Container(id="stats-container", classes="stats-display"):
+            # Use Pretty widget to display repository metadata
+            repo_data = {
+                "name": self.repo.name,
+                "language": self.repo.language,
+                "private": self.repo.private,
+                "fork": self.repo.fork,
+                "created": self.repo.updated_at
+            }
+            yield create_pretty_display(
+                repo_data,
+                pretty_id="repo-metadata"
+            )
+
+            # Use Digits widgets for large numbers
+            with Horizontal(classes="stats-row"):
+                yield Static("Stars:", classes="stat-label")
+                yield create_digits_display(
+                    self.repo.stargazers_count,
+                    digits_id="stars-display"
+                )
+
+                yield Static("Forks:", classes="stat-label")
+                yield create_digits_display(
+                    self.repo.forks_count,
+                    digits_id="forks-display"
+                )
 
 
 # Function to create repository widget for main TUI app

@@ -82,6 +82,11 @@ StatusBar.compact {
     overflow: hidden;
 }
 
+.adaptive-container.layout-transitioning {
+    /* Subtle visual feedback during layout transitions */
+    opacity: 0.95;
+}
+
 /* Sidebar styling with responsive behavior */
 .sidebar {
     width: 25%;
@@ -96,6 +101,31 @@ StatusBar.compact {
 
 .adaptive-sidebar {
     display: block;
+}
+
+.adaptive-sidebar.transitioning {
+    opacity: 0.9;
+}
+
+/* Enhanced sidebar styling for horizontal screens */
+.sidebar.horizontal-optimized {
+    width: auto;
+    min-width: 12;
+    max-width: 20;
+    padding: 0 1;
+    border-right: solid $primary;
+}
+
+.sidebar.horizontal-optimized Tree {
+    height: auto;
+    max-height: 3;
+}
+
+.sidebar.horizontal-optimized Button {
+    width: 100%;
+    margin: 0;
+    padding: 0 1;
+    text-overflow: ellipsis;
 }
 
 /* Compact navigation for small screens */
@@ -226,13 +256,55 @@ StatusBar.compact {
 }
 
 /* Horizontal layout optimizations */
+.horizontal-comfortable {
+    padding: 1;
+    margin: 0;
+}
+
+.horizontal-comfortable .sidebar {
+    width: 18;
+    min-width: 15;
+    max-width: 22;
+    padding: 1;
+    border-right: heavy $primary;
+    display: block;
+}
+
+.horizontal-comfortable .sidebar Tree {
+    height: 3;
+    max-height: 4;
+}
+
+.horizontal-comfortable .sidebar Button {
+    height: 1;
+    margin: 0 0 1 0;
+    padding: 0 1;
+}
+
 .horizontal-tight {
     padding: 0;
     margin: 0;
 }
 
 .horizontal-tight .sidebar {
-    display: none;
+    width: 15;
+    min-width: 12;
+    max-width: 18;
+    padding: 0 1;
+    border-right: solid $primary;
+    display: block;
+}
+
+.horizontal-tight .sidebar Tree {
+    height: 2;
+    max-height: 2;
+}
+
+.horizontal-tight .sidebar Button {
+    height: 1;
+    margin: 0;
+    padding: 0;
+    text-overflow: ellipsis;
 }
 
 .horizontal-tight TabPane {
@@ -250,7 +322,25 @@ StatusBar.compact {
 }
 
 .horizontal-ultra-tight .sidebar {
-    display: none;
+    width: 12;
+    min-width: 10;
+    max-width: 15;
+    padding: 0;
+    border-right: solid $primary;
+    display: block;
+}
+
+.horizontal-ultra-tight .sidebar Tree {
+    height: 1;
+    max-height: 1;
+}
+
+.horizontal-ultra-tight .sidebar Button {
+    height: 1;
+    margin: 0;
+    padding: 0;
+    text-overflow: ellipsis;
+    text-style: none;
 }
 
 .horizontal-ultra-tight TabPane {
@@ -262,8 +352,90 @@ StatusBar.compact {
     overflow: hidden;
 }
 
+/* Micro height optimizations for extremely small screens */
+.horizontal-micro {
+    padding: 0;
+    margin: 0;
+}
+
+.horizontal-micro .sidebar {
+    width: 10;
+    min-width: 8;
+    max-width: 12;
+    padding: 0;
+    border-right: solid $primary;
+    display: block;
+}
+
+.horizontal-micro .sidebar Tree {
+    height: 1;
+    max-height: 1;
+}
+
+.horizontal-micro .sidebar Button {
+    height: 1;
+    margin: 0;
+    padding: 0;
+    text-overflow: ellipsis;
+    text-style: none;
+}
+
+.horizontal-micro TabPane {
+    padding: 0;
+}
+
+.horizontal-micro #main-tabs {
+    height: 100%;
+    overflow: hidden;
+}
+
+.horizontal-micro Header {
+    display: none;
+}
+
+.horizontal-micro Footer {
+    display: none;
+}
+
+/* Vertical micro mode - absolute minimum */
+.vertical-micro {
+    padding: 0;
+    margin: 0;
+}
+
+.vertical-micro .sidebar {
+    width: 8;
+    min-width: 6;
+    max-width: 10;
+    padding: 0;
+    border-right: solid $primary;
+    display: block;
+}
+
+.vertical-micro Header {
+    display: none;
+}
+
+.vertical-micro Footer {
+    display: none;
+}
+
+.vertical-micro TabPane {
+    padding: 0;
+    margin: 0;
+}
+
+.vertical-micro #main-tabs {
+    height: 100%;
+    overflow: hidden;
+}
+
+.vertical-micro DataTable {
+    max-height: 3;
+}
+
 .horizontal-ultra-tight DataTable {
-    /* Note: show-header is not supported in CSS, handled programmatically */
+    max-height: 5;
 }
 
 /* Responsive repository widget styles */
@@ -1000,3 +1172,402 @@ Placeholder {
 }
 
 /* End of responsive utilities */
+
+/* Modern Widget Styles for Textual 4.0+ */
+
+/* Digits Widget Styling */
+Digits {
+    background: $surface;
+    color: $primary;
+    border: solid $accent;
+    text-align: center;
+    text-style: bold;
+    padding: 1;
+    margin: 0 1;
+}
+
+.digits-display {
+    background: $background;
+    color: $success;
+    border: solid $success;
+}
+
+.enhanced-digits {
+    text-style: bold;
+    color: $warning;
+}
+
+/* Link Widget Styling */
+Link {
+    color: $accent;
+    text-style: underline;
+    background: transparent;
+}
+
+Link:hover {
+    color: $primary;
+    background: $surface;
+    text-style: bold underline;
+}
+
+.link-widget {
+    padding: 0 1;
+}
+
+.enhanced-link {
+    color: $accent;
+    text-style: italic underline;
+}
+
+/* ListView Widget Styling */
+ListView {
+    background: $surface;
+    border: solid $accent;
+    scrollbar-background: $background;
+    scrollbar-color: $primary;
+}
+
+.list-view {
+    padding: 1;
+}
+
+.enhanced-list {
+    border: solid $success;
+    background: $background;
+}
+
+/* OptionList Widget Styling */
+OptionList {
+    background: $surface;
+    border: solid $accent;
+    color: $text;
+}
+
+OptionList > .option-list--option {
+    background: $surface;
+    color: $text;
+    padding: 0 2;
+}
+
+OptionList > .option-list--option:hover {
+    background: $primary;
+    color: $background;
+}
+
+OptionList > .option-list--option-highlighted {
+    background: $accent;
+    color: $background;
+    text-style: bold;
+}
+
+.option-list {
+    border: solid $primary;
+}
+
+.enhanced-options {
+    background: $background;
+    border: solid $success;
+}
+
+/* Pretty Widget Styling */
+Pretty {
+    background: $surface;
+    border: solid $accent;
+    padding: 1;
+    color: $text;
+}
+
+.pretty-display {
+    background: $background;
+    border: solid $accent;
+}
+
+.enhanced-pretty {
+    border: solid $success;
+    background: $surface;
+}
+
+/* Checkbox Widget Styling */
+Checkbox {
+    background: transparent;
+    color: $text;
+    padding: 0 1;
+}
+
+Checkbox:focus {
+    background: $surface;
+    border: solid $accent;
+}
+
+.checkbox {
+    margin: 0 1;
+}
+
+.enhanced-checkbox {
+    color: $success;
+    text-style: bold;
+}
+
+/* RadioButton and RadioSet Styling */
+RadioButton {
+    background: transparent;
+    color: $text;
+    padding: 0 1;
+}
+
+RadioButton:focus {
+    background: $surface;
+    border: solid $accent;
+}
+
+RadioSet {
+    background: $surface;
+    border: solid $accent;
+    padding: 1;
+}
+
+.radio-button {
+    margin: 0 1;
+}
+
+.enhanced-radio {
+    color: $accent;
+}
+
+.radio-set {
+    border: solid $primary;
+}
+
+.enhanced-radio-set {
+    background: $background;
+    border: solid $success;
+}
+
+/* TextArea Widget Styling */
+TextArea {
+    background: $surface;
+    border: solid $accent;
+    color: $text;
+    scrollbar-background: $background;
+    scrollbar-color: $primary;
+}
+
+TextArea:focus {
+    border: solid $primary;
+    background: $background;
+}
+
+.text-area {
+    padding: 1;
+}
+
+.enhanced-text-area {
+    border: solid $success;
+    background: $background;
+    color: $text;
+}
+
+/* Collapsible Widget Enhanced Styling */
+Collapsible {
+    background: $surface;
+    border: solid $accent;
+    margin: 1 0;
+}
+
+Collapsible > .collapsible--title {
+    background: $primary;
+    color: $background;
+    text-style: bold;
+    padding: 0 2;
+}
+
+Collapsible > .collapsible--title:hover {
+    background: $accent;
+    color: $background;
+}
+
+Collapsible > .collapsible--contents {
+    background: $surface;
+    padding: 1;
+    border-top: solid $accent;
+}
+
+.collapsible-section {
+    margin: 1 0;
+}
+
+.enhanced-collapsible {
+    border: solid $success;
+    background: $background;
+}
+
+.compact-collapsible {
+    margin: 0;
+    border: none;
+}
+
+/* ContentSwitcher Widget Styling */
+ContentSwitcher {
+    background: $surface;
+    border: solid $accent;
+}
+
+.content-switcher {
+    padding: 1;
+}
+
+.enhanced-switcher {
+    border: solid $primary;
+    background: $background;
+}
+
+/* DirectoryTree Widget Styling */
+DirectoryTree {
+    background: $surface;
+    border: solid $accent;
+    scrollbar-background: $background;
+    scrollbar-color: $primary;
+}
+
+.directory-tree {
+    padding: 1;
+}
+
+.enhanced-tree {
+    border: solid $success;
+    background: $background;
+}
+
+/* Application-Specific Widget Combinations */
+
+/* Repository Statistics Display */
+.stats-display {
+    background: $surface;
+    border: solid $accent;
+    padding: 1;
+    margin: 1 0;
+}
+
+.stats-row {
+    align: center middle;
+    height: 3;
+}
+
+.stat-label {
+    color: $text;
+    text-style: bold;
+    margin: 0 1;
+    width: auto;
+}
+
+.stat-icon {
+    color: $warning;
+    text-style: bold;
+    margin: 0 1;
+    width: 2;
+}
+
+/* Modern Filter Panel */
+.modern-filter {
+    background: $surface;
+    border: solid $accent;
+    padding: 1;
+    margin: 1 0;
+}
+
+/* Workflow Analytics Panel */
+.workflow-analytics {
+    background: $surface;
+    border: solid $accent;
+    padding: 1;
+    margin: 1 0;
+}
+
+.analytics-label {
+    color: $accent;
+    text-style: bold;
+    margin: 0 0 1 0;
+}
+
+.success-sparkline {
+    color: $success;
+    background: $background;
+    border: solid $success;
+    height: 3;
+}
+
+.metrics-row {
+    align: center middle;
+    height: 4;
+    margin: 1 0;
+}
+
+.metric-label {
+    color: $text;
+    text-style: bold;
+    margin: 0 1;
+    width: auto;
+}
+
+/* Compact Layout Specific Styles */
+.compact-info-panel {
+    background: $surface;
+    padding: 1;
+    margin: 0 1;
+}
+
+.compact-stats-panel {
+    background: $background;
+    border: solid $accent;
+    padding: 1;
+    margin: 0 1;
+}
+
+/* Enhanced Static Text Variations */
+.enhanced-static {
+    background: transparent;
+    color: $text;
+    padding: 0 1;
+}
+
+.enhanced-static.compact {
+    padding: 0;
+    margin: 0;
+}
+
+.enhanced-static.highlight {
+    color: $accent;
+    text-style: bold;
+}
+
+/* Responsive Adaptations for New Widgets */
+/* Note: Textual CSS doesn't support @media queries, use responsive classes instead */
+
+.compact .digits-display {
+    padding: 0;
+    margin: 0;
+    text-style: none;
+}
+
+.compact .stats-row {
+    height: 2;
+}
+
+.compact .metric-label {
+    width: 8;
+    text-overflow: ellipsis;
+}
+
+.ultra-compact .collapsible-section {
+    margin: 0;
+}
+
+.ultra-compact .workflow-analytics {
+    padding: 0;
+    margin: 0;
+}
+
+.ultra-compact .modern-filter {
+    padding: 0;
+    margin: 0;
+}

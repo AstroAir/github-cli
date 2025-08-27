@@ -9,8 +9,9 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import (
-    Button, DataTable, Input, Label, LoadingIndicator,
-    Markdown, Static, Switch, TabbedContent, TabPane
+    Button, Checkbox, Collapsible, DataTable, Input, Label, Link, ListView,
+    LoadingIndicator, Markdown, OptionList, Pretty, Rule, Static, Switch,
+    TabbedContent, TabPane
 )
 from loguru import logger
 from pydantic import BaseModel
@@ -18,6 +19,11 @@ from pydantic import BaseModel
 from github_cli.api.client import GitHubClient
 from github_cli.utils.exceptions import GitHubCLIError
 from github_cli.ui.tui.core.responsive import ResponsiveLayoutManager
+from github_cli.ui.tui.widgets import (
+    create_enhanced_static, create_visual_separator, create_enhanced_button,
+    create_collapsible_section, create_link_widget, create_list_view,
+    create_option_list, create_checkbox
+)
 
 
 class Notification(BaseModel):
@@ -112,35 +118,142 @@ class NotificationDetailScreen(Screen[None]):
             self.layout_manager.add_resize_callback(self._on_responsive_change)
 
     def compose(self) -> ComposeResult:
-        """Compose the notification detail screen with adaptive layout."""
-        with Container(id="notification-detail-container", classes="adaptive-container"):
-            yield Static(f"Notification: {self.notification.subject.get('title', 'No title')}", id="notification-title", classes="adaptive-title")
+        """Compose the notification detail screen with modern layout containers."""
+        with Container(id="notification-detail-container", classes="adaptive-container modern-layout"):
+            # Enhanced title with better visual hierarchy
+            yield create_enhanced_static(
+                f"[bold cyan]📬 Notification:[/bold cyan] {self.notification.subject.get('title', 'No title')}",
+                static_id="notification-title",
+                markup=True
+            )
 
-            with Container(id="notification-info", classes="adaptive-layout"):
-                with Vertical(id="notification-basic-info", classes="adaptive-panel priority-high"):
-                    yield Label(f"Repository: {self.notification.repository_name}", classes="info-item")
-                    yield Label(f"Type: {self.notification.subject_type}", classes="info-item")
-                    yield Label(f"Reason: {self.notification.reason_display}", classes="info-item")
-                    yield Label(f"Updated: {self.notification.updated_at}", classes="info-item priority-medium")
-                    yield Label(f"Status: {'Unread' if self.notification.unread else 'Read'}", classes="info-item priority-low")
+            # Visual separator
+            yield create_visual_separator("heavy", "horizontal", "title-separator")
 
-                with Vertical(id="notification-actions-panel", classes="adaptive-panel priority-medium"):
-                    if self.notification.unread:
-                        yield Button("✅ Mark as Read", id="mark-read", variant="primary", classes="adaptive-button")
-                    else:
-                        yield Button("🔴 Mark as Unread", id="mark-unread", variant="warning", classes="adaptive-button")
-                    yield Button("🌐 Open in Browser", id="open-browser", classes="adaptive-button priority-medium")
-                    yield Button("📋 Copy URL", id="copy-url", classes="adaptive-button priority-low")
-                    yield Button("🔔 Unsubscribe", id="unsubscribe", classes="adaptive-button priority-low")
-                    yield Button("⬅️ Back", id="back", variant="error", classes="adaptive-button")
+            # Modern layout with improved organization
+            with Container(id="notification-info", classes="modern-info-layout"):
+                # Basic Information Collapsible Section
+                with Collapsible(
+                    title="📋 Notification Details",
+                    collapsed=False,
+                    id="notification-basic-collapsible",
+                    classes="info-section priority-high"
+                ):
+                    yield create_enhanced_static(
+                        f"[bold yellow]Repository:[/bold yellow] {self.notification.repository_name}",
+                        static_id="notification-repo",
+                        markup=True
+                    )
+                    yield create_enhanced_static(
+                        f"[bold yellow]Type:[/bold yellow] {self.notification.subject_type}",
+                        static_id="notification-type",
+                        markup=True
+                    )
+                    yield create_enhanced_static(
+                        f"[bold yellow]Reason:[/bold yellow] {self.notification.reason_display}",
+                        static_id="notification-reason",
+                        markup=True
+                    )
+                    yield create_enhanced_static(
+                        f"[bold yellow]Updated:[/bold yellow] {self.notification.updated_at}",
+                        static_id="notification-updated",
+                        markup=True
+                    )
 
-            with TabbedContent(id="notification-tabs", classes="adaptive-tabs"):
-                with TabPane("Details", id="details-tab"):
-                    with Container(id="details-content", classes="adaptive-content"):
-                        yield Static("Loading details...", id="details-placeholder")
+                    # Status with conditional styling
+                    status_text = "[bold green]✅ Read[/bold green]" if not self.notification.unread else "[bold red]📬 Unread[/bold red]"
+                    yield create_enhanced_static(
+                        f"[bold yellow]Status:[/bold yellow] {status_text}",
+                        static_id="notification-status",
+                        markup=True
+                    )
 
-                with TabPane("Raw Data", id="raw-tab"):
-                    yield Markdown(f"```json\n{self.notification.model_dump_json(indent=2)}\n```", classes="raw-data")
+                # Action Management Collapsible Section
+                with Collapsible(
+                    title="⚡ Quick Actions",
+                    collapsed=True,
+                    id="notification-actions-collapsible",
+                    classes="actions-section priority-medium"
+                ):
+                    yield create_enhanced_static(
+                        "[dim]Available actions for this notification:[/dim]",
+                        static_id="actions-description",
+                        markup=True
+                    )
+
+                    # Visual separator
+                    yield create_visual_separator("dashed", "horizontal", "actions-separator")
+
+                    # Enhanced action buttons with modern styling
+                    with Vertical(id="notification-actions-panel", classes="modern-actions-panel"):
+                        if self.notification.unread:
+                            yield create_enhanced_button(
+                                "✅ Mark as Read",
+                                "mark-read",
+                                variant="primary",
+                                tooltip="Mark this notification as read"
+                            )
+                        else:
+                            yield create_enhanced_button(
+                                "🔴 Mark as Unread",
+                                "mark-unread",
+                                variant="warning",
+                                tooltip="Mark this notification as unread"
+                            )
+
+                        yield create_enhanced_button(
+                            "🌐 Open in Browser",
+                            "open-browser",
+                            variant="default",
+                            tooltip="Open notification subject in web browser"
+                        )
+                        yield create_enhanced_button(
+                            "📋 Copy URL",
+                            "copy-url",
+                            variant="default",
+                            tooltip="Copy notification URL to clipboard"
+                        )
+                        yield create_enhanced_button(
+                            "🔔 Unsubscribe",
+                            "unsubscribe",
+                            variant="default",
+                            tooltip="Unsubscribe from this notification thread"
+                        )
+                        yield create_enhanced_button(
+                            "⬅️ Back",
+                            "back",
+                            variant="error",
+                            tooltip="Return to notifications list"
+                        )
+
+            # Visual separator before tabs
+            yield create_visual_separator("solid", "horizontal", "tabs-separator")
+
+            # Enhanced tabs with modern content organization
+            with TabbedContent(id="notification-tabs", classes="adaptive-tabs modern-tabs"):
+                with TabPane("📄 Details", id="details-tab"):
+                    with Collapsible(
+                        title="🔍 Subject Details",
+                        collapsed=False,
+                        id="details-collapsible"
+                    ):
+                        with Container(id="details-content", classes="modern-details-content"):
+                            yield create_enhanced_static(
+                                "[dim]Loading details...[/dim]",
+                                static_id="details-placeholder",
+                                markup=True
+                            )
+
+                with TabPane("🔧 Raw Data", id="raw-tab"):
+                    with Collapsible(
+                        title="📋 JSON Data",
+                        collapsed=False,
+                        id="raw-data-collapsible"
+                    ):
+                        yield Markdown(
+                            f"```json\n{self.notification.model_dump_json(indent=2)}\n```",
+                            classes="raw-data modern-code-block"
+                        )
 
             yield LoadingIndicator(id="details-loading")
 
@@ -241,46 +354,100 @@ class NotificationDetailScreen(Screen[None]):
             await details_content.mount(Static("No details available"))
 
     async def _show_issue_pr_details(self, container: Container) -> None:
-        """Show details for issues and pull requests."""
+        """Show details for issues and pull requests with enhanced styling."""
         title = self.subject_details.get('title', 'No title')
         body = self.subject_details.get('body', '')
         state = self.subject_details.get('state', 'unknown')
         author = self.subject_details.get('user', {}).get('login', 'Unknown')
 
-        await container.mount(Label(f"Title: {title}"))
-        await container.mount(Label(f"State: {state.upper()}"))
-        await container.mount(Label(f"Author: {author}"))
+        # Enhanced details with better formatting
+        await container.mount(create_enhanced_static(
+            f"[bold cyan]Title:[/bold cyan] {title}",
+            static_id="detail-title",
+            markup=True
+        ))
+
+        # State with conditional styling
+        state_color = "green" if state == "open" else "red" if state == "closed" else "purple"
+        await container.mount(create_enhanced_static(
+            f"[bold cyan]State:[/bold cyan] [{state_color}]{state.upper()}[/{state_color}]",
+            static_id="detail-state",
+            markup=True
+        ))
+
+        await container.mount(create_enhanced_static(
+            f"[bold cyan]Author:[/bold cyan] {author}",
+            static_id="detail-author",
+            markup=True
+        ))
 
         if body:
+            # Visual separator before body
+            await container.mount(create_visual_separator("dashed", "horizontal", "body-separator"))
+
             # Limit body length for display
             display_body = body[:500] + "..." if len(body) > 500 else body
-            await container.mount(Markdown(display_body))
+            await container.mount(Markdown(display_body, classes="enhanced-markdown"))
 
     async def _show_release_details(self, container: Container) -> None:
-        """Show details for releases."""
+        """Show details for releases with enhanced styling."""
         name = self.subject_details.get('name', 'No name')
         tag_name = self.subject_details.get('tag_name', 'No tag')
         draft = self.subject_details.get('draft', False)
         prerelease = self.subject_details.get('prerelease', False)
 
-        await container.mount(Label(f"Release: {name}"))
-        await container.mount(Label(f"Tag: {tag_name}"))
+        # Enhanced release details
+        await container.mount(create_enhanced_static(
+            f"[bold cyan]Release:[/bold cyan] [bold green]{name}[/bold green]",
+            static_id="release-name",
+            markup=True
+        ))
+
+        await container.mount(create_enhanced_static(
+            f"[bold cyan]Tag:[/bold cyan] [yellow]{tag_name}[/yellow]",
+            static_id="release-tag",
+            markup=True
+        ))
+
         if draft:
-            await container.mount(Label("⚠️ Draft Release"))
+            await container.mount(create_enhanced_static(
+                "[bold red]⚠️ Draft Release[/bold red]",
+                static_id="release-draft",
+                markup=True
+            ))
         if prerelease:
-            await container.mount(Label("🧪 Pre-release"))
+            await container.mount(create_enhanced_static(
+                "[bold yellow]🧪 Pre-release[/bold yellow]",
+                static_id="release-prerelease",
+                markup=True
+            ))
 
     async def _show_commit_details(self, container: Container) -> None:
-        """Show details for commits."""
+        """Show details for commits with enhanced styling."""
         sha = self.subject_details.get('sha', 'No SHA')
         message = self.subject_details.get(
             'commit', {}).get('message', 'No message')
         author = self.subject_details.get('commit', {}).get(
             'author', {}).get('name', 'Unknown')
 
-        await container.mount(Label(f"Commit: {sha[:7]}"))
-        await container.mount(Label(f"Author: {author}"))
-        await container.mount(Label(f"Message: {message}"))
+        # Enhanced commit details
+        await container.mount(create_enhanced_static(
+            f"[bold cyan]Commit:[/bold cyan] [yellow]{sha[:7]}[/yellow]",
+            static_id="commit-sha",
+            markup=True
+        ))
+
+        await container.mount(create_enhanced_static(
+            f"[bold cyan]Author:[/bold cyan] {author}",
+            static_id="commit-author",
+            markup=True
+        ))
+
+        await container.mount(create_enhanced_static(
+            f"[bold cyan]Message:[/bold cyan] [dim]{message}[/dim]",
+            static_id="commit-message",
+            markup=True
+        ))
 
     @on(Button.Pressed, "#mark-read")
     async def mark_as_read(self) -> None:
@@ -673,6 +840,42 @@ class NotificationWidget(Container):
                 # Pass layout manager to detail screen if available
                 self.app.push_screen(NotificationDetailScreen(
                     notification, self.client, self.layout_manager))
+
+    def create_modern_filter_panel(self) -> ComposeResult:
+        """Create a modern filter panel using new widgets."""
+        with Container(id="filter-panel", classes="modern-filter"):
+            # Use OptionList for notification type filtering
+            type_options = [
+                ("All Types", "all"),
+                ("Pull Requests", "pull_request"),
+                ("Issues", "issue"),
+                ("Releases", "release"),
+                ("Security Alerts", "security_alert")
+            ]
+            yield create_option_list(
+                options=type_options,
+                option_list_id="notification-type-filter"
+            )
+
+            # Use RadioSet for status filtering
+            status_options = ["All", "Unread Only", "Read Only"]
+            yield create_radio_set(
+                options=status_options,
+                radio_set_id="notification-status-filter"
+            )
+
+            # Use Checkbox for additional filters
+            yield create_checkbox(
+                label="Show archived",
+                value=False,
+                checkbox_id="show-archived-filter"
+            )
+
+            yield create_checkbox(
+                label="Group by repository",
+                value=True,
+                checkbox_id="group-by-repo-filter"
+            )
 
 
 # Function to replace placeholder in main TUI app

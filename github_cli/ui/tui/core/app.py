@@ -1,6 +1,7 @@
 ﻿from __future__ import annotations
 
 import asyncio
+from datetime import timedelta
 from pathlib import Path
 from typing import Any, ClassVar
 
@@ -11,9 +12,10 @@ from textual.containers import Container, Horizontal, Vertical
 from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import (
-    Button, Collapsible, DataTable, Footer, Header, Input, Label, LoadingIndicator,
-    Log, MarkdownViewer, Placeholder, ProgressBar, RichLog, Rule, SelectionList,
-    Sparkline, Static, TabbedContent, TabPane, Tree
+    Button, Checkbox, Collapsible, ContentSwitcher, DataTable, Digits, DirectoryTree,
+    Footer, Header, Input, Label, Link, ListView, LoadingIndicator, Log, MarkdownViewer,
+    OptionList, Placeholder, Pretty, ProgressBar, RadioButton, RadioSet, RichLog, Rule,
+    SelectionList, Sparkline, Static, TabbedContent, TabPane, TextArea, Tree
 )
 from loguru import logger
 
@@ -136,6 +138,9 @@ class GitHubTUIApp(App[None]):
         # Initialize error handler
         self.error_handler = TUIErrorHandler(self)
 
+        # Initialize data loader for preemptive loading
+        self.data_loader = None  # Will be initialized after client is ready
+
         # Layout state
         self._current_layout_config = None
         self._sidebar_visible = True
@@ -143,27 +148,78 @@ class GitHubTUIApp(App[None]):
         logger.info("GitHub TUI application initialized with responsive layout")
 
     async def on_mount(self) -> None:
-        """Called when the app is mounted."""
-        logger.info("GitHub TUI application mounted")
+        """Called when the app is mounted with progressive loading."""
+        logger.info("GitHub TUI application mounted - starting progressive initialization")
 
-        # Initialize responsive layout
-        self.layout_manager.update_layout(self.size)
-        self.layout_manager.add_resize_callback(
-            self._on_responsive_layout_change)
+        # Phase 1: Immediate UI setup (show loading state)
+        self.loading = True
+        self.notify("Initializing GitHub CLI...", timeout=1)
 
-        # Initialize GitHub client (without token initially)
+        # Phase 2: Initialize responsive layout (optimized)
+        logger.debug("Phase 1: Setting up responsive layout")
+        # Batch layout initialization to avoid multiple updates
+        self._initialize_responsive_layout()
+
+        # Phase 3: Initialize GitHub client (medium speed)
+        logger.debug("Phase 2: Initializing GitHub client")
         self.client = GitHubClient(self.authenticator)
 
-        # Check authentication status
+        # Initialize data loader with client
+        from github_cli.ui.tui.utils.data_loader import create_data_loader
+        self.data_loader = create_data_loader(self.client, self.error_handler, cache_ttl_minutes=10)
+
+        # Update loading state
+        self.notify("Checking authentication...", timeout=1)
+
+        # Phase 4: Check authentication status (potentially slow)
+        logger.debug("Phase 3: Checking authentication")
         await self._check_authentication()
 
-        # Start background tasks
+        # Phase 5: Start background tasks (fast)
+        logger.debug("Phase 4: Starting background services")
         self._start_background_tasks()
 
+        # Phase 6: Preload initial data if authenticated
+        if self.authenticated:
+            logger.debug("Phase 5: Preloading initial data")
+            self.notify("Loading initial data...", timeout=1)
+            await self._preload_initial_data()
+
+        # Initialization complete
+        self.loading = False
+        self.notify("GitHub CLI ready!", severity="information", timeout=2)
+        logger.info("GitHub TUI application initialization complete")
+
+    def _initialize_responsive_layout(self) -> None:
+        """Initialize responsive layout with optimized batch operations."""
+        try:
+            # Single layout update with callback registration
+            layout_changed = self.layout_manager.update_layout(self.size)
+            self.layout_manager.add_resize_callback(self._on_responsive_layout_change)
+
+            # Pre-calculate and cache layout configurations
+            breakpoint = self.layout_manager.get_current_breakpoint()
+
+            # Cache frequently accessed configurations
+            self.layout_manager.get_sidebar_config()
+            self.layout_manager.get_content_config()
+            self.layout_manager.get_header_config()
+            self.layout_manager.get_footer_config()
+
+            logger.debug(f"Responsive layout initialized with breakpoint: {breakpoint.name}")
+
+        except Exception as e:
+            logger.error(f"Error initializing responsive layout: {e}")
+            # Fallback to basic initialization
+            self.layout_manager.update_layout(self.size)
+            self.layout_manager.add_resize_callback(self._on_responsive_layout_change)
+
     async def on_resize(self, event: Any) -> None:
-        """Handle terminal resize events."""
-        self.layout_manager.update_layout(event.size)
-        await self._update_responsive_layout()
+        """Handle terminal resize events with optimized updates."""
+        # Only update if layout actually changed
+        layout_changed = self.layout_manager.update_layout(event.size)
+        if layout_changed:
+            await self._update_responsive_layout()
 
     def compose(self) -> ComposeResult:
         """Create the main UI layout with responsive design."""
@@ -212,21 +268,110 @@ class GitHubTUIApp(App[None]):
             footer.add_class("hidden")
             yield footer
 
+    def _get_prioritized_sidebar_content(self) -> list[tuple[str, int, Any]]:
+        """Get sidebar content items with priority levels for adaptive display.
+
+        Returns list of tuples: (item_type, priority, content_data)
+        Priority levels: 1=highest, 5=lowest
+        """
+        breakpoint = self.layout_manager.get_current_breakpoint()
+        available_height = self.layout_manager._get_available_content_height()
+
+        # Define sidebar content with priorities based on available height
+        if available_height <= 3:
+            # Micro height - only essential navigation
+            content_items = [
+                ("tree", 1, {"label": "CLI", "id": "nav-tree"}),  # Ultra compact label
+            ]
+        elif available_height <= 5:
+            # Extremely tight - navigation and auth only
+            content_items = [
+                ("tree", 1, {"label": "GitHub", "id": "nav-tree"}),  # Compact label
+                ("auth_button", 2, None),  # Login/logout - essential
+            ]
+        else:
+            # Normal content with adaptive priorities
+            content_items = [
+                ("tree", 1, {"label": "GitHub CLI", "id": "nav-tree"}),  # Always show navigation
+                ("auth_button", 2, None),  # Login/logout - high priority
+                ("separator", 4, {"style": "heavy"}) if available_height > 8 else None,  # Skip separator on very tight screens
+                ("refresh_button", 3, {"label": "🔄 Refresh", "id": "refresh-btn"}),  # Refresh functionality
+            ]
+
+        # Filter out None items and adjust for horizontal screens
+        filtered_items = [item for item in content_items if item is not None]
+
+        # For horizontal and micro screens, prioritize more compact content
+        if breakpoint and (breakpoint.name.startswith("horizontal") or "micro" in breakpoint.name):
+            # Use more compact labels and reduce separators
+            for i, (item_type, priority, data) in enumerate(filtered_items):
+                if item_type == "refresh_button" and data:
+                    # Use compact refresh button for constrained screens
+                    filtered_items[i] = (item_type, priority, {"label": "🔄", "id": "refresh-btn"})
+                elif item_type == "tree" and data and available_height <= 5:
+                    # Use ultra compact tree label for micro heights
+                    filtered_items[i] = (item_type, priority, {"label": "GH", "id": "nav-tree"})
+
+        return filtered_items
+
+    def _compose_adaptive_sidebar_content(self) -> ComposeResult:
+        """Compose sidebar content based on available space and priorities."""
+        sidebar_config = self.layout_manager.get_sidebar_config()
+        breakpoint = self.layout_manager.get_current_breakpoint()
+        available_height = self.layout_manager._get_available_content_height()
+
+        # Get prioritized content
+        content_items = self._get_prioritized_sidebar_content()
+
+        # Determine how many items we can fit based on height constraints
+        if available_height <= 3:
+            max_items = 1  # Micro height - only one item
+        elif available_height <= 5:
+            max_items = 2  # Extremely tight - maximum 2 items
+        else:
+            max_items = available_height - 2  # Reserve space for container padding
+            if breakpoint and breakpoint.name.startswith("horizontal_ultra"):
+                max_items = min(max_items, 4)  # Limit items on ultra tight screens
+            elif breakpoint and "micro" in breakpoint.name:
+                max_items = min(max_items, 2)  # Limit items on micro screens
+
+        # Sort by priority and take top items
+        sorted_items = sorted(content_items, key=lambda x: x[1])[:max_items]
+
+        # Render items with height-aware styling
+        for item_type, priority, data in sorted_items:
+            if item_type == "tree" and data:
+                yield Tree(data["label"], id=data["id"])
+            elif item_type == "separator":
+                if data and available_height > 6:  # Only show separators if we have space
+                    yield Rule(line_style=data.get("style", "solid"))
+            elif item_type == "auth_button":
+                # Show appropriate auth button based on state and available space
+                if available_height <= 5:
+                    # Ultra compact auth buttons for micro heights
+                    if self.authenticated:
+                        yield Button("⚪", id="logout-btn", variant="error")
+                    else:
+                        yield Button("🔐", id="login-btn", variant="primary")
+                else:
+                    # Normal auth buttons
+                    if self.authenticated:
+                        yield Button("🚪 Logout", id="logout-btn", variant="error")
+                    else:
+                        yield Button("🔐 Login", id="login-btn", variant="primary")
+            elif item_type == "refresh_button" and data:
+                yield Button(data["label"], id=data["id"])
+
     def _compose_horizontal_layout(self) -> ComposeResult:
         """Compose horizontal layout for larger screens."""
         sidebar_config = self.layout_manager.get_sidebar_config()
         breakpoint = self.layout_manager.get_current_breakpoint()
 
         with Horizontal(id="content-area"):
-            # Sidebar navigation (conditionally visible)
-            if sidebar_config["visible"] and not breakpoint.name.startswith("horizontal"):
+            # Sidebar navigation (always visible when configured, including horizontal screens)
+            if sidebar_config["visible"]:
                 with Vertical(id="sidebar", classes="sidebar adaptive-sidebar"):
-                    yield Tree("GitHub CLI", id="nav-tree")
-                    yield Rule(line_style="heavy")
-                    yield Button("🔐 Login", id="login-btn", variant="primary")
-                    yield Button("🚪 Logout", id="logout-btn", variant="error")
-                    yield Rule()
-                    yield Button("🔄 Refresh", id="refresh-btn")
+                    yield from self._compose_adaptive_sidebar_content()
 
             # Main content area with responsive tabs
             yield from self._compose_main_content()
@@ -388,6 +533,152 @@ class GitHubTUIApp(App[None]):
             logger.debug(f"Could not update button visibility: {e}")
             # Buttons might not be mounted yet or layout might not have them
 
+    async def _preload_initial_data(self) -> None:
+        """Preload initial data for faster user experience using DataLoader."""
+        if not self.client or not self.authenticated or not self.data_loader:
+            return
+
+        try:
+            # Start preloading in background without blocking UI
+            logger.debug("Starting strategic background data preload")
+
+            # Phase 1: Critical data (immediate)
+            self.set_timer(0.1, self._preload_critical_data)
+
+            # Phase 2: Commonly accessed data (short delay)
+            self.set_timer(0.5, self._preload_common_data)
+
+            # Phase 3: Nice-to-have data (longer delay)
+            self.set_timer(2.0, self._preload_supplementary_data)
+
+            # Start background refresh for critical data
+            self._start_background_refresh()
+
+        except Exception as e:
+            logger.warning(f"Error during data preload setup: {e}")
+            # Don't fail initialization if preload fails
+
+    @work(exclusive=False)
+    async def _preload_critical_data(self) -> None:
+        """Preload critical data that users access immediately."""
+        if not self.data_loader or not self.authenticated:
+            return
+
+        try:
+            # User info (for header display)
+            await self.data_loader.load(
+                "user_info",
+                self.client.get_user_info,
+                use_cache=True
+            )
+
+            # Rate limit info (for status display)
+            await self.data_loader.load(
+                "rate_limit",
+                self._get_rate_limit_info,
+                use_cache=True
+            )
+
+            logger.debug("Critical data preloaded successfully")
+        except Exception as e:
+            logger.debug(f"Critical data preload failed: {e}")
+
+    @work(exclusive=False)
+    async def _preload_common_data(self) -> None:
+        """Preload commonly accessed data."""
+        if not self.data_loader or not self.authenticated:
+            return
+
+        try:
+            # User repositories (most commonly accessed)
+            await self.data_loader.load(
+                "user_repositories",
+                self.client.get_user_repositories,
+                type="all",
+                sort="updated",
+                per_page=20,
+                use_cache=True
+            )
+
+            # Recent notifications (frequently checked)
+            await self.data_loader.load(
+                "notifications",
+                self.client.get_notifications,
+                per_page=10,
+                use_cache=True
+            )
+
+            logger.debug("Common data preloaded successfully")
+        except Exception as e:
+            logger.debug(f"Common data preload failed: {e}")
+
+    @work(exclusive=False)
+    async def _preload_supplementary_data(self) -> None:
+        """Preload supplementary data for enhanced experience."""
+        if not self.data_loader or not self.authenticated:
+            return
+
+        try:
+            # Recent pull requests
+            await self.data_loader.load(
+                "user_pull_requests",
+                self.client.search_pull_requests,
+                query="author:@me",
+                per_page=10,
+                use_cache=True
+            )
+
+            # Recent issues
+            await self.data_loader.load(
+                "user_issues",
+                self.client.search_issues,
+                query="author:@me",
+                per_page=10,
+                use_cache=True
+            )
+
+            logger.debug("Supplementary data preloaded successfully")
+        except Exception as e:
+            logger.debug(f"Supplementary data preload failed: {e}")
+
+    def _start_background_refresh(self) -> None:
+        """Start background refresh for critical data."""
+        if not self.data_loader:
+            return
+
+        try:
+            # Refresh notifications every 2 minutes
+            self.data_loader.start_background_refresh(
+                "notifications",
+                self.client.get_notifications,
+                per_page=10,
+                interval=timedelta(minutes=2)
+            )
+
+            # Refresh rate limit every 5 minutes
+            self.data_loader.start_background_refresh(
+                "rate_limit",
+                self._get_rate_limit_info,
+                interval=timedelta(minutes=5)
+            )
+
+            logger.debug("Background refresh started for critical data")
+        except Exception as e:
+            logger.debug(f"Background refresh setup failed: {e}")
+
+    async def _get_rate_limit_info(self) -> dict:
+        """Get current rate limit information."""
+        if not self.client:
+            return {"remaining": 0, "limit": 5000, "reset": 0}
+
+        try:
+            response = await self.client.get("/rate_limit")
+            if hasattr(response, 'data') and 'rate' in response.data:
+                return response.data['rate']
+            return {"remaining": 0, "limit": 5000, "reset": 0}
+        except Exception:
+            return {"remaining": 0, "limit": 5000, "reset": 0}
+
     def _start_background_tasks(self) -> None:
         """Start background tasks for periodic updates."""
         # Start rate limit monitoring
@@ -419,16 +710,20 @@ class GitHubTUIApp(App[None]):
         try:
             breakpoint = self.layout_manager.get_current_breakpoint()
 
-            # Update main container classes
+            # Update main container classes (optimized)
             try:
                 main_container = self.query_one("#main-container")
-                # Remove old breakpoint classes
-                for bp_name in ["xs", "sm", "md", "lg", "xl", "horizontal_tight", "horizontal_ultra_tight"]:
-                    main_container.remove_class(bp_name)
-                # Add current breakpoint class
-                main_container.add_class(breakpoint.name)
-            except Exception:
-                pass
+                # More efficient class management - batch update
+                current_classes = set(main_container.classes)
+                breakpoint_classes = {"xs", "sm", "md", "lg", "xl", "horizontal_comfortable", "horizontal_tight", "horizontal_ultra_tight", "horizontal_micro", "vertical_micro"}
+
+                # Only update if classes actually changed
+                new_classes = (current_classes - breakpoint_classes) | {breakpoint.name}
+                if new_classes != current_classes:
+                    main_container.set_classes(" ".join(new_classes))
+                    logger.debug(f"Updated container classes for breakpoint: {breakpoint.name}")
+            except Exception as e:
+                logger.debug(f"Could not update main container classes: {e}")
 
             # Update header classes
             try:
@@ -495,16 +790,30 @@ class GitHubTUIApp(App[None]):
         logger.info("Switching to horizontal layout")
 
     def _on_responsive_layout_change(self, old_breakpoint: Any, new_breakpoint: Any) -> None:
-        """Handle responsive layout changes."""
+        """Handle responsive layout changes with smooth transitions."""
         logger.info(
             f"Layout changed from {old_breakpoint.name if old_breakpoint else 'None'} to {new_breakpoint.name}")
 
-        # Schedule layout update
-        self.call_after_refresh(self._update_responsive_layout)
+        # Start transition animation
+        self._start_layout_transition()
+
+        # Schedule layout update with transition support
+        self.call_after_refresh(self._update_responsive_layout_with_transition)
 
         # Update status bar
         if self.status_bar:
             self.status_bar.refresh()
+
+        # Provide user feedback for significant layout changes
+        if old_breakpoint and new_breakpoint:
+            if old_breakpoint.name.startswith("horizontal") != new_breakpoint.name.startswith("horizontal"):
+                # Major layout change - notify user
+                layout_type = "horizontal" if new_breakpoint.name.startswith("horizontal") else "vertical"
+                self.notify(f"Layout optimized for {layout_type} display", timeout=2)
+            elif old_breakpoint.sidebar_visible != new_breakpoint.sidebar_visible:
+                # Sidebar visibility change
+                sidebar_state = "shown" if new_breakpoint.sidebar_visible else "hidden"
+                self.notify(f"Sidebar {sidebar_state}", timeout=1.5)
 
         # Log layout change details
         if new_breakpoint.name.startswith("horizontal"):
@@ -514,6 +823,50 @@ class GitHubTUIApp(App[None]):
             logger.info(f"Switched to compact mode: {new_breakpoint.name}")
         else:
             logger.info(f"Switched to normal layout: {new_breakpoint.name}")
+
+    def _start_layout_transition(self) -> None:
+        """Start visual transition effects for layout changes."""
+        try:
+            # Add transitioning class to main container
+            main_container = self.query_one("#main-container")
+            main_container.add_class("layout-transitioning")
+
+            # Add transitioning class to sidebar if present
+            try:
+                sidebar = self.query_one("#sidebar")
+                sidebar.add_class("transitioning")
+            except Exception:
+                pass  # Sidebar might not be present
+
+            # Remove transition classes after animation completes
+            self.set_timer(0.4, self._end_layout_transition)
+
+        except Exception as e:
+            logger.debug(f"Could not start layout transition: {e}")
+
+    def _end_layout_transition(self) -> None:
+        """End visual transition effects."""
+        try:
+            # Remove transitioning classes
+            main_container = self.query_one("#main-container")
+            main_container.remove_class("layout-transitioning")
+
+            try:
+                sidebar = self.query_one("#sidebar")
+                sidebar.remove_class("transitioning")
+            except Exception:
+                pass  # Sidebar might not be present
+
+        except Exception as e:
+            logger.debug(f"Could not end layout transition: {e}")
+
+    async def _update_responsive_layout_with_transition(self) -> None:
+        """Update responsive layout with transition support."""
+        # Call the regular update method
+        await self._update_responsive_layout()
+
+        # Ensure transition classes are properly managed
+        self.set_timer(0.1, self._end_layout_transition)
 
     def action_toggle_responsive_debug(self) -> None:
         """Toggle responsive debug information."""

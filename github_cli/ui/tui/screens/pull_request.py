@@ -9,8 +9,8 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import (
-    Button, DataTable, Input, Label, LoadingIndicator,
-    Markdown, Placeholder, Static, TabbedContent, TabPane
+    Button, Collapsible, DataTable, Input, Label, LoadingIndicator,
+    Markdown, Placeholder, Rule, SelectionList, Static, TabbedContent, TabPane
 )
 from loguru import logger
 from pydantic import BaseModel
@@ -18,6 +18,9 @@ from pydantic import BaseModel
 from github_cli.api.client import GitHubClient
 from github_cli.utils.exceptions import GitHubCLIError
 from github_cli.ui.tui.core.responsive import ResponsiveLayoutManager
+from github_cli.ui.tui.widgets import (
+    create_enhanced_static, create_visual_separator, create_enhanced_button
+)
 
 
 class PullRequest(BaseModel):
@@ -100,55 +103,302 @@ class PullRequestDetailScreen(Screen[None]):
             self.layout_manager.add_resize_callback(self._on_responsive_change)
 
     def compose(self) -> ComposeResult:
-        """Compose the pull request detail screen with adaptive layout."""
+        """Compose the pull request detail screen with modern widgets and SelectionList."""
         with Container(id="pr-detail-container", classes="adaptive-container"):
-            yield Static(f"Pull Request #{self.pr.number}: {self.pr.title}", id="pr-title", classes="adaptive-title")
+            # Enhanced title
+            yield create_enhanced_static(
+                f"[bold cyan]Pull Request #{self.pr.number}:[/bold cyan] {self.pr.title}",
+                static_id="pr-title",
+                markup=True
+            )
 
-            with Container(id="pr-info", classes="adaptive-layout"):
-                with Vertical(id="pr-basic-info", classes="adaptive-panel priority-high"):
-                    yield Label(f"Author: {self.pr.author}", classes="info-item")
-                    yield Label(f"State: {self.pr.state.upper()}", classes="info-item")
-                    yield Label(f"Branch: {self.pr.branch_info}", classes="info-item")
-                    yield Label(f"Created: {self.pr.created_date}", classes="info-item priority-medium")
-                    if self.pr.draft:
-                        yield Label("⚠️ Draft PR", classes="info-item priority-low")
+            # Visual separator
+            yield create_visual_separator("heavy", "horizontal", "title-separator")
 
-                with Vertical(id="pr-stats", classes="adaptive-panel priority-medium"):
-                    yield Label(f"💬 Comments: {self.pr.comments}", classes="stat-item")
-                    yield Label(f"📝 Review Comments: {self.pr.review_comments}", classes="stat-item")
-                    yield Label(f"📊 Changes: +{self.pr.additions}/-{self.pr.deletions}", classes="stat-item")
-                    yield Label(f"📁 Files Changed: {self.pr.changed_files}", classes="stat-item priority-low")
-                    yield Label(f"🔗 Commits: {getattr(self.pr, 'commits', 0)}", classes="stat-item priority-low")
+            # Basic Information Collapsible Section
+            with Collapsible(
+                title="📋 Pull Request Information",
+                collapsed=False,
+                id="pr-info-collapsible",
+                classes="adaptive-panel priority-high"
+            ):
+                yield create_enhanced_static(
+                    f"[bold yellow]Author:[/bold yellow] {self.pr.author}",
+                    static_id="pr-author",
+                    markup=True
+                )
+                yield create_enhanced_static(
+                    f"[bold yellow]State:[/bold yellow] {self.pr.state.upper()}",
+                    static_id="pr-state",
+                    markup=True
+                )
+                yield create_enhanced_static(
+                    f"[bold yellow]Branch:[/bold yellow] {self.pr.branch_info}",
+                    static_id="pr-branch",
+                    markup=True
+                )
+                yield create_enhanced_static(
+                    f"[bold yellow]Created:[/bold yellow] {self.pr.created_date}",
+                    static_id="pr-created",
+                    markup=True
+                )
+                if self.pr.draft:
+                    yield create_enhanced_static(
+                        "[bold red]⚠️ Draft PR[/bold red]",
+                        static_id="pr-draft",
+                        markup=True
+                    )
 
-            with TabbedContent(id="pr-tabs", classes="adaptive-tabs"):
-                with TabPane("Description", id="description-tab"):
+            # Statistics Collapsible Section
+            with Collapsible(
+                title="📊 Statistics & Changes",
+                collapsed=False,
+                id="pr-stats-collapsible",
+                classes="adaptive-panel priority-medium"
+            ):
+                yield create_enhanced_static(
+                    f"[bold blue]💬 Comments:[/bold blue] {self.pr.comments}",
+                    static_id="pr-comments",
+                    markup=True
+                )
+                yield create_enhanced_static(
+                    f"[bold blue]📝 Review Comments:[/bold blue] {self.pr.review_comments}",
+                    static_id="pr-review-comments",
+                    markup=True
+                )
+                yield create_enhanced_static(
+                    f"[bold blue]📊 Changes:[/bold blue] [green]+{self.pr.additions}[/green]/[red]-{self.pr.deletions}[/red]",
+                    static_id="pr-changes",
+                    markup=True
+                )
+                yield create_enhanced_static(
+                    f"[bold blue]📁 Files Changed:[/bold blue] {self.pr.changed_files}",
+                    static_id="pr-files",
+                    markup=True
+                )
+                yield create_enhanced_static(
+                    f"[bold blue]🔗 Commits:[/bold blue] {getattr(self.pr, 'commits', 0)}",
+                    static_id="pr-commits",
+                    markup=True
+                )
+
+            # Reviewers Selection Section (using SelectionList)
+            with Collapsible(
+                title="👥 Reviewers & Assignees",
+                collapsed=True,
+                id="pr-reviewers-collapsible",
+                classes="adaptive-panel priority-medium"
+            ):
+                # SelectionList for managing reviewers
+                reviewer_options = [
+                    ("reviewer1", "👤 John Doe"),
+                    ("reviewer2", "👤 Jane Smith"),
+                    ("reviewer3", "👤 Bob Johnson"),
+                    ("reviewer4", "👤 Alice Brown"),
+                ]
+                yield SelectionList(
+                    *reviewer_options,
+                    id="reviewers-selection",
+                    classes="reviewers-list"
+                )
+
+                yield create_visual_separator("dashed", "horizontal", "reviewers-separator")
+
+                # SelectionList for managing assignees
+                assignee_options = [
+                    ("assignee1", "🎯 John Doe"),
+                    ("assignee2", "🎯 Jane Smith"),
+                    ("assignee3", "🎯 Bob Johnson"),
+                ]
+                yield SelectionList(
+                    *assignee_options,
+                    id="assignees-selection",
+                    classes="assignees-list"
+                )
+
+            # Labels Selection Section (using SelectionList)
+            with Collapsible(
+                title="🏷️ Labels & Categories",
+                collapsed=True,
+                id="pr-labels-collapsible",
+                classes="adaptive-panel priority-low"
+            ):
+                # SelectionList for managing labels
+                label_options = [
+                    ("bug", "🐛 Bug"),
+                    ("feature", "✨ Feature"),
+                    ("enhancement", "🚀 Enhancement"),
+                    ("documentation", "📚 Documentation"),
+                    ("testing", "🧪 Testing"),
+                    ("refactor", "♻️ Refactor"),
+                    ("performance", "⚡ Performance"),
+                    ("security", "🔒 Security"),
+                ]
+                yield SelectionList(
+                    *label_options,
+                    id="labels-selection",
+                    classes="labels-list"
+                )
+
+            # Visual separator before tabs
+            yield create_visual_separator("solid", "horizontal", "tabs-separator")
+
+            # Enhanced tabs with modern content organization
+            with TabbedContent(id="pr-tabs", classes="adaptive-tabs modern-tabs"):
+                with TabPane("📄 Description", id="description-tab"):
                     if self.pr.body:
                         yield Markdown(self.pr.body, id="pr-description")
                     else:
-                        yield Static("No description provided", id="pr-no-description")
+                        yield create_enhanced_static(
+                            "[dim]No description provided[/dim]",
+                            static_id="pr-no-description",
+                            markup=True
+                        )
 
-                with TabPane("Files Changed", id="files-tab"):
-                    yield Placeholder("File diff viewer coming soon")
+                with TabPane("📁 Files Changed", id="files-tab"):
+                    with Collapsible(
+                        title="🗂️ File Selection",
+                        collapsed=False,
+                        id="files-selection-collapsible"
+                    ):
+                        # SelectionList for file selection/filtering
+                        file_options = [
+                            ("file1", "📄 src/main.py"),
+                            ("file2", "📄 src/utils.py"),
+                            ("file3", "📄 tests/test_main.py"),
+                            ("file4", "📄 README.md"),
+                            ("file5", "📄 requirements.txt"),
+                        ]
+                        yield SelectionList(
+                            *file_options,
+                            id="files-selection",
+                            classes="files-list"
+                        )
 
-                with TabPane("Commits", id="commits-tab"):
-                    yield Placeholder("Commit history coming soon")
+                    yield create_enhanced_static(
+                        "[dim]File diff viewer coming soon...[/dim]",
+                        static_id="files-placeholder",
+                        markup=True
+                    )
 
-                with TabPane("Checks", id="checks-tab"):
-                    yield Placeholder("Status checks coming soon")
+                with TabPane("🔗 Commits", id="commits-tab"):
+                    with Collapsible(
+                        title="📋 Commit Selection",
+                        collapsed=False,
+                        id="commits-selection-collapsible"
+                    ):
+                        # SelectionList for commit selection
+                        commit_options = [
+                            ("commit1", "🔸 feat: Add new feature"),
+                            ("commit2", "🔸 fix: Fix critical bug"),
+                            ("commit3", "🔸 docs: Update documentation"),
+                            ("commit4", "🔸 test: Add unit tests"),
+                        ]
+                        yield SelectionList(
+                            *commit_options,
+                            id="commits-selection",
+                            classes="commits-list"
+                        )
 
-                with TabPane("Reviews", id="reviews-tab"):
-                    yield Placeholder("Code reviews coming soon")
+                    yield create_enhanced_static(
+                        "[dim]Commit history details coming soon...[/dim]",
+                        static_id="commits-placeholder",
+                        markup=True
+                    )
 
-            # Action buttons with adaptive layout
-            with Horizontal(id="pr-actions", classes="adaptive-horizontal"):
+                with TabPane("✅ Checks", id="checks-tab"):
+                    with Collapsible(
+                        title="🔍 Check Selection",
+                        collapsed=False,
+                        id="checks-selection-collapsible"
+                    ):
+                        # SelectionList for status checks
+                        check_options = [
+                            ("check1", "✅ CI/CD Pipeline"),
+                            ("check2", "✅ Code Quality"),
+                            ("check3", "❌ Security Scan"),
+                            ("check4", "⏳ Performance Tests"),
+                        ]
+                        yield SelectionList(
+                            *check_options,
+                            id="checks-selection",
+                            classes="checks-list"
+                        )
+
+                    yield create_enhanced_static(
+                        "[dim]Status checks details coming soon...[/dim]",
+                        static_id="checks-placeholder",
+                        markup=True
+                    )
+
+                with TabPane("👥 Reviews", id="reviews-tab"):
+                    with Collapsible(
+                        title="📝 Review Management",
+                        collapsed=False,
+                        id="reviews-management-collapsible"
+                    ):
+                        # SelectionList for review actions
+                        review_options = [
+                            ("approve", "✅ Approve"),
+                            ("request_changes", "❌ Request Changes"),
+                            ("comment", "💬 Comment Only"),
+                            ("dismiss", "🚫 Dismiss Review"),
+                        ]
+                        yield SelectionList(
+                            *review_options,
+                            id="review-actions-selection",
+                            classes="review-actions-list"
+                        )
+
+                    yield create_enhanced_static(
+                        "[dim]Code reviews interface coming soon...[/dim]",
+                        static_id="reviews-placeholder",
+                        markup=True
+                    )
+
+            # Visual separator before actions
+            yield create_visual_separator("heavy", "horizontal", "actions-separator")
+
+            # Enhanced action buttons with modern styling
+            with Horizontal(id="pr-actions", classes="adaptive-horizontal modern-actions"):
                 if self.pr.is_mergeable:
-                    yield Button("🔀 Merge", id="merge-pr", variant="primary", classes="adaptive-button")
-                    yield Button("🗳️ Request Review", id="request-review", classes="adaptive-button priority-medium")
+                    yield create_enhanced_button(
+                        "🔀 Merge",
+                        "merge-pr",
+                        variant="primary",
+                        tooltip="Merge this pull request"
+                    )
+                    yield create_enhanced_button(
+                        "🗳️ Request Review",
+                        "request-review",
+                        variant="default",
+                        tooltip="Request review from selected reviewers"
+                    )
 
-                yield Button("🌐 Open in Browser", id="open-browser", classes="adaptive-button priority-medium")
-                yield Button("📋 Copy URL", id="copy-url", classes="adaptive-button priority-low")
-                yield Button("🔄 Refresh", id="refresh-pr", classes="adaptive-button priority-low")
-                yield Button("⬅️ Close", id="close-detail", variant="error", classes="adaptive-button")
+                yield create_enhanced_button(
+                    "🌐 Open in Browser",
+                    "open-browser",
+                    variant="default",
+                    tooltip="Open pull request in web browser"
+                )
+                yield create_enhanced_button(
+                    "📋 Copy URL",
+                    "copy-url",
+                    variant="default",
+                    tooltip="Copy pull request URL to clipboard"
+                )
+                yield create_enhanced_button(
+                    "🔄 Refresh",
+                    "refresh-pr",
+                    variant="default",
+                    tooltip="Refresh pull request data"
+                )
+                yield create_enhanced_button(
+                    "❌ Close",
+                    "close-detail",
+                    variant="error",
+                    tooltip="Close this detail view"
+                )
 
             yield LoadingIndicator(id="pr-detail-loading")
 
@@ -299,6 +549,66 @@ class PullRequestDetailScreen(Screen[None]):
     def close_detail(self) -> None:
         """Close the detail screen."""
         self.dismiss()
+
+    # SelectionList event handlers for enhanced functionality
+    @on(SelectionList.SelectedChanged, "#reviewers-selection")
+    def on_reviewers_changed(self, event: SelectionList.SelectedChanged) -> None:
+        """Handle reviewer selection changes."""
+        selected_reviewers = [str(item) for item in event.selection_list.selected]
+        if selected_reviewers:
+            self.notify(f"Selected reviewers: {', '.join(selected_reviewers)}", severity="information")
+        else:
+            self.notify("No reviewers selected", severity="information")
+
+    @on(SelectionList.SelectedChanged, "#assignees-selection")
+    def on_assignees_changed(self, event: SelectionList.SelectedChanged) -> None:
+        """Handle assignee selection changes."""
+        selected_assignees = [str(item) for item in event.selection_list.selected]
+        if selected_assignees:
+            self.notify(f"Selected assignees: {', '.join(selected_assignees)}", severity="information")
+        else:
+            self.notify("No assignees selected", severity="information")
+
+    @on(SelectionList.SelectedChanged, "#labels-selection")
+    def on_labels_changed(self, event: SelectionList.SelectedChanged) -> None:
+        """Handle label selection changes."""
+        selected_labels = [str(item) for item in event.selection_list.selected]
+        if selected_labels:
+            self.notify(f"Selected labels: {', '.join(selected_labels)}", severity="information")
+        else:
+            self.notify("No labels selected", severity="information")
+
+    @on(SelectionList.SelectedChanged, "#files-selection")
+    def on_files_changed(self, event: SelectionList.SelectedChanged) -> None:
+        """Handle file selection changes for diff viewing."""
+        selected_files = [str(item) for item in event.selection_list.selected]
+        if selected_files:
+            self.notify(f"Viewing files: {', '.join(selected_files)}", severity="information")
+            # In a real implementation, this would filter the diff view
+
+    @on(SelectionList.SelectedChanged, "#commits-selection")
+    def on_commits_changed(self, event: SelectionList.SelectedChanged) -> None:
+        """Handle commit selection changes."""
+        selected_commits = [str(item) for item in event.selection_list.selected]
+        if selected_commits:
+            self.notify(f"Selected commits: {', '.join(selected_commits)}", severity="information")
+            # In a real implementation, this would show commit details
+
+    @on(SelectionList.SelectedChanged, "#checks-selection")
+    def on_checks_changed(self, event: SelectionList.SelectedChanged) -> None:
+        """Handle status check selection changes."""
+        selected_checks = [str(item) for item in event.selection_list.selected]
+        if selected_checks:
+            self.notify(f"Viewing checks: {', '.join(selected_checks)}", severity="information")
+            # In a real implementation, this would show check details
+
+    @on(SelectionList.SelectedChanged, "#review-actions-selection")
+    def on_review_actions_changed(self, event: SelectionList.SelectedChanged) -> None:
+        """Handle review action selection changes."""
+        selected_actions = [str(item) for item in event.selection_list.selected]
+        if selected_actions:
+            self.notify(f"Review actions: {', '.join(selected_actions)}", severity="information")
+            # In a real implementation, this would trigger review actions
 
 
 class PullRequestManager:

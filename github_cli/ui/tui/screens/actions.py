@@ -9,8 +9,9 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import (
-    Button, DataTable, Input, Label, LoadingIndicator,
-    Log, Placeholder, ProgressBar, Static, TabbedContent, TabPane
+    Button, DataTable, Digits, Input, Label, Link, LoadingIndicator,
+    Log, Placeholder, Pretty, ProgressBar, Sparkline, Static,
+    TabbedContent, TabPane
 )
 from loguru import logger
 from pydantic import BaseModel
@@ -18,6 +19,9 @@ from pydantic import BaseModel
 from github_cli.api.client import GitHubClient
 from github_cli.utils.exceptions import GitHubCLIError
 from github_cli.ui.tui.core.responsive import ResponsiveLayoutManager
+from github_cli.ui.tui.widgets import (
+    create_digits_display, create_pretty_display, create_collapsible_section
+)
 
 
 class WorkflowRun(BaseModel):
@@ -702,6 +706,65 @@ class ActionsWidget(Container):
                 # Pass layout manager to detail screen if available
                 self.app.push_screen(WorkflowRunDetailScreen(
                     run, self.client, repo_name, self.layout_manager))
+
+    def create_workflow_analytics_panel(self, workflow_runs: list[WorkflowRun]) -> ComposeResult:
+        """Create a modern analytics panel using Sparkline and other new widgets."""
+        with Container(id="analytics-panel", classes="workflow-analytics"):
+            # Create success rate sparkline
+            success_data = []
+            for run in workflow_runs[-30:]:  # Last 30 runs
+                if run.conclusion == "success":
+                    success_data.append(1)
+                elif run.conclusion == "failure":
+                    success_data.append(0)
+                else:
+                    success_data.append(0.5)  # Neutral/cancelled
+
+            if success_data:
+                yield Static("Success Rate Trend (Last 30 runs):", classes="analytics-label")
+                yield Sparkline(
+                    data=success_data,
+                    id="success-rate-sparkline",
+                    classes="success-sparkline"
+                )
+
+            # Use Digits for key metrics
+            with Horizontal(classes="metrics-row"):
+                total_runs = len(workflow_runs)
+                successful_runs = len([r for r in workflow_runs if r.conclusion == "success"])
+
+                yield Static("Total Runs:", classes="metric-label")
+                yield create_digits_display(
+                    total_runs,
+                    digits_id="total-runs-display"
+                )
+
+                yield Static("Success Rate:", classes="metric-label")
+                success_rate = (successful_runs / total_runs * 100) if total_runs > 0 else 0
+                yield create_digits_display(
+                    f"{success_rate:.1f}%",
+                    digits_id="success-rate-display"
+                )
+
+            # Use Pretty widget to display workflow summary
+            workflow_summary = {
+                "total_runs": total_runs,
+                "successful": successful_runs,
+                "failed": len([r for r in workflow_runs if r.conclusion == "failure"]),
+                "in_progress": len([r for r in workflow_runs if r.status == "in_progress"]),
+                "queued": len([r for r in workflow_runs if r.status == "queued"])
+            }
+
+            yield create_collapsible_section(
+                title="📊 Detailed Statistics",
+                collapsed=True,
+                collapsible_id="workflow-stats"
+            )
+
+            yield create_pretty_display(
+                workflow_summary,
+                pretty_id="workflow-summary"
+            )
 
 
 # Function to replace placeholder in main TUI app
